@@ -1,3 +1,3 @@
-#define DB "./db/"
-#define HOSTNAME "localhost"
-#define PORT 8080
+#define DB "./db/" // Files for tests
+#define HOST "localhost"
+#define PORT 8000

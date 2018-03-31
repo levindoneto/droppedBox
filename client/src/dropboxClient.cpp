@@ -1,7 +1,9 @@
 #include <iostream>
-#include "dropboxClient.hpp"
+#include "../headers/dropboxClient.hpp"
+
+using namespace std;
 
 int main (int argc, char* argv[]) {
-    std::cout << "Client";
+    cout << "Client";
     return 0;
 }

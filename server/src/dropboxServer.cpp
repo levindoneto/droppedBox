@@ -1,7 +1,9 @@
 #include <iostream>
 #include "dropboxServer.hpp"
 
+using namespace std;
+
 int main (int argc, char* argv[]) {
-    std::cout << "Server";
+    cout << "Server";
     return 0;
 }
