@@ -5,3 +5,6 @@
 # Compiled object files
 *.lo
 *.o
+dropboxClient
+dropboxServer
+

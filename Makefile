@@ -6,10 +6,10 @@ CFLAGS=$(FLAGS) $(INCLUDE)
 
 all: dropboxServer dropboxClient
 
-dropboxServer: $(UTIL) server/dropboxServer.o
+dropboxServer: $(UTIL) server/src/dropboxServer.o
 	$(CC) $(CFLAGS) -o $@ $^
 
-dropboxClient: $(UTIL) client/dropboxClient.o
+dropboxClient: $(UTIL) client/src/dropboxClient.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 %.o: %.cpp
