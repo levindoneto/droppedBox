@@ -3,13 +3,13 @@
 
 using namespace std;
 
-class ClientCommunication { // TODO: extend communication from utils
+class ClientCommunication : public Communication {
     private:
     	int port;
     	int socketDescriptor;
 
     public:
-    	ClientCommunication(void);
+    	ClientCommunication();
     	ClientCommunication(int port);
     	bool connectServer(string ip, int port);
 };
