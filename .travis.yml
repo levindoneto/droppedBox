@@ -11,5 +11,5 @@ addons:
     - g++-6
     - clang-3.8
 script:
-  - make dropbox Server
+  - make dropboxServer
   - make dropboxClient
