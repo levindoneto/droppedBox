@@ -10,4 +10,13 @@ __Authors:__ Ana Mativi, Felipe Tormes, Levindo Neto e Matheus Barbieri.
 
 ## Organization of the Project
 
-## Date Structures
+TODO
+
+## How to use
+
+```terminal
+$ make
+$ .dropboxDP 
+```
+
+Being DP Client or Server.

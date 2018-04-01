@@ -4,6 +4,6 @@
 using namespace std;
 
 int main (int argc, char* argv[]) {
-    cout << "Server";
+    cout << "Server" << endl;
     return 0;
 }
