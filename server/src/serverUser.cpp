@@ -3,6 +3,7 @@
 
 using namespace std;
 
-ServerUser::ServerUser(string userid) {
+ServerUser::ServerUser(string userid, Folder *folderPath) {
 	this->userid = userid;
+	this->folderPath = folderPath;
 }
