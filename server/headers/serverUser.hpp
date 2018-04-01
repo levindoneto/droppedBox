@@ -1,6 +1,7 @@
 #include <string>
+#include <vector>
 #include <mutex>
-#include "../../utils/device.hpp"
+#include "../../utils/headers/device.hpp"
 
 using namespace std;
 
@@ -10,4 +11,5 @@ class ServerUser {
         vector<Device*> devices; // Vector of devices
 	public:
 		ServerUser () {}; // Default constructor
+		ServerUser (string userid); // TODO: Put devices in this init
 };
