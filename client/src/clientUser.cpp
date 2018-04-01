@@ -3,7 +3,11 @@
 
 using namespace std;
 
-ClientUser::ClientUser(string userid, Device* device) {
-	this->userid = userid;
+ClientUser::ClientUser(string userId, Device* device) {
+	this->userId = userId;
 	this->device = device;
+}
+
+string ClientUser::getUserId() {
+	return this->userId;
 }

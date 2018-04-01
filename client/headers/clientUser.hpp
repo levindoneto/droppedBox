@@ -5,9 +5,11 @@ using namespace std;
 
 class ClientUser {
 	private:
-		string userid;
+		string userId;
 		Device* device;
 	public:
 		ClientUser () {}; // Default constructor
 		ClientUser (string userid, Device* device);
+
+		string getUserId();
 };

@@ -5,13 +5,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/types.h>
+#include <sys/types.h> // bool return
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "../headers/clientCommunication.hpp"
 
+#define DEBUG 1
 #define TRUE 1
+
 using namespace std;
 
 ClientCommunication::ClientCommunication(void) {
@@ -25,6 +27,10 @@ ClientCommunication::ClientCommunication(void) {
         cout << "<Client Communication>: Error for opening the socket" << endl;
 		exit(TRUE);
 	}
+    #ifdef DEBUG
+    cout << "<Client Communication>: Connection with the socket " 
+        << this->socketDescriptor << " has been established"<< endl;
+    #endif
 	clientAddress.sin_family = AF_INET;
 	clientAddress.sin_addr.s_addr = htonl(INADDR_ANY);
 	clientAddress.sin_port = this->port;
@@ -43,7 +49,9 @@ ClientCommunication::ClientCommunication(int port) {
 
 bool ClientCommunication::connectServer(string ip, int port) {
     // TODO
+    #ifdef DEBUG
     cout << "Connecting to the server with ip = " << ip
         << " and port = " << port << endl;
+    #endif
     return true;
 }
