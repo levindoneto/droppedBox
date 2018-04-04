@@ -28,7 +28,7 @@ ClientCommunication::ClientCommunication(void) {
 		exit(TRUE);
 	}
     #ifdef DEBUG
-    cout << "<Client Communication>: Connection with the socket " 
+    cout << "<Client Communication>: Connection with the socket "
         << this->socketDescriptor << " has been established"<< endl;
     #endif
 	clientAddress.sin_family = AF_INET;
@@ -42,12 +42,12 @@ ClientCommunication::ClientCommunication(void) {
 	}
 }
 
-ClientCommunication::ClientCommunication(int port) {
-    this->port = 0;
+ClientCommunication::ClientCommunication(char* port) {
+    this->port = '0';
     // TODO
 }
 
-bool ClientCommunication::connectServer(string ip, int port) {
+bool ClientCommunication::connectServer(char* ip, char* port) {
     // TODO
     #ifdef DEBUG
     cout << "Connecting to the server with ip = " << ip
