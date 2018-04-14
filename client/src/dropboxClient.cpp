@@ -1,4 +1,6 @@
 #include <iostream>
+#include <string>
+#include "string.h"
 #include "../headers/dropboxClient.hpp"
 #include "../headers/clientUser.hpp"
 #include "../headers/clientCommunication.hpp"
@@ -6,12 +8,11 @@
 
 using namespace std;
 
-int main (int argc, char* argv[]) {
+int main (int argc, char **argv) {
     cout << "Client" << endl;
-
+    int port = atoi(argv[2]);
     // Test client communication
-    ClientCommunication* c = new ClientCommunication();
-    cout << "Attempt to connect the user " << argv[1] << endl;
-    c->connectServer(argv[2], argv[3]);
+    ClientCommunication* c = new ClientCommunication(argv[1], port);
+    c->connectServer(argv[1], port);
     return 0;
 }

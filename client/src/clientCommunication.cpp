@@ -16,12 +16,13 @@
 
 using namespace std;
 
-ClientCommunication::ClientCommunication(void) {
+// Create connectionm in localhost:8080 with IPv4
+ClientCommunication::ClientCommunication() {
     /* According to the C standard, the address of a structure and its first
     member are the same, so you can cast the pointer to sockaddr_in(6) in a
     pointer to sockaddr. (source: https://stackoverflow.com/questions/18609397)*/
     struct sockaddr_in clientAddress;
-    this->port = 0;
+    this->port = 8080;
 
 	if ((this->socketDescriptor = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         cout << "<Client Communication>: Error for opening the socket" << endl;
@@ -42,12 +43,20 @@ ClientCommunication::ClientCommunication(void) {
 	}
 }
 
-ClientCommunication::ClientCommunication(char* port) {
-    this->port = '0';
-    // TODO
+// Create connectionm in localhost:port with IPv4
+ClientCommunication::ClientCommunication(int port) {
+    this->port =  port;
+    // TODO - assume localhost
 }
 
-bool ClientCommunication::connectServer(char* ip, char* port) {
+// Create connectionm in ip:port with IPv4
+ClientCommunication::ClientCommunication(char* ip, int port) {
+    this->port = port;
+    // TODO - assume localhost
+}
+
+
+bool ClientCommunication::connectServer(char* ip, int port) {
     // TODO
     #ifdef DEBUG
     cout << "Connecting to the server with ip = " << ip
