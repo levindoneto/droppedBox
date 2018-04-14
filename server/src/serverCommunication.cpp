@@ -24,7 +24,7 @@ ServerCommunication::ServerCommunication(int port) {
 	socklen_t clilen;
 	struct sockaddr_in serverAddress, clientAddress;
 	char buffer[BUFFER_SIZE];
-
+	fflush(stdin);
 	if ((socketDesc = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
 	throwError("Error on opening socket");
 
@@ -51,7 +51,6 @@ ServerCommunication::ServerCommunication(int port) {
 		if (n < 0) {
 			throwError("ERROR on recvfrom");
 		}
-
 		cout << "Received a datagram: " << endl << buffer << endl;
 
 		// Send datagram to the created socket
@@ -68,5 +67,6 @@ ServerCommunication::ServerCommunication(int port) {
 			throwError("Error on sending datagram to the created socket");
 		}
 	}
+	fflush(stdin);
 	close(socketDesc);
 }

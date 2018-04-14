@@ -59,7 +59,7 @@ bool ClientCommunication::connectServer(char* ip, int port) {
   struct hostent *server;
 
   char buffer[BUFFER_SIZE];
-
+  fflush(stdin);
   // Get host
   server = gethostbyname(ip);
   if (server == NULL) {
@@ -106,7 +106,7 @@ bool ClientCommunication::connectServer(char* ip, int port) {
   }
 
   cout << "Got an ack: " << buffer;
-
+  fflush(stdin);
   close(socketDesc);
 
   #ifdef DEBUG
