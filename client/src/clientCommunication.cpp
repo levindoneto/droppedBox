@@ -1,14 +1,14 @@
-#include <sys/socket.h>
 #include <string>
 #include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h> // bool return
+#include <sys/types.h> // bool impl
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netdb.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 #include "../headers/clientCommunication.hpp"
 
 #define DEBUG 1
@@ -16,11 +16,20 @@
 
 using namespace std;
 
+/*
+  start socket
+  while true:
+    sendto
+    recvfrom
+  close socket
+*/
+
 // Create connectionm in localhost:8080 with IPv4
 ClientCommunication::ClientCommunication() {
     /* According to the C standard, the address of a structure and its first
     member are the same, so you can cast the pointer to sockaddr_in(6) in a
     pointer to sockaddr. (source: https://stackoverflow.com/questions/18609397)*/
+
     struct sockaddr_in clientAddress;
     this->port = 8080;
 
