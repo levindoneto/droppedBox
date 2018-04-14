@@ -10,19 +10,20 @@
 #include <unistd.h>
 #include <string.h>
 #include "../headers/clientCommunication.hpp"
+#include "../../utils/headers/dropboxUtils.hpp"
 
-#define DEBUG 1
+#define DEBUG 0
 #define TRUE 1
+#define BYTE_IN_BITS 8
+#define BUFFER_SIZE 256
 
 using namespace std;
 
-/*
-  start socket
-  while true:
-    sendto
-    recvfrom
-  close socket
-*/
+/* start socket
+   while true:
+     sendto
+     recvfrom
+   close socket */
 
 // Create connectionm in localhost:8080 with IPv4
 ClientCommunication::ClientCommunication() {
@@ -30,27 +31,12 @@ ClientCommunication::ClientCommunication() {
     member are the same, so you can cast the pointer to sockaddr_in(6) in a
     pointer to sockaddr. (source: https://stackoverflow.com/questions/18609397)*/
 
-    struct sockaddr_in clientAddress;
-    this->port = 8080;
-
-	if ((this->socketDescriptor = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        cout << "<Client Communication>: Error for opening the socket" << endl;
-		exit(TRUE);
-	}
+    // TODO UDP
     #ifdef DEBUG
     cout << "<Client Communication>: Connection with the socket "
         << this->socketDescriptor << " has been established"<< endl;
     #endif
-	clientAddress.sin_family = AF_INET;
-	clientAddress.sin_addr.s_addr = htonl(INADDR_ANY);
-	clientAddress.sin_port = this->port;
-
-	if ((bind(this->socketDescriptor, (struct sockaddr *) &clientAddress, sizeof(clientAddress))) != 0) {
-        cout << "<Client Communication>: Error for binding the socket"
-            << "at the port " << this->port << endl;
-		exit(TRUE);
-	}
-}
+    }
 
 // Create connectionm in localhost:port with IPv4
 ClientCommunication::ClientCommunication(int port) {
@@ -64,12 +50,68 @@ ClientCommunication::ClientCommunication(char* ip, int port) {
     // TODO - assume localhost
 }
 
-
 bool ClientCommunication::connectServer(char* ip, int port) {
-    // TODO
-    #ifdef DEBUG
-    cout << "Connecting to the server with ip = " << ip
-        << " and port = " << port << endl;
-    #endif
-    return true;
+  int socketDesc;
+  int n;
+  unsigned int lenSckAddr;
+  struct sockaddr_in serverAddress;
+  struct sockaddr_in from;
+  struct hostent *server;
+
+  char buffer[BUFFER_SIZE];
+
+  // Get host
+  server = gethostbyname(ip);
+  if (server == NULL) {
+    throwError("The host does not exist\n");
+  }
+
+  // Open udp socket using the defaul protocol
+  if ((socketDesc = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+    throwError("Error on opening socket\n");
+
+  serverAddress.sin_family = AF_INET;
+  serverAddress.sin_port = htons(port);
+  serverAddress.sin_addr = *((struct in_addr *)server->h_addr);
+  bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
+
+  printf(">>> ");
+  bzero(buffer, BUFFER_SIZE);
+  fgets(buffer, BUFFER_SIZE, stdin);
+
+  n = sendto(
+    socketDesc,
+    buffer,
+    strlen(buffer),
+    0,
+    (const struct sockaddr *) &serverAddress,
+    sizeof(struct sockaddr_in)
+  );
+  if (n < 0) {
+    throwError("Error on sending message\n");
+  }
+
+  lenSckAddr = sizeof(struct sockaddr_in);
+  n = recvfrom(
+    socketDesc,
+    buffer,
+    BUFFER_SIZE,
+    0,
+    (struct sockaddr *) &from,
+    &lenSckAddr
+  );
+
+  if (n < 0) {
+    throwError("Error on receive from");
+  }
+
+  cout << "Got an ack: " << buffer;
+
+  close(socketDesc);
+
+  #ifdef DEBUG
+  cout << "Connecting to the server with ip = " << ip
+    << " and port = " << port << endl;
+  #endif
+  return true;
 }

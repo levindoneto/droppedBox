@@ -5,8 +5,7 @@ using namespace std;
 
 class ClientCommunication : public Communication {
     private:
-      int port;
-    	char* ipHost;
+    	int port;
     	int socketDescriptor;
 
     public:

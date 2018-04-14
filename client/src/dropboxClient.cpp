@@ -12,7 +12,7 @@ int main (int argc, char **argv) {
     cout << "Client" << endl;
     int port = atoi(argv[2]);
     // Test client communication
-    ClientCommunication* c = new ClientCommunication(argv[1], port);
+    ClientCommunication* c = new ClientCommunication();
     c->connectServer(argv[1], port);
     return 0;
 }

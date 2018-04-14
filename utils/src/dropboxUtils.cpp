@@ -1,9 +1,11 @@
 #include <iostream>
 #include <string>
 
+#include "../headers/dropboxUtils.hpp"
+
 using namespace std;
 
-void error (string errorMessage) {
+void throwError (char* errorMessage) {
   perror(errorMessage);
   exit(1);
 }
