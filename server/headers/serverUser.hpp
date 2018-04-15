@@ -9,9 +9,20 @@ using namespace std;
 class ServerUser {
 	private:
 		string userid;
-        vector<Device*> devices; // Vector of devices
+		int userReaders; // Users who are reading from the server
+		mutex aReader;
+		mutex aWriterReader;
+    vector<Device*> devices; // Vector of devices
 	public:
 		Folder *folderPath;
 		ServerUser () {}; // Default constructor
-		ServerUser (string userid, Folder *folderPath); // TODO: Put devices in this init
+		ServerUser (string userid, Folder *folderPath);
+		ServerUser (string userid, Folder *folderPath, Device* device);
+
+		string getUserId();
+		Folder* getUserFolder();
+
+		bool thereAreNoDevices();
+		void delDevice(Device* device);
+		void addDevice(Device* device);
 };
