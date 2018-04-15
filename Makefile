@@ -3,7 +3,7 @@ INCLUDE = -I./util
 FLAGS = -O2 -Wall -lpthread -std=gnu++11
 CFLAGS = $(FLAGS) $(INCLUDE)
 UTILS = utils/src/device.o utils/src/communication.o\
- utils/src/dropboxUtils.o utils/fileSystem/src/folder.o
+ utils/src/dropboxUtils.o utils/fileSystem/src/folder.o utils/fileSystem/src/file.o
 
 .PHONY: all clean
 
