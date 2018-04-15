@@ -16,10 +16,12 @@
     IN_MOVED_FROM – File moved out of watched directory
     IN_MOVED_TO – File moved into watched directory
     IN_OPEN – File was opened */
-#define INOTIFY_EVENTS IN_MODIFY | IN_ATTRIB | IN_CLOSE_WRITE | IN_CLOSE_NOWRITE | IN_CREATE | IN_DELETE\
- | IN_DELETE_SELF | IN_MODIFY | IN_MOVE_SELF | IN_MOVED_FROM | IN_MOVED_TO | IN_OPEN
+#define INOTIFY_EVENTS IN_MODIFY | IN_CREATE | IN_DELETE\
+ | IN_MOVED_FROM | IN_MOVED_TO
 #define EVENT_SIZE sizeof (struct inotify_event)
-#define EVENT_BUF_LEN 1024 * (EVENT_SIZE + 16)
+#define LEN_NAME 16
+#define AMX_EVENTS 1024
+#define EVENT_BUF_LEN MAX_EVENTS * (EVENT_SIZE + LEN_NAME)
 
 using namespace std;
 
@@ -29,14 +31,70 @@ Folder::~Folder() {
 }
 
 Folder::Folder(string folderPath) {
-	int lenStr = folderPath.size();
+	int lenName = folderPath.size();
+	int init;
+	char buffer[EVENT_BUF_LEN];
+
 	if (folderPath.back() != END_PATH) { // str::back = last char of the string
 		this->folderPath = folderPath;
 	} else {
 		this->folderPath = folderPath.substr(BEGIN_STR, lenStr-1); // delete last char (/)
+	} 	
+
+	init = inotify_init()
+	if (init == -1) {
+		throwError("Couldn't initislize inotify.");
 	}
 
-	// TODO: Work on inotify with files
+	watchedFolder = inotify_add_watch(folder, folderPath, INOTIFY_EVENTS);
+
+	if (watchedFolder == -1) {
+		throwError("Couldn't watch that folder.");
+	}
+
+	while(1) {
+		i = 0;
+		length = read(init, buffer, EVENT_BUF_LEN);
+
+		while ( i < length ) {
+	       		struct inotify_event *event = ( struct inotify_event * ) &buffer[ i ];
+			if ( event->len ) {
+		 		if (IN_CREATE) {
+		    			if (IN_ISDIR)
+		      				// CREATE DIR
+		    			else
+		      				// CREATE FILE
+		  		}
+		   
+		  		if (IN_MODIFY) {
+		    			if (IN_ISDIR)
+		      				// MODIFY DIR      
+		    			else
+		     				// MODIFY FILE      
+		  		}
+		   
+		  		if (IN_DELETE) {
+		    			if (IN_ISDIR)
+		      				// DELETE DIR     
+		    			else
+		      				// DELETE FILE      
+		  		} 
+				if (IN_MOVED_FROM) {
+		    			if (IN_ISDIR)
+		      				// MOVED OUT DIR     
+		    			else
+		      				// MOVED OUT FILE      
+		  		}
+				if (IN_MOVED_TO) {
+		    			if (IN_ISDIR)
+		      				// MOVED IN DIR     
+		    			else
+		      				// MOVED IN FILE      
+		  		}
+
+		  	i += EVENT_SIZE + event->len;
+        	}
+      	}
 }
 
 string Folder::getFolderPath() {
