@@ -1,6 +1,7 @@
 #include <iostream>
 #include "../headers/dropboxServer.hpp"
 #include "../headers/serverCommunication.hpp"
+#include "../../settings/config.hpp"
 
 using namespace std;
 
@@ -15,7 +16,8 @@ using namespace std;
 
 int main (int argc, char* argv[]) {
     cout << "Server" << endl;
-    int port = atoi(argv[1]);
+    int port;
+    port = argv[1] != NULL ? atoi(argv[1]) : PORT;
     ServerCommunication* s = new ServerCommunication(port);
     return 0;
 }

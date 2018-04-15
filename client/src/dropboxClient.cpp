@@ -10,7 +10,9 @@ using namespace std;
 
 int main (int argc, char **argv) {
     cout << "Client" << endl;
-    int port = atoi(argv[2]);
+    int port;
+    port = argv[2] != NULL ? atoi(argv[2]) : PORT;
+    cout << port;
     // Test client communication
     ClientCommunication* c = new ClientCommunication();
     c->connectServer(argv[1], port);
