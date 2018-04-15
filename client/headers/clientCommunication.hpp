@@ -10,6 +10,7 @@ class ClientCommunication : public Communication {
 
     public:
     	ClientCommunication();
-    	ClientCommunication(char* port);
-    	bool connectServer(char* ip, char* port);
+    	ClientCommunication(int port);
+      ClientCommunication(char* ip, int port);
+    	bool connectServer(char* ip, int port);
 };
