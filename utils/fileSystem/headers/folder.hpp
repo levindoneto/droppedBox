@@ -13,5 +13,7 @@ class Folder {
 		~Folder();
 		Folder(string folderPath);
 		Folder() {};
+		int inotifyEvent(string userFolder);
+		int createFolder(string userId);
 		string getFolderPath(); // it takes note of changes in the folder
 };

@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <sys/stat.h>
 
 #include "../headers/folder.hpp"
 #include "../../headers/dropboxUtils.hpp"
@@ -12,9 +13,11 @@
     IN_DELETE – File/directory deleted from watched directory
     IN_MODIFY – File was modified
     IN_MOVED_FROM – File moved out of watched directory
-    IN_MOVED_TO – File moved into watched directory */
+    IN_MOVED_TO – File moved into watched directory
+    IN_OPEN – File was opened
+    IN_ACCESS – File was readed */ 
 #define INOTIFY_EVENTS IN_MODIFY | IN_CREATE | IN_DELETE\
- | IN_MOVED_FROM | IN_MOVED_TO
+ | IN_MOVED_FROM | IN_MOVED_TO | IN_OPEN | IN_ACCESS
 #define EVENT_SIZE sizeof (struct inotify_event)
 #define LEN_NAME 16
 #define TRUE 1
@@ -30,27 +33,33 @@ Folder::~Folder() {
 
 Folder::Folder(string folderPath) {
 	int lenName = folderPath.size();
-	int init;
-  int watchedFolder;
-  int i;
-  int length;
-  char buffer[EVENT_BUF_LEN];
 
 	if (folderPath.back() != END_PATH) { // str::back = last char of the string
 		this->folderPath = folderPath;
 	} else {
 		this->folderPath = folderPath.substr(BEGIN_STR, lenName-1); // delete last char (/)
 	}
+}
+
+int Folder::inotifyEvent(string userFolder) {
+	int init;
+  int watchedFolder;
+  int i;
+  int length;
+  char buffer[EVENT_BUF_LEN];
+
   const char *folder = this->folderPath.c_str();
 	init = inotify_init();
 	if (init == -1) {
 		throwError("Could not initialize inotify");
+    return -1;
 	}
 
-	watchedFolder = inotify_add_watch(init, folder, INOTIFY_EVENTS);
+  watchedFolder = inotify_add_watch(init, folder, INOTIFY_EVENTS);
 
 	if (watchedFolder == -1) {
 		throwError("Could not watch that folder");
+    return -1;
 	}
 
 	while(1) {
@@ -95,11 +104,30 @@ Folder::Folder(string folderPath) {
             cout << "MOVED IN FILE";
           }
 		  	}
+        if (IN_OPEN || IN_ACCESS) {
+		    	if (IN_ISDIR) {
+            cout << "OPENED DIR";
+          } else {
+            cout << "OPENED FILE";
+          }
+		  	}
 
 		  	i += EVENT_SIZE + event->len;
       }
     }
   }
+  return TRUE;
+}
+
+int Folder::createFolder(string userId) {
+  folderPath = this->folderPath;
+  string userFolder = folderPath + userId;
+  int folderCreation;
+  const char *userFolderChar = userFolder.c_str();
+
+  folderCreation = mkdir(userFolderChar, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+  return folderCreation;
 }
 
 string Folder::getFolderPath() {
