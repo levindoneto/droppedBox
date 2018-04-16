@@ -11,6 +11,7 @@
 #include <string.h>
 #include "../headers/clientCommunication.hpp"
 #include "../../utils/headers/dropboxUtils.hpp"
+#include "../../settings/config.hpp"
 
 #define DEBUG 0
 #define TRUE 1
@@ -63,7 +64,10 @@ bool ClientCommunication::connectServer(char* ip, int port) {
   // Get host
   server = gethostbyname(ip);
   if (server == NULL) {
-    throwError("The host does not exist\n");
+    server = gethostbyname(HOST);
+    if (server == NULL) {
+      throwError("The host does not exist\n");
+    }
   }
 
   // Open udp socket using the defaul protocol
@@ -106,7 +110,7 @@ bool ClientCommunication::connectServer(char* ip, int port) {
   }
 
   cout << "Got an ack: " << buffer;
-  fflush(stdin);
+
   close(socketDesc);
 
   #ifdef DEBUG
