@@ -6,20 +6,20 @@
 
 // Destructor ~
 Communication::~Communication() {
-	close(this->scktDesc);
+  close(this->scktDesc);
 }
 
 Communication::Communication() {
-	this->scktDesc = UNDEF;
-	this->port = UNDEF;
+  this->scktDesc = UNDEF;
+  this->port = UNDEF;
 }
 
 Communication::Communication(int scktDesc) {
-	this->scktDesc = scktDesc;
-	this->port = UNDEF;
+  this->scktDesc = scktDesc;
+  this->port = UNDEF;
 }
 
 // Return the descriptor of the socket which is open at the current communication
 int Communication::getSocketDesc() {
-	return this->scktDesc;
+  return this->scktDesc;
 }

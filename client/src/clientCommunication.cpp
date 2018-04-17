@@ -64,7 +64,7 @@ bool ClientCommunication::connectServer(char* ip, int port) {
   // Get host
   server = gethostbyname(ip);
   if (server == NULL) {
-    server = gethostbyname(HOST);
+    server = gethostbyname(LOCALHOST);
     if (server == NULL) {
       throwError("The host does not exist\n");
     }

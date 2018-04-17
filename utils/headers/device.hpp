@@ -5,10 +5,10 @@
 using namespace std;
 
 class Device {
-	private:
-		mutex accessDev;
-		int state; // Executing, closing, ...
+  private:
+    mutex accessDev;
+    int state; // Executing, closing, ...
 
-	public:
-		Device () {};
+  public:
+    Device () {};
 };

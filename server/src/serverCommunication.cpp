@@ -65,9 +65,9 @@ ServerCommunication::ServerCommunication(int port) {
     cout << "Received a datagram: " << endl << buffer << endl;
 
     // Send datagram to the created socket
-    n = sendto(
+    status = sendto(
       socketDesc,
-      "Got your message\n",
+      "Got your datagram\n",
       17,
       0,
       (struct sockaddr *) &clientAddress,
