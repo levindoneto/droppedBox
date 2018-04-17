@@ -28,32 +28,32 @@ using namespace std;
 
 // Create connectionm in localhost:8080 with IPv4
 ClientCommunication::ClientCommunication() {
-    /* According to the C standard, the address of a structure and its first
-    member are the same, so you can cast the pointer to sockaddr_in(6) in a
-    pointer to sockaddr. (source: https://stackoverflow.com/questions/18609397)*/
+  /* According to the C standard, the address of a structure and its first
+     member are the same, so you can cast the pointer to sockaddr_in(6) in a
+     pointer to sockaddr. (source: https://stackoverflow.com/questions/18609397)*/
 
-    // TODO UDP
-    #ifdef DEBUG
-    cout << "<Client Communication>: Connection with the socket "
-        << this->socketDescriptor << " has been established"<< endl;
-    #endif
-    }
+  // TODO UDP
+  #ifdef DEBUG
+  cout << "<Client Communication>: Connection with the socket "
+    << this->socketDescriptor << " has been established"<< endl;
+  #endif
+}
 
 // Create connectionm in localhost:port with IPv4
 ClientCommunication::ClientCommunication(int port) {
-    this->port =  port;
-    // TODO - assume localhost
+  this->port =  port;
+  // TODO - assume localhost
 }
 
 // Create connectionm in ip:port with IPv4
 ClientCommunication::ClientCommunication(char* ip, int port) {
-    this->port = port;
-    // TODO - assume localhost
+  this->port = port;
+  // TODO - assume localhost
 }
 
 bool ClientCommunication::connectServer(char* ip, int port) {
   int socketDesc;
-  int n;
+  int status;
   unsigned int lenSckAddr;
   struct sockaddr_in serverAddress;
   struct sockaddr_in from;
@@ -71,8 +71,9 @@ bool ClientCommunication::connectServer(char* ip, int port) {
   }
 
   // Open udp socket using the defaul protocol
-  if ((socketDesc = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+  if ((socketDesc = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
     throwError("Error on opening socket\n");
+  }
 
   serverAddress.sin_family = AF_INET;
   serverAddress.sin_port = htons(port);
@@ -83,7 +84,7 @@ bool ClientCommunication::connectServer(char* ip, int port) {
   bzero(buffer, BUFFER_SIZE);
   fgets(buffer, BUFFER_SIZE, stdin);
 
-  n = sendto(
+  status = sendto(
     socketDesc,
     buffer,
     strlen(buffer),
@@ -91,12 +92,12 @@ bool ClientCommunication::connectServer(char* ip, int port) {
     (const struct sockaddr *) &serverAddress,
     sizeof(struct sockaddr_in)
   );
-  if (n < 0) {
+  if (status < 0) {
     throwError("Error on sending message\n");
   }
 
   lenSckAddr = sizeof(struct sockaddr_in);
-  n = recvfrom(
+  status = recvfrom(
     socketDesc,
     buffer,
     BUFFER_SIZE,
@@ -105,7 +106,7 @@ bool ClientCommunication::connectServer(char* ip, int port) {
     &lenSckAddr
   );
 
-  if (n < 0) {
+  if (status < 0) {
     throwError("Error on receive from");
   }
 

@@ -4,13 +4,13 @@
 using namespace std;
 
 class ClientCommunication : public Communication {
-    private:
-    	int port;
-    	int socketDescriptor;
+  private:
+    int port;
+    int socketDescriptor;
 
-    public:
-    	ClientCommunication();
-    	ClientCommunication(int port);
-      ClientCommunication(char* ip, int port);
-    	bool connectServer(char* ip, int port);
+  public:
+    ClientCommunication();
+    ClientCommunication(int port);
+    ClientCommunication(char* ip, int port);
+    bool connectServer(char* ip, int port);
 };

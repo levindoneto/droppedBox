@@ -6,12 +6,12 @@
 using namespace std;
 
 class Folder {
-	private:
-		int inotify;
-		string folderPath;
-	public:
-		~Folder();
-		Folder(string folderPath);
-		Folder() {};
-		string getFolderPath(); // it takes note of changes in the folder
+  private:
+    int inotify;
+    string folderPath;
+  public:
+    ~Folder();
+    Folder(string folderPath);
+    Folder() {};
+    string getFolderPath(); // it takes note of changes in the folder
 };
