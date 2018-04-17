@@ -19,54 +19,65 @@ using namespace std;
 #define BUFFER_SIZE 256
 
 ServerCommunication::ServerCommunication(int port) {
-	int socketDesc;
-  int n;
-	socklen_t clilen;
-	struct sockaddr_in serverAddress, clientAddress;
-	char buffer[BUFFER_SIZE];
-	fflush(stdin);
-	if ((socketDesc = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
-	throwError("Error on opening socket");
+  int socketDesc;
+  int status;
+  socklen_t clilen;
+  struct sockaddr_in serverAddress;
+  struct sockaddr_in clientAddress;
+  char buffer[BUFFER_SIZE];
+  fflush(stdin);
 
-	serverAddress.sin_family = AF_INET;
-	serverAddress.sin_port = htons(port);
-	serverAddress.sin_addr.s_addr = INADDR_ANY;
-	bzero(&(serverAddress.sin_zero), 8);
+  // Open socket
+	if ((socketDesc = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
+    throwError("Error on opening socket");
+  }
 
-	if (
-		bind(
-			socketDesc,
-			(struct sockaddr *) &serverAddress,
-			sizeof(struct sockaddr)
-		) < 0
-	) {
-		throwError("Error on on binding");
-	}
+  serverAddress.sin_family = AF_INET;
+  serverAddress.sin_port = htons(port);
+  serverAddress.sin_addr.s_addr = INADDR_ANY;
+  bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
 
-	clilen = sizeof(struct sockaddr_in);
+  if (
+    bind(
+      socketDesc,
+      (struct sockaddr *) &serverAddress,
+      sizeof(struct sockaddr)
+    ) < 0
+  ) {
+    throwError("Error on on binding");
+  }
 
-	while (TRUE) {
-		/* receive from socket */
-		n = recvfrom(socketDesc, buffer, BUFFER_SIZE, 0, (struct sockaddr *) &clientAddress, &clilen);
-		if (n < 0) {
-			throwError("ERROR on recvfrom");
-		}
-		cout << "Received a datagram: " << endl << buffer << endl;
+  clilen = sizeof(struct sockaddr_in);
 
-		// Send datagram to the created socket
-		n = sendto(
-			socketDesc,
-			"Got your message\n",
-			17,
-			0,
-			(struct sockaddr *) &clientAddress,
-			sizeof(struct sockaddr)
-		);
+  while (TRUE) {
+    /* Receive from socket */
+		status = recvfrom(
+      socketDesc,
+      buffer,
+      BUFFER_SIZE,
+      0,
+      (struct sockaddr *) &clientAddress,
+      &clilen
+    );
+		if (status < 0) {
+      throwError("Error on recvfrom");
+    }
+    cout << "Received a datagram: " << endl << buffer << endl;
 
-		if (n  < 0) {
-			throwError("Error on sending datagram to the created socket");
-		}
-	}
-	fflush(stdin);
-	close(socketDesc);
+    // Send datagram to the created socket
+    n = sendto(
+      socketDesc,
+      "Got your message\n",
+      17,
+      0,
+      (struct sockaddr *) &clientAddress,
+      sizeof(struct sockaddr)
+    );
+
+    if (status  < 0) {
+      throwError("Error on sending datagram to the created socket");
+    }
+  }
+  fflush(stdin);
+  close(socketDesc);
 }

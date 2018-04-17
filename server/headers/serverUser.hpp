@@ -7,22 +7,22 @@
 using namespace std;
 
 class ServerUser {
-	private:
-		string userid;
-		int userReaders; // Users who are reading from the server
-		mutex aReader;
-		mutex aWriterReader;
+  private:
+    string userid;
+    int userReaders; // Users who are reading from the server
+    mutex aReader;
+    mutex aWriterReader;
     vector<Device*> devices; // Vector of devices
-	public:
-		Folder *folderPath;
-		ServerUser () {}; // Default constructor
-		ServerUser (string userid, Folder *folderPath);
-		ServerUser (string userid, Folder *folderPath, Device* device);
+  public:
+    Folder *folderPath;
+    ServerUser () {}; // Default constructor
+    ServerUser (string userid, Folder *folderPath);
+    ServerUser (string userid, Folder *folderPath, Device* device);
 
-		string getUserId();
-		Folder* getUserFolder();
+    string getUserId();
+    Folder* getUserFolder();
 
-		bool thereAreNoDevices();
-		void delDevice(Device* device);
-		void addDevice(Device* device);
+    bool thereAreNoDevices();
+    void delDevice(Device* device);
+    void addDevice(Device* device);
 };
