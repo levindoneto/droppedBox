@@ -12,5 +12,5 @@ class ClientCommunication : public Communication {
     ClientCommunication();
     ClientCommunication(int port);
     ClientCommunication(char* ip, int port);
-    bool connectServer(char* ip, int port);
+    bool connectServer(char* ip, int port, string userId);
 };

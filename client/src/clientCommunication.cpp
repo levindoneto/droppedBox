@@ -12,6 +12,7 @@
 #include "../headers/clientCommunication.hpp"
 #include "../../utils/headers/dropboxUtils.hpp"
 #include "../../settings/config.hpp"
+#include "../../utils/fileSystem/headers/folder.hpp"
 
 #define DEBUG 0
 #define TRUE 1
@@ -51,7 +52,7 @@ ClientCommunication::ClientCommunication(char* ip, int port) {
   // TODO - assume localhost
 }
 
-bool ClientCommunication::connectServer(char* ip, int port) {
+bool ClientCommunication::connectServer(char* ip, int port, string userId) {
   int socketDesc;
   int status;
   unsigned int lenSckAddr;
@@ -79,6 +80,9 @@ bool ClientCommunication::connectServer(char* ip, int port) {
   serverAddress.sin_port = htons(port);
   serverAddress.sin_addr = *((struct in_addr *)server->h_addr);
   bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
+  
+  Folder* folder = new Folder();
+  folder->createFolder(userId);
 
   printf(">>> ");
   bzero(buffer, BUFFER_SIZE);
