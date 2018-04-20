@@ -66,13 +66,13 @@ bool ClientCommunication::connectServer(char* ip, int port) {
   if (server == NULL) {
     server = gethostbyname(LOCALHOST);
     if (server == NULL) {
-      throwError("The host does not exist\n");
+      throwError("The host does not exist");
     }
   }
 
   // Open udp socket using the defaul protocol
   if ((socketDesc = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-    throwError("Error on opening socket\n");
+    throwError("Error on opening socket");
   }
 
   serverAddress.sin_family = AF_INET;
@@ -93,7 +93,7 @@ bool ClientCommunication::connectServer(char* ip, int port) {
     sizeof(struct sockaddr_in)
   );
   if (status < 0) {
-    throwError("Error on sending message\n");
+    throwError("Error on sending message");
   }
 
   lenSckAddr = sizeof(struct sockaddr_in);
@@ -107,15 +107,15 @@ bool ClientCommunication::connectServer(char* ip, int port) {
   );
 
   if (status < 0) {
-    throwError("Error on receive from");
+    throwError("Error on receive ack");
   }
 
-  cout << "Got an ack: " << buffer;
+  cout << "Got an ack: " << buffer << endl;
 
   close(socketDesc);
 
   #ifdef DEBUG
-  cout << "Connecting to the server with ip = " << ip
+  cout << endl << "Connecting to the server with ip = " << ip
     << " and port = " << port << endl;
   #endif
   return true;

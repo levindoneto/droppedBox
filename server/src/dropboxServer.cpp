@@ -2,6 +2,7 @@
 #include "../headers/dropboxServer.hpp"
 #include "../headers/serverCommunication.hpp"
 #include "../../settings/config.hpp"
+#include "../../utils/headers/dropboxUtils.hpp"
 
 using namespace std;
 
@@ -15,9 +16,17 @@ using namespace std;
 */
 
 int main (int argc, char* argv[]) {
-  cout << "Server" << endl;
+  cout << "******* Server is running *******" << endl << endl;
   int port;
-  port = argv[PORT_SERVER] != NULL ? atoi(argv[1]) : PORT;
+
+  if (argv[PORT_SERVER] != NULL) {
+      port = atoi(argv[PORT_SERVER]);
+  } else {
+    cout << "Usage:" << endl
+      << "./dropboxServer <port>" << endl;
+    throwError("[Server]: Invalid use of the application");
+  }
+
   ServerCommunication* s = new ServerCommunication(port);
   return 0;
 }

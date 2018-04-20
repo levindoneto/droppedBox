@@ -5,25 +5,36 @@
 #include "../headers/clientUser.hpp"
 #include "../headers/clientCommunication.hpp"
 #include "../../settings/config.hpp"
+#include "../../utils/headers/dropboxUtils.hpp"
 
 using namespace std;
 
 int main (int argc, char **argv) {
-  cout << "Client" << endl;
+  cout << "******* Client is running *******" << endl << endl;
   string username;
   string host;
   int port;
 
-  username = argv[USER_CLIENT] != NULL ? argv[USER_CLIENT] : USER_ADMIN;
-  host = argv[HOST_CLIENT] != NULL ? argv[HOST_CLIENT] : LOCALHOST;
-  port = argv[PORT_CLIENT] != NULL ? atoi(argv[PORT_CLIENT]) : PORT;
+  if (
+    argv[USER_CLIENT] != NULL &&
+    argv[HOST_CLIENT] != NULL &&
+    argv[PORT_CLIENT] != NULL
+  ) {
+      username = argv[USER_CLIENT];
+      host = argv[HOST_CLIENT];
+      port = atoi(argv[PORT_CLIENT]);
+  } else {
+    cout << "Usage:" << endl
+      << "./dropboxClient <username> <host> <port>" << endl;
+    throwError("[Client]: Invalid use of the application");
+  }
 
   // string -> char*
   char *hostConn = new char[host.size()+1];
   strcpy(hostConn, host.c_str());
 
   cout << "Establishing connection with the user " << username
-    << " at the port " << port;
+    << " at the port " << port << " on the host " << host << endl;
   // Test client communication
   ClientCommunication* c = new ClientCommunication();
   c->connectServer(hostConn, port);
