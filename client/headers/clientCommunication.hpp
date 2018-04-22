@@ -1,5 +1,6 @@
 #include <string>
 #include "../../utils/headers/communication.hpp"
+#include "clientUser.hpp"
 
 using namespace std;
 // ClientCommunication extends Communication
