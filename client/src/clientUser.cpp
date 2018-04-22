@@ -3,6 +3,14 @@
 
 using namespace std;
 
+ClientUser::ClientUser(string userId, Folder *userFolder) {
+  this->userId = userId;
+  this->isSync = false;
+  this->userFolder = userFolder;
+  this->device = NULL;
+}
+
+
 ClientUser::ClientUser(string userId, Device *device, Folder *userFolder) {
   this->userId = userId;
   this->isSync = false;
