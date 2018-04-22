@@ -113,5 +113,7 @@ bool ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
 
 bool ClientCommunication::closeSession () {
   cout << "Bye user" << endl;
-  return false;
+  // Close sync thread
+
+  return false; // For exiting the user interface
 }

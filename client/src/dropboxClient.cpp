@@ -42,6 +42,11 @@ int main (int argc, char **argv) {
   ClientCommunication* c = new ClientCommunication();
 
   c->loginServer(hostConn, port, user);
+
+  while(!EXIT) {
+    // Show dropbox interface
+  }
+
   delete[] hostConn;
   return 0;
 }
