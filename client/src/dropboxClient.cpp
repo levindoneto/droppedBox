@@ -2,7 +2,8 @@
 #include <string>
 #include "string.h"
 #include "../headers/dropboxClient.hpp"
-#include "../headers/clientUser.hpp"
+//#include "../headers/clientUser.hpp"
+
 #include "../headers/clientCommunication.hpp"
 #include "../../settings/config.hpp"
 #include "../../utils/headers/dropboxUtils.hpp"
@@ -11,9 +12,9 @@ using namespace std;
 
 int main (int argc, char **argv) {
   cout << "******* Client is running *******" << endl << endl;
-  string username;
-  string host;
-  int port;
+  string username = USER_ADMIN; // Default user
+  string host = LOCALHOST; // Default host
+  int port = PORT; // Default port
 
   if (
     argv[USER_CLIENT] != NULL &&
