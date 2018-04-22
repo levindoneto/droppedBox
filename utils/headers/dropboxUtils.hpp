@@ -4,6 +4,7 @@
 #define TRUE 1
 #define ERROR -1
 #define BYTE_IN_BITS 8
+#define EXIT false
 
 // Function which takes a string, and shows it, followed by exiting the app
 void throwError (char* errorMessage);
