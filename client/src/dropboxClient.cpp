@@ -35,9 +35,13 @@ int main (int argc, char **argv) {
 
   cout << "Establishing connection with the user " << username
     << " at the port " << port << " on the host " << host << endl;
-  // Test client communication
+
+  // TODO: Use createUserFolder for this purpose
+  Folder *userFolder = new Folder("../../db/" + username);
+  ClientUser* user = new ClientUser(username, userFolder);
   ClientCommunication* c = new ClientCommunication();
-  c->connectServer(hostConn, port);
+
+  c->loginServer(hostConn, port, user);
   delete[] hostConn;
   return 0;
 }

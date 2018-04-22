@@ -14,7 +14,7 @@ class ClientUser {
     Folder *userFolder;
     Device* device;
 
-    ClientUser () {}; // Default constructor
+    ClientUser(string userId, Folder *userFolder); // Default constructor
     ClientUser (string userid, Device* device, Folder *userFolder);
 
     string getUserId();
