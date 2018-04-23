@@ -15,7 +15,7 @@ int main (int argc, char **argv) {
   string username = USER_ADMIN; // Default user
   string host = LOCALHOST; // Default host
   int port = PORT; // Default port
-
+  vector<string> commandToRun; // [command, parameter(optional)]
   if (
     argv[USER_CLIENT] != NULL &&
     argv[HOST_CLIENT] != NULL &&
@@ -45,7 +45,7 @@ int main (int argc, char **argv) {
   c->loginServer(hostConn, port, user);
 
   while(!EXIT) {
-    // Show dropbox interface
+    commandToRun = user->getCommand();
   }
 
   delete[] hostConn;
