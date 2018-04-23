@@ -1,7 +1,9 @@
 #include <string>
+#include <vector>
 #include <mutex>
 #include "../../utils/headers/device.hpp"
 #include "../../utils/fileSystem/headers/folder.hpp"
+#include "../../utils/headers/dropboxUtils.hpp"
 
 using namespace std;
 
@@ -23,4 +25,5 @@ class ClientUser {
     void setUserFolder(Folder* userFolder);
     void sync();
     bool isSynchronized();
+    vector<string> getCommand();
 };
