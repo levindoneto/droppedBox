@@ -56,7 +56,7 @@ bool ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
   struct sockaddr_in serverAddress;
   struct sockaddr_in from;
   struct hostent *server;
-  string clientFolder;
+  string clientFolder, serverFolder;
 
   char buffer[BUFFER_SIZE];
   fflush(stdin);
@@ -77,9 +77,11 @@ bool ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
   bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
 
   clientFolder = getpwuid(getuid())->pw_dir;
-  clientFolder = clientFolder + "/sync_dir_";
-  Folder* folder = new Folder(clientFolder);
-  folder->createFolder(user->getUserId());
+  clientFolder = clientFolder + "/sync_dir_" + user->getUserId();
+  serverFolder = "db/clients/sync_dir_" + user->getUserId();
+  Folder* folder = new Folder("");
+  folder->createFolder(clientFolder);
+  folder->createFolder(serverFolder);
 
   printf(">>> ");
   bzero(buffer, BUFFER_SIZE);
