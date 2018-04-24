@@ -13,7 +13,6 @@
 #include "../headers/clientCommunication.hpp"
 #include "../../utils/headers/dropboxUtils.hpp"
 #include "../../settings/config.hpp"
-#include "../../utils/fileSystem/headers/folder.hpp"
 
 #define DEBUG 0
 #define TRUE 1
@@ -28,16 +27,10 @@ using namespace std;
      recvfrom
    close socket */
 
-// Create connectionm in localhost:8080 with IPv4
 ClientCommunication::ClientCommunication() {
-  /* According to the C standard, the address of a structure and its first
-     member are the same, so you can cast the pointer to sockaddr_in(6) in a
-     pointer to sockaddr. (source: https://stackoverflow.com/questions/18609397)*/
-
-  // TODO UDP
   #ifdef DEBUG
-  cout << "<Client Communication>: Connection with the socket "
-    << this->socketDescriptor << " has been established"<< endl;
+  cout << endl << "<Client Communication>: Connection with the socket "
+    << this->socketDescriptor << " has been established" << endl;
   #endif
 }
 
@@ -53,10 +46,13 @@ ClientCommunication::ClientCommunication(char* ip, int port) {
   // TODO - assume localhost
 }
 
-bool ClientCommunication::connectServer(char* ip, int port, string userId) {
+bool ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
   int socketDesc;
   int status;
   unsigned int lenSckAddr;
+  /* According to the C standard, the address of a structure and its first
+     member are the same, so you can cast the pointer to sockaddr_in(6) in a
+     pointer to sockaddr. (source: https://stackoverflow.com/questions/18609397)*/
   struct sockaddr_in serverAddress;
   struct sockaddr_in from;
   struct hostent *server;
@@ -67,18 +63,15 @@ bool ClientCommunication::connectServer(char* ip, int port, string userId) {
   // Get host
   server = gethostbyname(ip);
   if (server == NULL) {
-    server = gethostbyname(LOCALHOST);
-    if (server == NULL) {
-      throwError("The host does not exist\n");
-    }
+    throwError("The host does not exist");
   }
 
   // Open udp socket using the defaul protocol
   if ((socketDesc = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-    throwError("Error on opening socket\n");
+    throwError("Error on opening socket");
   }
 
-  serverAddress.sin_family = AF_INET;
+  serverAddress.sin_family = AF_INET; // IPv4
   serverAddress.sin_port = htons(port);
   serverAddress.sin_addr = *((struct in_addr *)server->h_addr);
   bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
@@ -86,7 +79,7 @@ bool ClientCommunication::connectServer(char* ip, int port, string userId) {
   clientFolder = getpwuid(getuid())->pw_dir;
   clientFolder = clientFolder + "/sync_dir_";
   Folder* folder = new Folder(clientFolder);
-  folder->createFolder(userId);
+  folder->createFolder(user->getUserId());
 
   printf(">>> ");
   bzero(buffer, BUFFER_SIZE);
@@ -101,7 +94,7 @@ bool ClientCommunication::connectServer(char* ip, int port, string userId) {
     sizeof(struct sockaddr_in)
   );
   if (status < 0) {
-    throwError("Error on sending message\n");
+    throwError("Error on sending message");
   }
 
   lenSckAddr = sizeof(struct sockaddr_in);
@@ -115,16 +108,19 @@ bool ClientCommunication::connectServer(char* ip, int port, string userId) {
   );
 
   if (status < 0) {
-    throwError("Error on receive from");
+    throwError("Error on receive ack");
   }
 
-  cout << "Got an ack: " << buffer;
+  cout << "Got an ack: " << buffer << endl;
 
   close(socketDesc);
 
-  #ifdef DEBUG
-  cout << "Connecting to the server with ip = " << ip
-    << " and port = " << port << endl;
-  #endif
   return true;
+}
+
+bool ClientCommunication::closeSession () {
+  cout << "Bye user" << endl;
+  // Close sync thread
+
+  return false; // For exiting the user interface
 }
