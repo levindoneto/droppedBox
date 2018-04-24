@@ -77,8 +77,8 @@ bool ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
   bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
 
   clientFolder = getpwuid(getuid())->pw_dir;
-  clientFolder = clientFolder + "/sync_dir_" + user->getUserId();
-  serverFolder = "db/clients/sync_dir_" + user->getUserId();
+  clientFolderPath = clientFolder + "/sync_dir_" + user->getUserId();
+  serverFolderPath = "db/clients/sync_dir_" + user->getUserId();
   Folder* folder = new Folder("");
   folder->createFolder(clientFolder);
   folder->createFolder(serverFolder);
