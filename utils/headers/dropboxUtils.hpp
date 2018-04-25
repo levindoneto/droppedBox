@@ -5,6 +5,13 @@
 #define ERROR -1
 #define BYTE_IN_BITS 8
 #define EXIT false
+#define IS_THE_COMMAND 0
+#define UPLOAD "upload"
+#define DOWNLOAD "download"
+#define LIST_SERVER "list_server"
+#define LIST_CLIENT "list_client"
+#define GET_SYNC_DIR "get_sync_directory"
+#define EXIT_COMMAND "exit"
 
 // Function which takes a string, and shows it, followed by exiting the app
 void throwError (char* errorMessage);
