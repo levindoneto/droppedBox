@@ -35,11 +35,11 @@ Folder::~Folder() {
 Folder::Folder(string folderPath) {
   int lenName = folderPath.size();
 
-  if (folderPath.back() != END_PATH) { // str::back = last char of the string
+  //if (folderPath.back() != END_PATH) { // str::back = last char of the string
     this->folderPath = folderPath;
-  } else {
-    this->folderPath = folderPath.substr(BEGIN_STR, lenName-1); // delete last char (/)
-  }
+  //} else {
+    //this->folderPath = folderPath.substr(BEGIN_STR, lenName-1); // delete last char (/)
+  //}
 }
 
 int Folder::inotifyEvent(string userFolder) {
@@ -128,6 +128,10 @@ int Folder::createFolder(string userId) {
     userFolderChar,
     S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH
   );
+
+  if((folderCreationStatus < 0) && (errno != EEXIST)) {
+    throwError("Error creating folder");
+  }
 
   return folderCreationStatus;
 }

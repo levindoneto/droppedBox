@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <pwd.h>
 #include "../headers/clientCommunication.hpp"
 #include "../../utils/headers/dropboxUtils.hpp"
 #include "../../settings/config.hpp"
@@ -55,6 +56,7 @@ bool ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
   struct sockaddr_in serverAddress;
   struct sockaddr_in from;
   struct hostent *server;
+  string clientFolderPath, serverFolderPath;
 
   char buffer[BUFFER_SIZE];
   fflush(stdin);
@@ -73,6 +75,13 @@ bool ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
   serverAddress.sin_port = htons(port);
   serverAddress.sin_addr = *((struct in_addr *)server->h_addr);
   bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
+
+  clientFolderPath = getpwuid(getuid())->pw_dir;
+  clientFolderPath = clientFolderPath + "/sync_dir_" + user->getUserId();
+  serverFolderPath = "db/clients/sync_dir_" + user->getUserId();
+  Folder* folder = new Folder("");
+  folder->createFolder(clientFolderPath);
+  folder->createFolder(serverFolderPath);
 
   printf(">>> ");
   bzero(buffer, BUFFER_SIZE);

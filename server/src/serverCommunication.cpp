@@ -1,5 +1,6 @@
 #include "../headers/serverCommunication.hpp"
 #include "../../utils/headers/dropboxUtils.hpp"
+#include "../../utils/fileSystem/headers/folder.hpp"
 
 #include <iostream>
 #include <string>
@@ -48,6 +49,10 @@ ServerCommunication::ServerCommunication(int port) {
   }
 
   clilen = sizeof(struct sockaddr_in);
+
+  Folder* folder = new Folder("");
+  folder->createFolder("db/");
+  folder->createFolder("db/clients");
 
   while (TRUE) {
     /* Receive from socket */
