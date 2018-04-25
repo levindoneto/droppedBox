@@ -71,7 +71,5 @@ vector<string> ClientUser::getCommand() {
   string wholeCommand;
   cin >> wholeCommand;
   commandWithParameter = parseUserCommand(wholeCommand, " ");
-  cout << commandWithParameter.front() << '\n';
-  cout << commandWithParameter.back() << '\n';
   return commandWithParameter;
 }
