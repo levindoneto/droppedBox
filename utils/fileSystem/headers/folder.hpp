@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 
 #define BEGIN_STR 0

@@ -8,11 +8,11 @@
 #include "../../settings/config.hpp"
 #include "../../utils/headers/dropboxUtils.hpp"
 #include "../../utils/headers/process.hpp"
+#include "../../utils/headers/ui.hpp"
 
 using namespace std;
 
 int main (int argc, char **argv) {
-  cout << "******* Client is running *******" << endl << endl;
   string username = USER_ADMIN; // Default user
   string host = LOCALHOST; // Default host
   string command;
@@ -47,10 +47,11 @@ int main (int argc, char **argv) {
   ClientUser* user = new ClientUser(username, userFolder);
   ClientCommunication* c = new ClientCommunication();
   Process* proc = new Process();
-  c->loginServer(hostConn, port, user);
+  //c->loginServer(hostConn, port, user);
 
+  showMenu();
   while(!EXIT) {
-    commandToRun = user->getCommand();
+    commandToRun = getUserCommand();
     command = commandToRun.front();
     parameter = commandToRun.back();
     proc->managerCommands(command, parameter, user);
