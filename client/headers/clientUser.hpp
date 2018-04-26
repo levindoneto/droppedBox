@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <vector>
 #include <mutex>
@@ -25,5 +27,5 @@ class ClientUser {
     void setUserFolder(Folder* userFolder);
     void sync();
     bool isSynchronized();
-    vector<string> getCommand();
+    vector<string> getUserCommand();
 };

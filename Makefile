@@ -2,8 +2,9 @@ CC = g++
 INCLUDE = -I./util
 FLAGS = -O2 -Wall -lpthread -std=gnu++11
 CFLAGS = $(FLAGS) $(INCLUDE)
-UTILS = utils/src/device.o utils/src/communication.o utils/src/process.o\
- utils/src/dropboxUtils.o utils/fileSystem/src/folder.o utils/fileSystem/src/file.o
+UTILS = utils/src/device.o utils/src/ui.o utils/src/communication.o\
+ utils/src/dropboxUtils.o utils/fileSystem/src/folder.o utils/fileSystem/src/file.o\
+ utils/src/ui.o utils/src/process.o
 
 .PHONY: all clean
 
