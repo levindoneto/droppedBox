@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #define BEGIN_STR 0
 #define END_PATH '/' // "/" would be a apointer to a string with len=1
@@ -18,4 +19,5 @@ class Folder {
     int inotifyEvent(string userFolder);
     int createFolder(string userId);
     string getFolderPath(); // it takes note of changes in the folder
+    vector<string> getTimes(string filePath);
 };

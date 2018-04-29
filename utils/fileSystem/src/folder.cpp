@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/stat.h>
+#include <vector>
 
 #include "../headers/folder.hpp"
 #include "../../headers/dropboxUtils.hpp"
@@ -134,4 +135,20 @@ int Folder::createFolder(string userId) {
 
 string Folder::getFolderPath() {
   return this->folderPath + END_PATH;
+}
+
+vector<string> Folder::getTimes(string filePath) {
+  struct stat buffer;
+  const char *filePathChar = filePath.c_str();
+  vector<string> fileTimes;
+
+  if (stat(filePathChar, &buffer) == -1) {
+    throwError("Error:");
+  }
+
+  fileTimes.push_back(ctime(&buffer.st_atim.tv_sec));
+  fileTimes.push_back(ctime(&buffer.st_mtim.tv_sec));
+  fileTimes.push_back(ctime(&buffer.st_ctim.tv_sec));
+   
+  return fileTimes;
 }
