@@ -18,6 +18,7 @@ int main (int argc, char **argv) {
   string command;
   string parameter;
   vector<string> commandToRun;
+  bool resp = true;
   int port = PORT; // Default port
 
   if (
@@ -50,13 +51,14 @@ int main (int argc, char **argv) {
   //c->loginServer(hostConn, port, user);
 
   showMenu();
-  while(!EXIT) {
+  while(resp) {
     commandToRun = getUserCommand();
     command = commandToRun.front();
     parameter = commandToRun.back();
-    proc->managerCommands(command, parameter, user);
+    resp = proc->managerCommands(command, parameter, user);
+    cout << resp << endl;
   }
-
   delete[] hostConn;
+  exit(TRUE);
   return 0;
 }
