@@ -56,7 +56,6 @@ int main (int argc, char **argv) {
     command = commandToRun.front();
     parameter = commandToRun.back();
     resp = proc->managerCommands(command, parameter, user);
-    cout << resp << endl;
   }
   delete[] hostConn;
   exit(TRUE);
