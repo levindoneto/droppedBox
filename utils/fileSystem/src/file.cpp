@@ -3,22 +3,7 @@
 
 using namespace std;
 
-File::File() {
-  this->fileName = EMPTY_FILENAME;
-  this->whenAccessed = UNDEF_TIME;
-  this->whenChanged = UNDEF_TIME;
-  this->whenCreated = UNDEF_TIME;
-}
-
-File::File(string fileName) {
-  this->fileName = fileName;
-  this->whenAccessed = UNDEF_TIME;
-  this->whenChanged = UNDEF_TIME;
-  this->whenCreated = UNDEF_TIME;
-}
-
-
-File::File(string fileName, long whenAccessed, long whenChanged, long whenCreated) {
+File::File(string fileName, string whenAccessed, string whenChanged, string whenCreated) {
   // TODO: Handle folder for getting its path as a string if needed here
   // Warning: redefinition because of ClientCommunication
   this->fileName = fileName;
@@ -31,14 +16,14 @@ string File::getFileName() {
   return this->fileName;
 }
 
-long File::getWhenChanged() {
+string File::getWhenChanged() {
   return this->whenAccessed;
 }
 
-long File::getWhenAccessed() {
+string File::getWhenAccessed() {
   return this->whenChanged;
 }
 
-long File::getWhenCreated() {
+string File::getWhenCreated() {
   return this->whenCreated;
 }

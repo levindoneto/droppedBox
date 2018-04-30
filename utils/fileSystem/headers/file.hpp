@@ -8,16 +8,16 @@ using namespace std;
 class File {
   private:
     string fileName;
-    long whenAccessed;
-    long whenChanged;
-    long whenCreated;
+    string whenAccessed;
+    string whenChanged;
+    string whenCreated;
   public:
     //~File();
     File();
     File(string fileName);
-    File(string fileName, long whenAccessed, long whenChanged, long whenCreated);
+    File(string fileName, string whenAccessed, string whenChanged, string whenCreated);
     string getFileName();
-    long getWhenChanged();
-    long getWhenAccessed();
-    long getWhenCreated();
+    string getWhenChanged();
+    string getWhenAccessed();
+    string getWhenCreated();
 };
