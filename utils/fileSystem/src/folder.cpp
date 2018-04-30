@@ -70,11 +70,7 @@ int Folder::inotifyEvent(string userFolder) {
       struct inotify_event *event = (struct inotify_event *) &buffer[i];
       if (event->len) {
         if (IN_CREATE) {
-          if (IN_ISDIR) {
-            cout << "CREATE DIR";
-          } else {
-            cout << "CREATE FILE";
-          }
+            return CREATE_FILE;
         }
         if (IN_MODIFY) {
           if (IN_ISDIR) {

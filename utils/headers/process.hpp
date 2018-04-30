@@ -10,7 +10,7 @@ class Process {
   public:
     Process() {};
     ~Process();
-    void managerCommands(
+    bool managerCommands(
       string command,
       string parameter,
       ClientUser* user
