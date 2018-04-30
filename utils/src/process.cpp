@@ -7,27 +7,34 @@
 using namespace std;
 
 Process::~Process() {
-  cout << "Destrying process..." << endl;
+  cout << "Destroying process..." << endl;
 }
 
-//TODO: REturn id of the command being executed
-void Process::managerCommands(
+bool Process::managerCommands(
   string command,
   string parameter,
   ClientUser* user
 ) {
+  int resp;
   if (command.compare(UPLOAD) == 0) {
-    upload(parameter, user);
+    resp = upload(parameter, user);
   } else if (command.compare(DOWNLOAD) == 0) {
-    download(parameter, user);
+      resp = download(parameter, user);
   } else if (command.compare(LIST_SERVER) == 0) {
-    listServer(user);
+      resp = listServer(user);
   } else if (command.compare(LIST_CLIENT) == 0) {
-    listClient(user);
+      resp = listClient(user);
   } else if (command.compare(GET_SYNC_DIR) == 0) {
-    getSyncDir(user);
+      resp = getSyncDir(user);
   } else if (command.compare(EXIT_APP) == 0) {
-    exitApp(user);
+      resp = exitApp(user);
+      if (resp == EXIT_OPT_YES) {
+        return EXIT;
+      } else if (resp == EXIT_OPT_WRONG) {
+          exitApp(user);
+      } else {
+        return !EXIT;
+      }
   } else if (command.compare(HELP_C) == 0 || command.compare(HELP_L) == 0) {
     showHelp();
   }else {
@@ -60,5 +67,20 @@ int Process::getSyncDir(ClientUser* user) {
 }
 
 int Process::exitApp(ClientUser* user) {
-  cout << "It has to be implemented" << endl;
+  string userAnswer;
+  cout << "$ Do you really want to log off, " << user->getUserId()
+    << "? [yes or no]" << endl;
+    cout << "$ ";
+  cin >> userAnswer;
+
+  if (userAnswer.compare("yes") == 0 || userAnswer.compare("YES") == 0) {
+    cout << "$ Have a good one and take care, " << user->getUserId() << " !" << endl;
+    return EXIT_OPT_YES;
+  } else if (userAnswer.compare("no") == 0 || userAnswer.compare("NO") == 0) {
+      cout << "$ You can stay logged in then!" << endl;
+      return EXIT_OPT_NO;
+  } else {
+      cout << INVALID_OPTION << endl;
+      return EXIT_OPT_WRONG;
+  }
 }
