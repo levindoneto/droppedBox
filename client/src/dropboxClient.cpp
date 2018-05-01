@@ -48,7 +48,7 @@ int main (int argc, char **argv) {
   ClientUser* user = new ClientUser(username, userFolder);
   ClientCommunication* c = new ClientCommunication();
   Process* proc = new Process();
-  //c->loginServer(hostConn, port, user);
+  c->loginServer(hostConn, port, user);
 
   showMenu();
   while(resp) {

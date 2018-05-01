@@ -16,7 +16,6 @@ class Folder {
     ~Folder();
     Folder() {};
     Folder(string folderPath);
-    int inotifyEvent(string userFolder);
     int createFolder(string userId);
     string getFolderPath(); // it takes note of changes in the folder
     vector<string> getTimes(string filePath);

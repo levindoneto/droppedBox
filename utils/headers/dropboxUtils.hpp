@@ -21,5 +21,25 @@
 
 #define CREATE_FILE 0
 
+/*  IN_CREATE – File/directory created in watched directory
+    IN_DELETE – File/directory deleted from watched directory
+    IN_MODIFY – File was modified
+    IN_MOVED_FROM – File moved out of watched directory
+    IN_MOVED_TO – File moved into watched directory
+    IN_OPEN – File was opened
+    IN_ACCESS – File was readed */
+#define INOTIFY_EVENTS IN_MODIFY | IN_CREATE | IN_DELETE\
+ | IN_MOVED_FROM | IN_MOVED_TO | IN_OPEN | IN_ACCESS
+
+#define EVENT_SIZE sizeof (struct inotify_event)
+#define LEN_NAME 16
+#define TRUE 1
+#define MAX_EVENTS 1024
+#define EVENT_BUF_LEN MAX_EVENTS * (EVENT_SIZE + LEN_NAME)
+
+using namespace std;
+
 // Function which takes a string, and shows it, followed by exiting the app
 void throwError (char* errorMessage);
+void getClientFolderPath(string folderPath);
+void *inotifyEvent(void*);
