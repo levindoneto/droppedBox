@@ -29,25 +29,27 @@ using namespace std;
    close socket */
 
 ClientCommunication::ClientCommunication() {
-  #ifdef DEBUG
-  cout << endl << "<Client Communication>: Connection with the socket "
-    << this->socketDescriptor << " has been established" << endl;
-  #endif
+  this->port =  PORT;
+  this->ip = LOCALHOST;
 }
 
-// Create connectionm in localhost:port with IPv4
+// Create a communication in localhost:port with IPv4
 ClientCommunication::ClientCommunication(int port) {
   this->port =  port;
-  // TODO - assume localhost
+  this->ip = LOCALHOST;
 }
 
-// Create connectionm in ip:port with IPv4
+// Create a communication in ip:port with IPv4
 ClientCommunication::ClientCommunication(char* ip, int port) {
   this->port = port;
-  // TODO - assume localhost
+  this->ip = ip;
 }
 
-bool ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
+/* Function that creates a socket for a logged user and returns the socket
+ * descriptor for trading messages throughtout the application, and for closing
+ * the open socket afterward.
+ */
+int ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
   int socketDesc;
   int status;
   unsigned int lenSckAddr;
@@ -85,42 +87,8 @@ bool ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
   folder->createFolder(clientFolderPath);
   folder->createFolder(serverFolderPath);
 
-  getClientFolderPath(clientFolderPath);
+  // Create thread for monitoring synchronized user folder
   pthread_create(&syn_th, NULL, inotifyEvent, NULL);
-
-  printf(">>> ");
-  bzero(buffer, BUFFER_SIZE);
-  fgets(buffer, BUFFER_SIZE, stdin);
-
-  status = sendto(
-    socketDesc,
-    buffer,
-    strlen(buffer),
-    0,
-    (const struct sockaddr *) &serverAddress,
-    sizeof(struct sockaddr_in)
-  );
-  if (status < 0) {
-    throwError("Error on sending message");
-  }
-
-  lenSckAddr = sizeof(struct sockaddr_in);
-  status = recvfrom(
-    socketDesc,
-    buffer,
-    BUFFER_SIZE,
-    0,
-    (struct sockaddr *) &from,
-    &lenSckAddr
-  );
-
-  if (status < 0) {
-    throwError("Error on receive ack");
-  }
-
-  cout << "Got an ack: " << buffer << endl;
-
-  close(socketDesc);
 
   return true;
 }

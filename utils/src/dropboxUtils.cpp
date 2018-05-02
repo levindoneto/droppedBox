@@ -13,10 +13,6 @@ void throwError (char* errorMessage) {
   exit(TRUE);
 }
 
-void getClientFolderPath(string folderPath) {
-  clientFolderPath = folderPath;
-}
-
 void *inotifyEvent(void*) {
   int init;
   int watchedFolder;
