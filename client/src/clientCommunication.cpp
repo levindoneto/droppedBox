@@ -45,9 +45,9 @@ ClientCommunication::ClientCommunication(char* ip, int port) {
   this->ip = ip;
 }
 
-/* Function that creates a socket for a logged user and returns the socket
- * descriptor for trading messages throughtout the application, and for closing
- * the open socket afterward.
+/* Function that logs a user in and creates a socket. In addition, it returns
+ * the socket descriptor for trading messages throughtout the application,
+ * and for closingthe open socket afterward.
  */
 int ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
   int socketDesc;
@@ -58,15 +58,17 @@ int ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
      pointer to sockaddr. (source: https://stackoverflow.com/questions/18609397)*/
   struct sockaddr_in serverAddress;
   struct sockaddr_in from;
-  struct hostent *server;
+  struct hostent *host;
   string clientFolderPath, serverFolderPath;
+
+  // Thread for synchronization
   pthread_t syn_th;
 
   char buffer[BUFFER_SIZE];
   fflush(stdin);
   // Get host
-  server = gethostbyname(ip);
-  if (server == NULL) {
+  host = gethostbyname(ip);
+  if (host == NULL) {
     throwError("The host does not exist");
   }
 
@@ -77,15 +79,19 @@ int ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
 
   serverAddress.sin_family = AF_INET; // IPv4
   serverAddress.sin_port = htons(port);
-  serverAddress.sin_addr = *((struct in_addr *)server->h_addr);
+  serverAddress.sin_addr = *((struct in_addr *)host->h_addr);
   bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
 
   clientFolderPath = getpwuid(getuid())->pw_dir;
   clientFolderPath = clientFolderPath + "/sync_dir_" + user->getUserId();
   serverFolderPath = "db/clients/sync_dir_" + user->getUserId();
+
+
   Folder* folder = new Folder("");
   folder->createFolder(clientFolderPath);
   folder->createFolder(serverFolderPath);
+
+  //getClientFolderPath(clientFolderPath); // TODO: change this in dropboxUtils
 
   // Create thread for monitoring synchronized user folder
   pthread_create(&syn_th, NULL, inotifyEvent, NULL);
@@ -95,7 +101,7 @@ int ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
 
 bool ClientCommunication::closeSession () {
   cout << "Bye user" << endl;
-  // Close sync thread
+  // Close sync thread (pthread_t syn_th)
 
   return false; // For exiting the user interface
 }

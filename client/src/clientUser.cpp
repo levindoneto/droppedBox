@@ -15,7 +15,6 @@ ClientUser::ClientUser(string userId, Folder *userFolder) {
   this->numberOfFiles = 0;
 }
 
-
 ClientUser::ClientUser(string userId, Device *device, Folder *userFolder) {
   this->userId = userId;
   this->isSync = false;

@@ -45,4 +45,6 @@ using namespace std;
 // Function which takes a string, and shows it, followed by exiting the app
 void throwError (char* errorMessage);
 
+//getClientFolderPath(string folderPath)
+
 void *inotifyEvent(void*);
