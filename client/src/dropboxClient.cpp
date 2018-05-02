@@ -45,8 +45,10 @@ int main (int argc, char **argv) {
   // TODO: Use createUserFolder for this purpose
   Folder *userFolder = new Folder("../../db/" + username);
   ClientUser* user = new ClientUser(username, userFolder);
+
   ClientCommunication* c = new ClientCommunication();
   Process* proc = new Process();
+
   clientSocket = c->loginServer(hostConn, port, user);
 
   showMenu();
@@ -59,5 +61,6 @@ int main (int argc, char **argv) {
   delete[] hostConn;
   //close(clientSocket); // Put it in closeSession
   exit(TRUE);
+
   return 0;
 }

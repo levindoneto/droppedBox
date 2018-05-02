@@ -13,15 +13,23 @@ void throwError (char* errorMessage) {
   exit(TRUE);
 }
 
+// TODO: Remake this function to make it OO
+/*
+void getClientFolderPath(string folderPath) {
+  clientFolderPath = folderPath;
+}
+*/
+
 void *inotifyEvent(void*) {
   int init;
   int watchedFolder;
   int i;
   int length;
   char buffer[EVENT_BUF_LEN];
-  cout << clientFolderPath << '\n';
+  cout << "sync_dir_lgtneto" << '\n'; // TODO: Change to the user folder
 
-  const char *folder = clientFolderPath.c_str();
+  //const char *folder = "sync_dir_lgtneto".c_str();
+  char *folder = "~sync_dir_lgtneto"; // TODO: Change to the user folder
   init = inotify_init();
   if (init == ERROR) {
     throwError("Could not initialize inotify");
