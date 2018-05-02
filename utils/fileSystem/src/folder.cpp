@@ -8,6 +8,7 @@
 
 #include "../headers/folder.hpp"
 #include "../../headers/dropboxUtils.hpp"
+#include "../../headers/udpUtils.hpp"
 
 using namespace std;
 
@@ -18,12 +19,7 @@ Folder::~Folder() {
 
 Folder::Folder(string folderPath) {
   int lenName = folderPath.size();
-
-  //if (folderPath.back() != END_PATH) { // str::back = last char of the string
     this->folderPath = folderPath;
-  //} else {
-    //this->folderPath = folderPath.substr(BEGIN_STR, lenName-1); // delete last char (/)
-  //}
 }
 
 int Folder::createFolder(string userId) {
@@ -62,4 +58,30 @@ vector<string> Folder::getTimes(string filePath) {
   fileTimes.push_back(ctime(&buffer.st_ctim.tv_sec));
 
   return fileTimes;
+}
+
+/* Method for listing files in the client or in the server side, relying on
+ * the mode passed as one of the parameters.
+ */
+void listFiles(string folderPath, int mode, string userId, int socket) {
+  int i;
+  if (mode == CLIENT_LIST) {
+    cout << "todo";
+  } else if (mode == SERVER_LIST) {
+    cout << "todo";
+      char buffer[BUFFER_SIZE]; // 1 KB buffer
+      //sprintf(buffer, "%d",user->getNumberOfFiles());
+      //writeToSocket(socket, buffer);
+      /*
+      for(f = 0; f < user->getNumberOfFiles(); f++) {
+        sprintf(buffer, "%s%s%s \n\t- MT: %s%s%s",
+          COLOR_GREEN, client->file_info[i].name, COLOR_RESET,
+          COLOR_YELLOW, client->file_info[i].last_modified, COLOR_RESET
+        );
+        write_to_socket(socket, buffer);
+      }
+      */
+  } else {
+      throwError("[List of Files]: Invalid option");
+  }
 }

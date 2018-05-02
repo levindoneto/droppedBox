@@ -5,4 +5,3 @@ Device::Device() {
 	this->state = EXEC; // init device
 }
 */
-

@@ -14,15 +14,19 @@ class ClientUser {
     string userId;
     bool isSync;
     mutex accessSync; // For more than one device
+    int numberOfFiles;
   public:
     Folder *userFolder;
     Device* device;
 
-    ClientUser(string userId, Folder *userFolder); // Default constructor
-    ClientUser (string userid, Device* device, Folder *userFolder);
+    ClientUser(string userId, Folder* userFolder);
+    ClientUser (string userId, Device* device, Folder *userFolder);
+    ClientUser (string userId, Device *device, Folder *userFolder, int numberOfFiles);
 
     string getUserId();
     Folder* getUserFolder();
+    string getUserConnectedDevicesToString();
+    int getNumberOfFiles();
 
     void setUserFolder(Folder* userFolder);
     void sync();

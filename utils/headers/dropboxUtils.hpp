@@ -18,6 +18,9 @@
 #define EXIT_OPT_YES 1 // User wants to log off
 #define EXIT_OPT_NO 0 // User wants to stay logged in
 #define INVALID_OPTION "$ An invalid option was given"
+#define CLIENT_LIST 0
+#define SERVER_LIST 1
+#define BUFFER_SIZE 1024
 
 #define CREATE_FILE 0
 
@@ -41,5 +44,5 @@ using namespace std;
 
 // Function which takes a string, and shows it, followed by exiting the app
 void throwError (char* errorMessage);
-void getClientFolderPath(string folderPath);
+
 void *inotifyEvent(void*);

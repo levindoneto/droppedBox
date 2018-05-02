@@ -8,12 +8,12 @@ class ClientCommunication : public Communication {
   private:
     int port;
     int socketDescriptor;
+    char* ip;
 
   public:
     ClientCommunication();
     ClientCommunication(int port);
     ClientCommunication(char* ip, int port);
-    ClientCommunication(char* ip, int port, ClientUser* user);
-    bool loginServer(char* ip, int port, ClientUser* user);
+    int loginServer(char* ip, int port, ClientUser* user);
     bool closeSession ();
 };

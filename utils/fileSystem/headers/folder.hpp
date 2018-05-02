@@ -19,4 +19,5 @@ class Folder {
     int createFolder(string userId);
     string getFolderPath(); // it takes note of changes in the folder
     vector<string> getTimes(string filePath);
+    void listFiles(string folderPath, int mode, string userId, int socket);
 };

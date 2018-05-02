@@ -2,8 +2,6 @@
 #include <string>
 #include "string.h"
 #include "../headers/dropboxClient.hpp"
-//#include "../headers/clientUser.hpp"
-
 #include "../headers/clientCommunication.hpp"
 #include "../../settings/config.hpp"
 #include "../../utils/headers/dropboxUtils.hpp"
@@ -20,6 +18,7 @@ int main (int argc, char **argv) {
   vector<string> commandToRun;
   bool resp = true;
   int port = PORT; // Default port
+  int clientSocket;
 
   if (
     argv[USER_CLIENT] != NULL &&
@@ -48,7 +47,7 @@ int main (int argc, char **argv) {
   ClientUser* user = new ClientUser(username, userFolder);
   ClientCommunication* c = new ClientCommunication();
   Process* proc = new Process();
-  c->loginServer(hostConn, port, user);
+  clientSocket = c->loginServer(hostConn, port, user);
 
   showMenu();
   while(resp) {
@@ -58,6 +57,7 @@ int main (int argc, char **argv) {
     resp = proc->managerCommands(command, parameter, user);
   }
   delete[] hostConn;
+  //close(clientSocket); // Put it in closeSession
   exit(TRUE);
   return 0;
 }
