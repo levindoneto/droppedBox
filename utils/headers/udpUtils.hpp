@@ -1,2 +1,2 @@
-int writeToSocket(string socketDesc, char* buffer);
-int readFromSocket(string socketDesc, char* buffer);
+int writeToSocket(int socketDesc, char* buffer);
+int readFromSocket(int socketDesc, char* buffer);

@@ -45,7 +45,6 @@ int main (int argc, char **argv) {
   // TODO: Use createUserFolder for this purpose
   Folder *userFolder = new Folder("../../db/" + username);
   ClientUser* user = new ClientUser(username, userFolder);
-
   ClientCommunication* c = new ClientCommunication();
   Process* proc = new Process();
 
@@ -56,7 +55,7 @@ int main (int argc, char **argv) {
     commandToRun = getUserCommand();
     command = commandToRun.front();
     parameter = commandToRun.back();
-    resp = proc->managerCommands(command, parameter, user);
+    resp = proc->managerCommands(command, parameter, user, clientSocket);
   }
   delete[] hostConn;
   //close(clientSocket); // Put it in closeSession

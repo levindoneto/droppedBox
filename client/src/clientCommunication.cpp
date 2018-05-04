@@ -91,12 +91,13 @@ int ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
   folder->createFolder(clientFolderPath);
   folder->createFolder(serverFolderPath);
 
+
   //getClientFolderPath(clientFolderPath); // TODO: change this in dropboxUtils
 
   // Create thread for monitoring synchronized user folder
-  pthread_create(&syn_th, NULL, inotifyEvent, NULL);
+  //pthread_create(&syn_th, NULL, inotifyEvent, NULL); // TODO: Fix inotify
 
-  return true;
+  return socketDesc;
 }
 
 bool ClientCommunication::closeSession () {
