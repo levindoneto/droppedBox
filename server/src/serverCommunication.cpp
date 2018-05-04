@@ -1,5 +1,6 @@
 #include "../headers/serverCommunication.hpp"
 #include "../../utils/headers/dropboxUtils.hpp"
+#include "../../utils/headers/udpUtils.hpp"
 #include "../../utils/fileSystem/headers/folder.hpp"
 
 #include <iostream>
@@ -32,6 +33,7 @@ ServerCommunication::ServerCommunication(int port) {
 	if ((socketDesc = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
     throwError("Error on opening socket");
   }
+
 
   serverAddress.sin_family = AF_INET;
   serverAddress.sin_port = htons(port);

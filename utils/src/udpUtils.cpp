@@ -1,40 +1,31 @@
-int writeToSocket(string socketDesc, char* buffer,  int bufferSize) {
-  printf(">>> ");
-  /*
-  bzero(buffer, bufferSize);
-  fgets(buffer, bufferSize, stdin);
+#include <string>
+#include <cstring>
+#include <unistd.h>
+#include <stdio.h>
+#include "../headers/dropboxUtils.hpp"
 
-  status = sendto(
-    socketDesc,
-    buffer,
-    strlen(buffer),
-    0,
-    (const struct sockaddr *) &serverAddress,
-    sizeof(struct sockaddr_in)
-  );
-  if (status < 0) {
-    throwError("Error on sending message");
+using namespace std;
+
+
+
+int writeToSocket(int socketDesc, char* buffer) {
+  int status;
+  int nBytes;
+  bzero(buffer, sizeof(buffer));
+  fgets(buffer, sizeof(buffer), stdin);
+  nBytes = write(socketDesc, &buffer, sizeof(buffer));
+
+  if (status < 0 || nBytes < 0) {
+    throwError("[writeToSocket]: Error on sending message");
   }
-
-  lenSckAddr = sizeof(struct sockaddr_in);
-  status = recvfrom(
-    socketDesc,
-    buffer,
-    BUFFER_SIZE,
-    0,
-    (struct sockaddr *) &from,
-    &lenSckAddr
-  );
-
-  if (status < 0) {
-    throwError("Error on receive ack");
-  }
-
-  cout << "Got an ack: " << buffer << endl;
-  */
-  return 0;
+  return SUCCESS;
 }
 
-int readFromSocket(string socketDesc, char* buffer) {
-  return 0;
+int readFromSocket(int socketDesc, char* buffer) {
+  int status;
+  status = read(socketDesc, &buffer, sizeof(buffer));
+  if (status < 0) {
+    throwError("[readFromSocket]: Error on receiving message");
+  }
+  return SUCCESS;
 }

@@ -3,6 +3,7 @@
 
 #include "../headers/process.hpp"
 #include "../headers/ui.hpp"
+#include "../headers/udpUtils.hpp"
 
 using namespace std;
 
@@ -13,7 +14,8 @@ Process::~Process() {
 bool Process::managerCommands(
   string command,
   string parameter,
-  ClientUser* user
+  ClientUser* user,
+  int socketDesc
 ) {
   int resp;
   if (command.compare(UPLOAD) == 0) {
@@ -21,9 +23,9 @@ bool Process::managerCommands(
   } else if (command.compare(DOWNLOAD) == 0) {
       resp = download(parameter, user);
   } else if (command.compare(LIST_SERVER) == 0) {
-      resp = listServer(user);
+      resp = listServer(user, socketDesc);
   } else if (command.compare(LIST_CLIENT) == 0) {
-      resp = listClient(user);
+      resp = listClient(user, socketDesc);
   } else if (command.compare(GET_SYNC_DIR) == 0) {
       resp = getSyncDir(user);
   } else if (command.compare(EXIT_APP) == 0) {
@@ -54,12 +56,12 @@ int Process::download(string filePath, ClientUser* user) {
   cout << "It has to be implemented" << endl;
 }
 
-int Process::listServer(ClientUser* user) {
+int Process::listServer(ClientUser* user, int socketDesc) {
   cout << "It has to be implemented" << endl;
 }
 
-int Process::listClient(ClientUser* user) {
-  cout << "It has to be implemented" << endl;
+int Process::listClient(ClientUser* user, int socketDesc) {
+  writeToSocket(socketDesc, "list_client");
 }
 
 int Process::getSyncDir(ClientUser* user) {

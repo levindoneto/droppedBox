@@ -6,7 +6,7 @@
 #include "../headers/dropboxUtils.hpp"
 
 using namespace std;
-string clientFolderPath;
+//string clientFolderPath;
 
 void throwError (char* errorMessage) {
   perror(errorMessage);
