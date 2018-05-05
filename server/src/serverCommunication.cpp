@@ -17,7 +17,6 @@
 using namespace std;
 
 #define TRUE 1
-#define BUFFER_SIZE 256
 
 ServerCommunication::ServerCommunication(int port) {
   int socketDesc, itr, status;
@@ -26,7 +25,7 @@ ServerCommunication::ServerCommunication(int port) {
   struct sockaddr_in clientAddress;
   char buffer[BUFFER_SIZE];
   fflush(stdin);
-  char fname[20];
+  char fname[20], ack[10];
   FILE *fp;
   unsigned int fileSize;
 
@@ -56,62 +55,43 @@ ServerCommunication::ServerCommunication(int port) {
   folder->createFolder("db/");
   folder->createFolder("db/clients");
 
-  while (TRUE) {
-    /* Receive from socket */
-		status = recvfrom(
-      socketDesc,
-      buffer,
-      BUFFER_SIZE,
-      0,
-      (struct sockaddr *) &clientAddress,
-      &clilen
-    );
-		if (status < 0) {
-      throwError("Error on recvfrom");
-    }
+	status = recvfrom(
+    socketDesc,
+    buffer,
+    BUFFER_SIZE,
+    0,
+    (struct sockaddr *) &clientAddress,
+    &clilen
+  );
+	if (status < 0) {
+    throwError("Error on recvfrom");
+  }
 
-    strcpy(fname, buffer);
+  strcpy(fname, buffer);
 
+  status = recvfrom(
+    socketDesc,
+    buffer,
+    BUFFER_SIZE,
+    0,
+    (struct sockaddr *) &clientAddress,
+    &clilen
+  );
+	if (status < 0) {
+    throwError("Error on recvfrom");
+  }
+
+  fileSize = atoi(buffer);
+
+  fp = fopen(fname, "wb");
+  itr = 1;
+  memset(buffer, 0, CHUNCK_SIZE);
+
+  while(itr * CHUNCK_SIZE < fileSize) {
     status = recvfrom(
       socketDesc,
-      buffer,
-      BUFFER_SIZE,
-      0,
-      (struct sockaddr *) &clientAddress,
-      &clilen
-    );
-		if (status < 0) {
-      throwError("Error on recvfrom");
-    }
-
-    fileSize = atoi(buffer);
-
-    fp = fopen(fname, "wb");
-    itr=1;
-
-    memset(buffer, 0, BUFFER_SIZE);
-    while(itr * BUFFER_SIZE < fileSize)
-    {
-      status = recvfrom(
-        socketDesc,
-        buffer,
-        BUFFER_SIZE,
-        0,
-        (struct sockaddr *) &clientAddress,
-        &clilen
-      );
-      if (status < 0) {
-        throwError("Error on recvfrom");
-      }
-        fwrite(buffer, BUFFER_SIZE, 1, fp);
-        memset(buffer, 0, BUFFER_SIZE);
-        itr++;
-    }
-
-    status = recvfrom(
-      socketDesc,
-      buffer,
-      (fileSize % BUFFER_SIZE),
+      &datagram,
+      sizeof(datagram),
       0,
       (struct sockaddr *) &clientAddress,
       &clilen
@@ -120,15 +100,13 @@ ServerCommunication::ServerCommunication(int port) {
       throwError("Error on recvfrom");
     }
 
-    fwrite(buffer,(fileSize % BUFFER_SIZE), 1, fp);
-    memset(buffer, 0, BUFFER_SIZE);
-    fclose(fp);
+    printf("%d\n", datagram.chunckId);
+    sprintf(ack, "%d", datagram.chunckId);
 
-    // Send datagram to the created socket
     status = sendto(
       socketDesc,
-      "Got your datagram\n",
-      17,
+      ack,
+      sizeof(datagram.chunckId),
       0,
       (struct sockaddr *) &clientAddress,
       sizeof(struct sockaddr)
@@ -137,7 +115,28 @@ ServerCommunication::ServerCommunication(int port) {
     if (status  < 0) {
       throwError("Error on sending datagram to the created socket");
     }
+
+    fwrite(datagram.chunck, CHUNCK_SIZE, 1, fp);
+    memset(datagram.chunck, 0, CHUNCK_SIZE);
+    itr++;
   }
+
+  memset(datagram.chunck, 0, (fileSize % CHUNCK_SIZE));
+  status = recvfrom(
+    socketDesc,
+    &datagram,
+    sizeof(datagram),
+    0,
+    (struct sockaddr *) &clientAddress,
+    &clilen
+  );
+  if (status < 0) {
+    throwError("Error on recvfrom");
+  }
+
+  fwrite(datagram.chunck,(fileSize % CHUNCK_SIZE), 1, fp);
+  memset(buffer, 0, CHUNCK_SIZE);
+  fclose(fp);
   fflush(stdin);
   close(socketDesc);
 }

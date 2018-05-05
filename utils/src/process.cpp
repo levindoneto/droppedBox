@@ -14,8 +14,6 @@
 #include "../headers/ui.hpp"
 #include "../headers/dropboxUtils.hpp"
 
-#define BUFFER_SIZE 256
-
 using namespace std;
 
 Process::~Process() {
@@ -74,18 +72,10 @@ int Process::upload(string fileName, ClientUser* user, int port, char* host) {
   string homePath = getpwuid(getuid())->pw_dir;
   string filePath = homePath + "/sync_dir_" + user->getUserId() + "/" + fileName;
   unsigned int size;
-  char str[10], message[BUFFER_SIZE];;
+  char str[10], ack[10];
   FILE *file;
   int itr = 1;
 
-  struct Books {
-   int  title;
-} book;
-
-book.title = 29;
-
-
-  char buffer[BUFFER_SIZE];
   fflush(stdin);
   // Get host
   server = gethostbyname(host);
@@ -131,31 +121,15 @@ book.title = 29;
   }
   const char *filePathChar = filePath.c_str();
   file = fopen(filePathChar, "rb");
-  memset(message, 0, BUFFER_SIZE);
-  fread(message, BUFFER_SIZE, 1, file);
+  memset(datagram.chunck, 0, CHUNCK_SIZE);
+  fread(datagram.chunck, CHUNCK_SIZE, 1, file);
+  datagram.chunckId = 1;
 
-  while(itr * BUFFER_SIZE < size){
-
+  while(itr * CHUNCK_SIZE < size){
     status = sendto(
       socketDesc,
-      message,
-      BUFFER_SIZE,
-      0,
-      (const struct sockaddr *) &serverAddress,
-      sizeof(struct sockaddr_in)
-    );
-    if (status < 0) {
-      throwError("Error on sending message");
-    }
-        memset(message, 0, BUFFER_SIZE);
-        fread(message, BUFFER_SIZE, 1, file);
-        itr++;
-    }
-    fread(message, (size % BUFFER_SIZE), 1, file);
-    status = sendto(
-      socketDesc,
-      message,
-      (size % BUFFER_SIZE),
+      &datagram,
+      sizeof(datagram),
       0,
       (const struct sockaddr *) &serverAddress,
       sizeof(struct sockaddr_in)
@@ -164,9 +138,48 @@ book.title = 29;
       throwError("Error on sending message");
     }
 
-    memset(message, 0, BUFFER_SIZE);
-    fclose(file);
-    close(socketDesc);
+    //printf("%s\n", datagram.chunck);
+    printf("%d\n", datagram.chunckId);
+
+    status = recvfrom(
+      socketDesc,
+      ack,
+      sizeof(datagram.chunckId),
+      0,
+      (struct sockaddr *) &from,
+      &lenSckAddr
+    );
+    if (status < 0) {
+      throwError("Error on receive ack");
+    }
+    //printf("%s\n", ack);
+    printf("%d\n", atoi(ack));
+
+    if(atoi(ack) == datagram.chunckId) {
+      memset(datagram.chunck, 0, CHUNCK_SIZE);
+      fread(datagram.chunck, CHUNCK_SIZE, 1, file);
+      itr++;
+      datagram.chunckId++;
+    }
+  }
+
+  fread(datagram.chunck, (size % CHUNCK_SIZE), 1, file);
+
+  status = sendto(
+    socketDesc,
+    &datagram,
+    sizeof(datagram),
+    0,
+    (const struct sockaddr *) &serverAddress,
+    sizeof(struct sockaddr_in)
+  );
+  if (status < 0) {
+    throwError("Error on sending message");
+  }
+
+  memset(datagram.chunck, 0, CHUNCK_SIZE);
+  fclose(file);
+  close(socketDesc);
 }
 
 int Process::download(string filePath, ClientUser* user) {

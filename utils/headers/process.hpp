@@ -3,6 +3,13 @@
 #include "../headers/dropboxUtils.hpp"
 
 using namespace std;
+#define BUFFER_SIZE sizeof(datagram)
+#define CHUNCK_SIZE 1024
+
+struct Datagrams {
+   int  chunckId;
+   char  chunck[CHUNCK_SIZE];
+} datagram;
 
 class Process {
   private:
