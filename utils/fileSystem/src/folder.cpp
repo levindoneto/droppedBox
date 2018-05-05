@@ -5,7 +5,9 @@
 #include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/stat.h>
+#include <pwd.h>
 #include <vector>
 
 #include "../headers/folder.hpp"
@@ -62,45 +64,54 @@ vector<string> Folder::getTimes(string filePath) {
   return fileTimes;
 }
 
-/* Method for listing files in the client or in the server side, relying on
- * the mode passed as one of the parameters.
- */
-
-void changeDirectory(string folderPath) {
+void Folder::changeDirectory(string folderPath) {
   const char *folder = folderPath.c_str();
   DIR* dir = opendir(folder);
   if (dir) {
-     /* If the user does not pass a folder as parameter, folder="", and
+    /* If the user does not pass a folder as parameter, folder="", and
       * chdir("") is the same as chdir("./")
       */
-      chdir(folder);
-  }
-  else if (ENOENT == errno) {
-      printf("The system cannot find the specified directory");
-  }
-  else {
-      printf("\nThe system has found an error\n");
+    chdir(folder);
+  } else if (ENOENT == errno) {
+      throwError("The system cannot find the specified directory");
+  } else {
+      throwError("\nThe system has found an error\n");
   }
 }
 
-void listFiles(int mode, string userId) {
+void Folder::listFolder(string folderPath) {
+  const char *folder = folderPath.c_str();
+  if (strcmp("", folder) == 0) {
+    folder = ".";
+  }
+  DIR * dir = opendir(folder);
+  if (dir) {
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != 0) {
+      // If entry is a file
+      if (entry->d_type != DT_DIR) {
+        cout << entry->d_name << endl;
+      }
+    }
+    closedir(dir);
+  } else {
+      throwError(strerror(errno));
+    }
+}
+
+/* Method for listing files in the client or in the server side, relying on
+ * the mode passed as one of the parameters.
+ */
+void Folder::listFiles(int mode, string userId) {
   int i;
   if (mode == CLIENT_LIST) {
-    cout << "todo";
+    string homePath;
+    string userFolderPath;
+    homePath = getpwuid(getuid())->pw_dir; // Get user's home folder
+    userFolderPath = homePath + "/sync_dir_" + userId;
+    listFolder(userFolderPath);
   } else if (mode == SERVER_LIST) {
-    cout << "todo";
-      char buffer[BUFFER_SIZE]; // 1 KB buffer
-      //sprintf(buffer, "%d",user->getNumberOfFiles());
-      //writeToSocket(socket, buffer);
-      /*
-      for(f = 0; f < user->getNumberOfFiles(); f++) {
-        sprintf(buffer, "%s%s%s \n\t- MT: %s%s%s",
-          COLOR_GREEN, client->file_info[i].name, COLOR_RESET,
-          COLOR_YELLOW, client->file_info[i].last_modified, COLOR_RESET
-        );
-        write_to_socket(socket, buffer);
-      }
-      */
+      cout << "todo";
   } else {
       throwError("[List of Files]: Invalid option");
   }

@@ -20,5 +20,6 @@ class Folder {
     string getFolderPath(); // it takes note of changes in the folder
     vector<string> getTimes(string filePath);
     void changeDirectory(string folderPath);
+    void listFolder(string folderPath);
     void listFiles(int mode, string userId);
 };

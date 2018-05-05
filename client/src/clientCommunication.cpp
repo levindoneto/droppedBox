@@ -83,7 +83,7 @@ int ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
   bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
 
   // Folder management after the user gets logged in
-  clientFolderPath = getpwuid(getuid())->pw_dir;
+  clientFolderPath = getpwuid(getuid())->pw_dir; // Get user's home folder
   clientFolderPath = clientFolderPath + "/sync_dir_" + user->getUserId();
   serverFolderPath = "db/clients/sync_dir_" + user->getUserId();
   Folder* folder = new Folder("");
