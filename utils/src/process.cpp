@@ -33,7 +33,8 @@ bool Process::managerCommands(
   } else if (command.compare(EXIT_APP) == 0) {
       resp = exitApp(user);
       if (resp == EXIT_OPT_YES) {
-        string clientRequest = "[Client Request]: Log off from the DroppedBox";
+        string clientRequest = "[Client Request]: The user " + user->getUserId()
+          + " has logged off from the DroppedBox";
         writeToSocket(clientRequest, socketDesc, host, port);
         return EXIT;
       } else if (resp == EXIT_OPT_WRONG) {
@@ -61,12 +62,16 @@ int Process::download(string filePath, ClientUser* user) {
 }
 
 int Process::listServer(ClientUser* user, int port, string host, int socketDesc) {
+  string clientRequest = "[Client Request]: List all the files on the server side for the client "
+    + user->getUserId() + " via the socket " + to_string(socketDesc);
   cout << "It has to be implemented" << endl;
 }
 
 int Process::listClient(ClientUser* user, int port, string host, int socketDesc) {
-  string clientRequest = "[Client Request]: List all the files on the client side";
+  string clientRequest = "[Client Request]: List all the files on the client side for the client"
+     + user->getUserId() + " via the socket " + to_string(socketDesc);
   writeToSocket(clientRequest, socketDesc, host, port);
+
 }
 
 int Process::getSyncDir(ClientUser* user) {
