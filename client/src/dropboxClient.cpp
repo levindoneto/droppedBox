@@ -55,7 +55,7 @@ int main (int argc, char **argv) {
     commandToRun = getUserCommand();
     command = commandToRun.front();
     parameter = commandToRun.back();
-    resp = proc->managerCommands(command, parameter, user);
+    resp = proc->managerCommands(command, parameter, user, port, hostConn);
   }
   delete[] hostConn;
   exit(TRUE);

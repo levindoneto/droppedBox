@@ -42,7 +42,7 @@ vector<string> getUserCommand() {
   vector<string> commandWithParameter;
   string wholeCommand;
   cout << PREFIX << " ";
-  cin >> wholeCommand;
+  getline(cin, wholeCommand);
   commandWithParameter = parseUserCommand(wholeCommand, " ");
   return commandWithParameter;
 }

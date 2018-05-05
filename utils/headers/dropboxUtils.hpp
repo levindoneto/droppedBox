@@ -1,3 +1,5 @@
+#include <string>
+
 #define UNDEF -1 // not specified informationC
 #define INIT 0 // for initialization of parameters
 #define DEF 1 // specified information without worked out values
@@ -42,4 +44,5 @@ using namespace std;
 // Function which takes a string, and shows it, followed by exiting the app
 void throwError (char* errorMessage);
 void getClientFolderPath(string folderPath);
+unsigned int fileSize(string filePath);
 void *inotifyEvent(void*);

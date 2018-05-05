@@ -13,12 +13,14 @@ class Process {
     bool managerCommands(
       string command,
       string parameter,
-      ClientUser* user
+      ClientUser* user,
+      int port,
+      char* host
     );
     int getProcessId();
 
     // Functions which the user has access
-    int upload(string filePath, ClientUser* user);
+    int upload(string filePath, ClientUser* user, int port, char* host);
     int download(string filePath, ClientUser* user);
     int listServer(ClientUser* user);
     int listClient(ClientUser* user);

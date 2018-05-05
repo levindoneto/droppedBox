@@ -17,13 +17,22 @@ void getClientFolderPath(string folderPath) {
   clientFolderPath = folderPath;
 }
 
+unsigned int fileSize(string filePath) {
+  const char *filePathChar = filePath.c_str();
+  FILE * f = fopen(filePathChar, "r");
+  fseek(f, 0, SEEK_END);
+  unsigned long len = (unsigned long)ftell(f);
+  fclose(f);
+  return len;
+}
+
 void *inotifyEvent(void*) {
   int init;
   int watchedFolder;
   int i;
   int length;
   char buffer[EVENT_BUF_LEN];
-  cout << clientFolderPath << '\n';
+  //cout << clientFolderPath << '\n';
 
   const char *folder = clientFolderPath.c_str();
   init = inotify_init();

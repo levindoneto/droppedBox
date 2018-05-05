@@ -23,4 +23,4 @@ dropboxClient: $(UTILS_C) client/src/dropboxClient.o client/src/clientCommunicat
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f *~ *. ./*/*.o ./*/*.out dropboxClient dropboxServer
+	rm -f *~ *. ./*/*/*/*.o ./*/*/*/*.out dropboxClient dropboxServer

@@ -48,35 +48,8 @@ ClientCommunication::ClientCommunication(char* ip, int port) {
 }
 
 bool ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
-  int socketDesc;
-  int status;
-  unsigned int lenSckAddr;
-  /* According to the C standard, the address of a structure and its first
-     member are the same, so you can cast the pointer to sockaddr_in(6) in a
-     pointer to sockaddr. (source: https://stackoverflow.com/questions/18609397)*/
-  struct sockaddr_in serverAddress;
-  struct sockaddr_in from;
-  struct hostent *server;
   string clientFolderPath, serverFolderPath;
   pthread_t syn_th;
-
-  char buffer[BUFFER_SIZE];
-  fflush(stdin);
-  // Get host
-  server = gethostbyname(ip);
-  if (server == NULL) {
-    throwError("The host does not exist");
-  }
-
-  // Open udp socket using the defaul protocol
-  if ((socketDesc = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-    throwError("Error on opening socket");
-  }
-
-  serverAddress.sin_family = AF_INET; // IPv4
-  serverAddress.sin_port = htons(port);
-  serverAddress.sin_addr = *((struct in_addr *)server->h_addr);
-  bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
 
   clientFolderPath = getpwuid(getuid())->pw_dir;
   clientFolderPath = clientFolderPath + "/sync_dir_" + user->getUserId();
@@ -88,21 +61,9 @@ bool ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
   getClientFolderPath(clientFolderPath);
   pthread_create(&syn_th, NULL, inotifyEvent, NULL);
 
-  printf(">>> ");
+/*  printf(">>> ");
   bzero(buffer, BUFFER_SIZE);
   fgets(buffer, BUFFER_SIZE, stdin);
-
-  status = sendto(
-    socketDesc,
-    buffer,
-    strlen(buffer),
-    0,
-    (const struct sockaddr *) &serverAddress,
-    sizeof(struct sockaddr_in)
-  );
-  if (status < 0) {
-    throwError("Error on sending message");
-  }
 
   lenSckAddr = sizeof(struct sockaddr_in);
   status = recvfrom(
@@ -120,7 +81,7 @@ bool ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
 
   cout << "Got an ack: " << buffer << endl;
 
-  close(socketDesc);
+  close(socketDesc);*/
 
   return true;
 }
