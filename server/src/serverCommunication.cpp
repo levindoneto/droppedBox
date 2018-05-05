@@ -28,10 +28,8 @@ ServerCommunication::ServerCommunication(int port) {
   fflush(stdin);
 
   // Open socket
-	if ((socketDesc = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-    throwError("Error on opening socket");
-  }
-
+	socketDesc = openSocket();
+  
   serverAddress.sin_family = AF_INET;
   serverAddress.sin_port = htons(port);
   serverAddress.sin_addr.s_addr = INADDR_ANY;

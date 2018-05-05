@@ -51,3 +51,12 @@ int readFromSocket(int socketDesc, char* buffer) {
   }
   return SUCCESS;
 }
+
+int openSocket() {
+  int socketDesc;
+  // Open udp socket using the defaul protocol
+  if ((socketDesc= socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
+    throwError("[openSocket]: Error on opening socket");
+  }
+  return socketDesc;
+}

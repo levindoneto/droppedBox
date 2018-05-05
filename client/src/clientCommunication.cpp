@@ -74,10 +74,7 @@ int ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
     throwError("The host does not exist");
   }
 
-  // Open udp socket using the defaul protocol
-  if ((socketDesc = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-    throwError("Error on opening socket");
-  }
+  socketDesc = openSocket();
 
   // Address' configurations
   serverAddress.sin_family = AF_INET; // IPv4
@@ -94,7 +91,7 @@ int ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
   folder->createFolder(serverFolderPath);
 
   string clientMessage = "[Client Login]: User " + user->getUserId()
-    + " has logged in via socket " + to_string(socketDesc);
+    + " has logged in via the socket " + to_string(socketDesc);
   writeToSocket(clientMessage, socketDesc, ip, port);
   //getClientFolderPath(clientFolderPath); // TODO: change this in dropboxUtils
 
