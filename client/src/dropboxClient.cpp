@@ -51,8 +51,7 @@ int main (int argc, char **argv) {
   while(resp) {
     commandToRun = getUserCommand();
     command = commandToRun.front();
-    cout << command << endl;
-    parameter = "commandToRun.back()";
+    parameter = commandToRun.back();
     resp = proc->managerCommands(command, parameter, user, port, hostConn, socket);
   }
   delete[] hostConn;
