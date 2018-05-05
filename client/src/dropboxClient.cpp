@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <unistd.h>
 #include "string.h"
 #include "../headers/dropboxClient.hpp"
 #include "../headers/clientCommunication.hpp"
@@ -18,7 +19,7 @@ int main (int argc, char **argv) {
   vector<string> commandToRun;
   bool resp = true;
   int port = PORT; // Default port
-  int clientSocket;
+  int socket;
 
   if (
     argv[USER_CLIENT] != NULL &&
@@ -39,23 +40,20 @@ int main (int argc, char **argv) {
   char *hostConn = new char[host.size()+1];
   strcpy(hostConn, host.c_str());
 
-  cout << "Establishing connection with the user " << username
-    << " at the port " << port << " on the host " << host << endl;
-
-  // TODO: Use createUserFolder for this purpose
   Folder *userFolder = new Folder("../../db/" + username);
   ClientUser* user = new ClientUser(username, userFolder);
   ClientCommunication* c = new ClientCommunication();
   Process* proc = new Process();
 
-  clientSocket = c->loginServer(hostConn, port, user);
+  socket = c->loginServer(hostConn, port, user);
 
   showMenu();
   while(resp) {
     commandToRun = getUserCommand();
     command = commandToRun.front();
-    parameter = commandToRun.back();
-    resp = proc->managerCommands(command, parameter, user, clientSocket);
+    cout << command << endl;
+    parameter = "commandToRun.back()";
+    resp = proc->managerCommands(command, parameter, user, port, hostConn, socket);
   }
   delete[] hostConn;
   //close(clientSocket); // Put it in closeSession

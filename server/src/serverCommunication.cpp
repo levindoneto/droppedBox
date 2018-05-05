@@ -2,10 +2,8 @@
 #include "../../utils/headers/dropboxUtils.hpp"
 #include "../../utils/headers/udpUtils.hpp"
 #include "../../utils/fileSystem/headers/folder.hpp"
-
 #include <iostream>
 #include <string>
-
 #include <sys/types.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -33,7 +31,6 @@ ServerCommunication::ServerCommunication(int port) {
 	if ((socketDesc = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
     throwError("Error on opening socket");
   }
-
 
   serverAddress.sin_family = AF_INET;
   serverAddress.sin_port = htons(port);
@@ -69,7 +66,7 @@ ServerCommunication::ServerCommunication(int port) {
 		if (status < 0) {
       throwError("Error on recvfrom");
     }
-    cout << "Received a datagram: " << endl << buffer << endl;
+    cout << buffer << endl;
 
     // Send datagram to the created socket
     status = sendto(

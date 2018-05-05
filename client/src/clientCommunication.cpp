@@ -82,15 +82,14 @@ int ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
   serverAddress.sin_addr = *((struct in_addr *)host->h_addr);
   bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
 
+  // Folder management after the user gets logged in
   clientFolderPath = getpwuid(getuid())->pw_dir;
   clientFolderPath = clientFolderPath + "/sync_dir_" + user->getUserId();
   serverFolderPath = "db/clients/sync_dir_" + user->getUserId();
 
-
   Folder* folder = new Folder("");
   folder->createFolder(clientFolderPath);
   folder->createFolder(serverFolderPath);
-
 
   //getClientFolderPath(clientFolderPath); // TODO: change this in dropboxUtils
 
