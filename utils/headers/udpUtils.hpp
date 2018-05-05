@@ -1,2 +1,6 @@
-int writeToSocket(int socketDesc, char* buffer);
+#include <string>
+
+using namespace std;
+
+int writeToSocket(string fileName, int socketDesc, string host, int port);
 int readFromSocket(int socketDesc, char* buffer);

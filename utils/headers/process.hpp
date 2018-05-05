@@ -14,6 +14,8 @@ class Process {
       string command,
       string parameter,
       ClientUser* user,
+      int port,
+      string host,
       int socketDesc
     );
     int getProcessId();
@@ -21,8 +23,8 @@ class Process {
     // Functions which the user has access
     int upload(string filePath, ClientUser* user);
     int download(string filePath, ClientUser* user);
-    int listServer(ClientUser* user, int socketDesc);
-    int listClient(ClientUser* user, int socketDesc);
+    int listServer(ClientUser* user, int port, string host, int socketDesc);
+    int listClient(ClientUser* user, int port, string host, int socketDesc);
     int getSyncDir(ClientUser* user);
     int exitApp(ClientUser* user);
 };

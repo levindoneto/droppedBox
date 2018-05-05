@@ -4,7 +4,7 @@
 #include "../headers/process.hpp"
 #include "../headers/ui.hpp"
 #include "../headers/udpUtils.hpp"
-
+#include <unistd.h>
 using namespace std;
 
 Process::~Process() {
@@ -15,6 +15,8 @@ bool Process::managerCommands(
   string command,
   string parameter,
   ClientUser* user,
+  int port,
+  string host,
   int socketDesc
 ) {
   int resp;
@@ -23,9 +25,9 @@ bool Process::managerCommands(
   } else if (command.compare(DOWNLOAD) == 0) {
       resp = download(parameter, user);
   } else if (command.compare(LIST_SERVER) == 0) {
-      resp = listServer(user, socketDesc);
+      resp = listServer(user, port, host, socketDesc);
   } else if (command.compare(LIST_CLIENT) == 0) {
-      resp = listClient(user, socketDesc);
+      resp = listClient(user, port, host, socketDesc);
   } else if (command.compare(GET_SYNC_DIR) == 0) {
       resp = getSyncDir(user);
   } else if (command.compare(EXIT_APP) == 0) {
@@ -40,7 +42,7 @@ bool Process::managerCommands(
   } else if (command.compare(HELP_C) == 0 || command.compare(HELP_L) == 0) {
     showHelp();
   }else {
-    throwError("Invalid command");
+    throwError("[managerCommands]: Invalid command");
   }
 }
 
@@ -56,12 +58,13 @@ int Process::download(string filePath, ClientUser* user) {
   cout << "It has to be implemented" << endl;
 }
 
-int Process::listServer(ClientUser* user, int socketDesc) {
+int Process::listServer(ClientUser* user, int port, string host, int socketDesc) {
   cout << "It has to be implemented" << endl;
 }
 
-int Process::listClient(ClientUser* user, int socketDesc) {
-  writeToSocket(socketDesc, "list_client");
+int Process::listClient(ClientUser* user, int port, string host, int socketDesc) {
+  string clientRequest = "[Client Request]: List all the files on the client side";
+  writeToSocket(clientRequest, socketDesc, host, port);
 }
 
 int Process::getSyncDir(ClientUser* user) {

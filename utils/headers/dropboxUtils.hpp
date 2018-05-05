@@ -9,9 +9,9 @@
 #define IS_THE_COMMAND 0
 #define UPLOAD "upload"
 #define DOWNLOAD "download"
-#define LIST_SERVER "list_server"
-#define LIST_CLIENT "list_client"
-#define GET_SYNC_DIR "get_sync_directory"
+#define LIST_SERVER "listserver"
+#define LIST_CLIENT "listclient"
+#define GET_SYNC_DIR "getsyncdirectory"
 #define EXIT_APP "exit"
 #define HELP_C "HELP"
 #define HELP_L "help"
