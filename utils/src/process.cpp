@@ -33,6 +33,8 @@ bool Process::managerCommands(
   } else if (command.compare(EXIT_APP) == 0) {
       resp = exitApp(user);
       if (resp == EXIT_OPT_YES) {
+        string clientRequest = "[Client Request]: Log off from the DroppedBox";
+        writeToSocket(clientRequest, socketDesc, host, port);
         return EXIT;
       } else if (resp == EXIT_OPT_WRONG) {
           exitApp(user);

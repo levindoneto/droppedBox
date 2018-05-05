@@ -13,6 +13,7 @@
 #include <pthread.h>
 #include "../headers/clientCommunication.hpp"
 #include "../../utils/headers/dropboxUtils.hpp"
+#include "../../utils/headers/udpUtils.hpp"
 #include "../../settings/config.hpp"
 
 #define DEBUG 0
@@ -59,7 +60,8 @@ int ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
   struct sockaddr_in serverAddress;
   struct sockaddr_in from;
   struct hostent *host;
-  string clientFolderPath, serverFolderPath;
+  string clientFolderPath;
+  string serverFolderPath;
 
   // Thread for synchronization
   pthread_t syn_th;
@@ -77,6 +79,7 @@ int ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
     throwError("Error on opening socket");
   }
 
+  // Address' configurations
   serverAddress.sin_family = AF_INET; // IPv4
   serverAddress.sin_port = htons(port);
   serverAddress.sin_addr = *((struct in_addr *)host->h_addr);
@@ -86,11 +89,13 @@ int ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
   clientFolderPath = getpwuid(getuid())->pw_dir;
   clientFolderPath = clientFolderPath + "/sync_dir_" + user->getUserId();
   serverFolderPath = "db/clients/sync_dir_" + user->getUserId();
-
   Folder* folder = new Folder("");
   folder->createFolder(clientFolderPath);
   folder->createFolder(serverFolderPath);
 
+  string clientMessage = "[Client Login]: User " + user->getUserId()
+    + " has logged in via socket " + to_string(socketDesc);
+  writeToSocket(clientMessage, socketDesc, ip, port);
   //getClientFolderPath(clientFolderPath); // TODO: change this in dropboxUtils
 
   // Create thread for monitoring synchronized user folder
