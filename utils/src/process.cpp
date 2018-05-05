@@ -71,6 +71,7 @@ int Process::listClient(ClientUser* user, int port, string host, int socketDesc)
   string clientRequest = "[Client Request]: List all the files on the client side for the client"
      + user->getUserId() + " via the socket " + to_string(socketDesc);
   writeToSocket(clientRequest, socketDesc, host, port);
+  Folder* clientFolder = new Folder();
 
 }
 

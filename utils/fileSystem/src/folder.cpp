@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 #include <sys/types.h>
+#include <dirent.h>
+#include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -63,7 +65,25 @@ vector<string> Folder::getTimes(string filePath) {
 /* Method for listing files in the client or in the server side, relying on
  * the mode passed as one of the parameters.
  */
-void listFiles(string folderPath, int mode, string userId, int socket) {
+
+void changeDirectory(string folderPath) {
+  const char *folder = folderPath.c_str();
+  DIR* dir = opendir(folder);
+  if (dir) {
+     /* If the user does not pass a folder as parameter, folder="", and
+      * chdir("") is the same as chdir("./")
+      */
+      chdir(folder);
+  }
+  else if (ENOENT == errno) {
+      printf("The system cannot find the specified directory");
+  }
+  else {
+      printf("\nThe system has found an error\n");
+  }
+}
+
+void listFiles(int mode, string userId) {
   int i;
   if (mode == CLIENT_LIST) {
     cout << "todo";
