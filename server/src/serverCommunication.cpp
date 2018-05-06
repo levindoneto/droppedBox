@@ -53,7 +53,6 @@ ServerCommunication::ServerCommunication(int port) {
   folder->createFolder("db/");
   folder->createFolder("db/clients");
 
-<<<<<<< HEAD
 	status = recvfrom(
     socketDesc,
     buffer,
@@ -88,11 +87,6 @@ ServerCommunication::ServerCommunication(int port) {
 
   while(itr * CHUNCK_SIZE < fileSize) {
     status = recvfrom(
-=======
-  /* Receive requests from the client side */
-  while (TRUE) {
-		status = recvfrom(
->>>>>>> master
       socketDesc,
       &receiveChunck,
       sizeof(receiveChunck),
@@ -100,9 +94,9 @@ ServerCommunication::ServerCommunication(int port) {
       (struct sockaddr *) &clientAddress,
       &clilen
     );
-<<<<<<< HEAD
+
     if (status < 0) {
-      throwError("Error on recvfrom");
+      throwError("[ServerCommunication::ServerCommunication]: Error on receiving datagram");
     }
 
     //printf("%d\n", receiveChunck.chunckId);
@@ -117,22 +111,13 @@ ServerCommunication::ServerCommunication(int port) {
       sizeof(struct sockaddr)
     );
 
-    if (status  < 0) {
-      throwError("Error on sending receiveChunck to the created socket");
+    if (status < 0) {
+      throwError("[ServerCommunication::ServerCommunication]: Error on sending ack");
     }
     if(lastChunck != receiveChunck.chunckId) {
       fwrite(receiveChunck.chunck, CHUNCK_SIZE, 1, fp);
       memset(receiveChunck.chunck, 0, CHUNCK_SIZE);
       itr++;
-=======
-		if (status < 0) {
-      throwError("[ServerCommunication::ServerCommunication]: Error on recvfrom");
-    }
-    cout << buffer << endl;
-
-    if (status < 0) {
-      throwError("Error on sending datagram to the created socket");
->>>>>>> master
     }
     lastChunck = receiveChunck.chunckId;
   }

@@ -30,7 +30,7 @@ int writeToSocket(string request, int socketDesc, string host, int port) {
   status = sendto(
     socketDesc,
     requestChar,
-    BUFFER_SIZE,
+    CHUNCK_SIZE,
     0,
     (const struct sockaddr *) &serverAddress,
     sizeof(struct sockaddr_in)

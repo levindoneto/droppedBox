@@ -42,8 +42,7 @@ bool Process::managerCommands(
   } else if (command.compare(EXIT_APP) == 0) {
       resp = exitApp(user);
       if (resp == EXIT_OPT_YES) {
-        string clientRequest = "[Client Request]: The user " + user->getUserId()
-          + " has logged off from the DroppedBox";
+        string clientRequest = "[Client Request]: Log off user";
         writeToSocket(clientRequest, socketDesc, host, port);
         closeSocket(socketDesc);
         return EXIT;
@@ -63,11 +62,12 @@ int Process::getProcessId() {
   return this->processId;
 }
 
-int Process::upload(string fileName, ClientUser* user, int port, char* host) {
+int Process::upload(string fileName, ClientUser* user, int port, string host) {
   int socketDesc;
   int status;
   unsigned int lenSckAddr;
   const char *fileNameChar = fileName.c_str();
+  const char *hostChar = host.c_str();
   /* According to the C standard, the address of a structure and its first
      member are the same, so you can cast the pointer to sockaddr_in(6) in a
      pointer to sockaddr. (source: https://stackoverflow.com/questions/18609397)*/
@@ -85,7 +85,7 @@ int Process::upload(string fileName, ClientUser* user, int port, char* host) {
 
   fflush(stdin);
   // Get host
-  server = gethostbyname(host);
+  server = gethostbyname(hostChar);
   if (server == NULL) {
     throwError("The host does not exist");
   }
@@ -195,16 +195,14 @@ int Process::download(string filePath, ClientUser* user) {
 }
 
 int Process::listServer(ClientUser* user, int port, string host, int socketDesc) {
-  string clientRequest = "[Client Request]: List all the files on the server side for the user "
-    + user->getUserId() + " via the socket " + to_string(socketDesc);
+  string clientRequest = "[Client Request]: List files on the server side";
   writeToSocket(clientRequest, socketDesc, host, port);
   Folder* procFolder = new Folder();
   procFolder->listFiles(SERVER_LIST, user->getUserId());
 }
 
 int Process::listClient(ClientUser* user, int port, string host, int socketDesc) {
-  string clientRequest = "[Client Request]: List all the files on the client side for the user "
-     + user->getUserId() + " via the socket " + to_string(socketDesc);
+  string clientRequest = "[Client Request]: List files on the client side";
   writeToSocket(clientRequest, socketDesc, host, port);
   Folder* procFolder = new Folder();
   procFolder->listFiles(CLIENT_LIST, user->getUserId());

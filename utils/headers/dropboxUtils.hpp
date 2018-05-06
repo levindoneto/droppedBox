@@ -24,7 +24,7 @@
 #define INVALID_OPTION "$ An invalid option was given"
 #define CLIENT_LIST 0
 #define SERVER_LIST 1
-#define BUFFER_SIZE 1024
+//#define BUFFER_SIZE 1024
 #define CURRENT_FOLDER "."
 #define CREATE_FILE 0
 #define EMPTY_PATH ""
