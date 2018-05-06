@@ -54,7 +54,7 @@ int main (int argc, char **argv) {
     parameter = commandToRun.back();
     resp = proc->managerCommands(command, parameter, user, port, hostConn, socket);
   }
-  delete[] hostConn;
+  //delete[] hostConn;
 
   exit(TRUE);
 

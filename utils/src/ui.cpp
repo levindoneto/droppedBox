@@ -16,9 +16,9 @@ void showHelp() {
   cout << "  Available options:" << endl
     << "  upload <path/filename.ext>" << endl
     << "  download <filename.ext>" << endl
-    << "  list_server" << endl
-    << "  list_client" << endl
-    << "  get_sync_directory" << endl
+    << "  listserver" << endl
+    << "  listclient" << endl
+    << "  getsyncdirectory" << endl
     << "  exit" << endl << endl;
 }
 
@@ -41,7 +41,7 @@ vector<string> parseUserCommand(const string& input, const string& separator) {
 vector<string> getUserCommand() {
   vector<string> commandWithParameter;
   string wholeCommand;
-  cout << PREFIX << " ";
+  cout << endl << PREFIX << " ";
   getline(cin, wholeCommand);
   commandWithParameter = parseUserCommand(wholeCommand, " ");
   return commandWithParameter;

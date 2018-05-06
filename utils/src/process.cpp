@@ -42,12 +42,12 @@ bool Process::managerCommands(
   } else if (command.compare(EXIT_APP) == 0) {
       resp = exitApp(user);
       if (resp == EXIT_OPT_YES) {
-        string clientRequest = "[Client Request]: Log off user";
-        writeToSocket(clientRequest, socketDesc, host, port);
+        //string clientRequest = "[Client Request]: Log off user";
+        //writeToSocket(clientRequest, socketDesc, host, port);
         closeSocket(socketDesc);
         return EXIT;
       } else if (resp == EXIT_OPT_WRONG) {
-          exitApp(user);
+          resp = exitApp(user);
       } else {
         return !EXIT;
       }
@@ -147,7 +147,7 @@ int Process::upload(string fileName, ClientUser* user, int port, string host) {
     }
 
     //printf("%s\n", sendChunck.chunck);
-    //printf("%d\n", sendChunck.chunckId);
+    printf("%d\n", sendChunck.chunckId);
 
     status = recvfrom(
       socketDesc,
@@ -161,7 +161,7 @@ int Process::upload(string fileName, ClientUser* user, int port, string host) {
       throwError("Error on receive ack");
     }
     //printf("%s\n", ack);
-    //printf("%d\n", atoi(ack));
+    printf("%d\n", atoi(ack));
 
     if(atoi(ack) == sendChunck.chunckId) {
       memset(sendChunck.chunck, 0, CHUNCK_SIZE);
@@ -195,15 +195,15 @@ int Process::download(string filePath, ClientUser* user) {
 }
 
 int Process::listServer(ClientUser* user, int port, string host, int socketDesc) {
-  string clientRequest = "[Client Request]: List files on the server side";
-  writeToSocket(clientRequest, socketDesc, host, port);
+  //string clientRequest = "[Client Request]: List files on the server side";
+  //writeToSocket(clientRequest, socketDesc, host, port);
   Folder* procFolder = new Folder();
   procFolder->listFiles(SERVER_LIST, user->getUserId());
 }
 
 int Process::listClient(ClientUser* user, int port, string host, int socketDesc) {
-  string clientRequest = "[Client Request]: List files on the client side";
-  writeToSocket(clientRequest, socketDesc, host, port);
+  //string clientRequest = "[Client Request]: List files on the client side";
+  //writeToSocket(clientRequest, socketDesc, host, port);
   Folder* procFolder = new Folder();
   procFolder->listFiles(CLIENT_LIST, user->getUserId());
 }

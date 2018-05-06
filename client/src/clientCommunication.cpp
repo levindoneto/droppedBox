@@ -90,8 +90,8 @@ int ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
   folder->createFolder(clientFolderPath);
   folder->createFolder(serverFolderPath);
 
-  string clientMessage = "abc";
-  writeToSocket(clientMessage, socketDesc, ip, port);
+  //string clientMessage = "abc";
+  //writeToSocket(clientMessage, socketDesc, ip, port);
   //getClientFolderPath(clientFolderPath); // TODO: change this in dropboxUtils
 
   // Create thread for monitoring synchronized user folder

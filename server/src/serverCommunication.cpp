@@ -18,7 +18,7 @@ using namespace std;
 #define TRUE 1
 
 ServerCommunication::ServerCommunication(int port) {
-  int socketDesc, itr, status, lastChunck = 1;
+  int socketDesc, itr, status, lastChunck = 0;
   socklen_t clilen;
   struct sockaddr_in serverAddress;
   struct sockaddr_in clientAddress;
@@ -66,6 +66,7 @@ ServerCommunication::ServerCommunication(int port) {
   }
 
   strcpy(fname, buffer);
+  printf("%s\n", fname);
 
   status = recvfrom(
     socketDesc,
@@ -80,6 +81,7 @@ ServerCommunication::ServerCommunication(int port) {
   }
 
   fileSize = atoi(buffer);
+  printf("%d\n", fileSize);
 
   fp = fopen(fname, "wb");
   itr = 1;
@@ -99,7 +101,7 @@ ServerCommunication::ServerCommunication(int port) {
       throwError("[ServerCommunication::ServerCommunication]: Error on receiving datagram");
     }
 
-    //printf("%d\n", receiveChunck.chunckId);
+    printf("%d\n", receiveChunck.chunckId);
     sprintf(ack, "%d", receiveChunck.chunckId);
 
     status = sendto(
@@ -114,7 +116,8 @@ ServerCommunication::ServerCommunication(int port) {
     if (status < 0) {
       throwError("[ServerCommunication::ServerCommunication]: Error on sending ack");
     }
-    if(lastChunck != receiveChunck.chunckId) {
+    if (lastChunck != receiveChunck.chunckId) {
+      printf("testeeeeeeee\n");
       fwrite(receiveChunck.chunck, CHUNCK_SIZE, 1, fp);
       memset(receiveChunck.chunck, 0, CHUNCK_SIZE);
       itr++;
