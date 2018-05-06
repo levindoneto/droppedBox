@@ -22,8 +22,19 @@
 #define CLIENT_LIST 0
 #define SERVER_LIST 1
 #define BUFFER_SIZE 1024
-
+#define CURRENT_FOLDER "."
 #define CREATE_FILE 0
+#define EMPTY_PATH ""
+#define EQUAL 0
+#define TAB "\t"
+#define SEPARATOR_LIST ' | '
+#define SIZE_FILENAME_LIST 26
+#define SIZE_CTIMES_LIST 26
+#define FILENAME_LABEL "     Name of the File      | "
+#define ACCESS_TIME_LABEL "        Access Time      |"
+#define MODIFICATION_TIME_LABEL "    Modificatin Time      |"
+#define CREATION_TIME_LABEL "      Creation Time      "
+
 
 /*  IN_CREATE – File/directory created in watched directory
     IN_DELETE – File/directory deleted from watched directory

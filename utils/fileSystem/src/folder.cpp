@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <pwd.h>
 #include <vector>
+#include <iomanip> // List layout
 
 #include "../headers/folder.hpp"
 #include "../../headers/dropboxUtils.hpp"
@@ -38,7 +39,7 @@ int Folder::createFolder(string userId) {
   );
 
   if((folderCreationStatus < 0) && (errno != EEXIST)) {
-    throwError("Error creating folder");
+    throwError("[Folder::createFolder]: Error creating folder");
   }
 
   return folderCreationStatus;
@@ -53,8 +54,8 @@ vector<string> Folder::getTimes(string filePath) {
   const char *filePathChar = filePath.c_str();
   vector<string> fileTimes;
 
-  if (stat(filePathChar, &buffer) == -1) {
-    throwError("Error:");
+  if (stat(filePathChar, &buffer) == ERROR) {
+    throwError("[Folder::getTimes]: Error on getting to the file");
   }
 
   fileTimes.push_back(ctime(&buffer.st_atim.tv_sec));
@@ -64,33 +65,48 @@ vector<string> Folder::getTimes(string filePath) {
   return fileTimes;
 }
 
+string Folder::timesToString(vector<string> times) {
+  string timesRaw = "";
+  for(int i = 0; i < times.size(); i++) {
+    times.at(i).erase(times.at(i).length()-1); // Remove \n
+    timesRaw += " | " + times.at(i);
+  }
+  return timesRaw;
+}
+
 void Folder::changeDirectory(string folderPath) {
   const char *folder = folderPath.c_str();
   DIR* dir = opendir(folder);
   if (dir) {
     /* If the user does not pass a folder as parameter, folder="", and
-      * chdir("") is the same as chdir("./")
-      */
+     * chdir("") is the same as chdir("./")
+     */
     chdir(folder);
   } else if (ENOENT == errno) {
-      throwError("The system cannot find the specified directory");
+      throwError("[Folder::changeDirectory]: The system cannot find the specified directory");
   } else {
-      throwError("\nThe system has found an error\n");
+      throwError("[Folder::changeDirectory]: The system has found an error");
   }
 }
 
 void Folder::listFolder(string folderPath) {
   const char *folder = folderPath.c_str();
-  if (strcmp("", folder) == 0) {
-    folder = ".";
+  const char separator = SEPARATOR_LIST;
+  const int nameWidth = SIZE_FILENAME_LIST;
+  const int numWidth = SIZE_CTIMES_LIST;
+  if (strcmp(EMPTY_PATH, folder) == EQUAL) {
+    folder = CURRENT_FOLDER;
   }
   DIR * dir = opendir(folder);
   if (dir) {
+    cout << FILENAME_LABEL << ACCESS_TIME_LABEL << MODIFICATION_TIME_LABEL
+      << CREATION_TIME_LABEL << endl;
     struct dirent *entry;
-    while ((entry = readdir(dir)) != 0) {
-      // If entry is a file
-      if (entry->d_type != DT_DIR) {
-        cout << entry->d_name << endl;
+    while ((entry = readdir(dir)) != EQUAL) {
+      if (entry->d_type != DT_DIR) { // If entry is a file
+        timesToString(getTimes(folderPath));
+        cout << left << setw(nameWidth) << setfill(separator) << entry->d_name;
+        cout << left << setw(numWidth) << setfill(separator) << timesToString(getTimes(folderPath)) << endl;
       }
     }
     closedir(dir);
@@ -113,6 +129,6 @@ void Folder::listFiles(int mode, string userId) {
   } else if (mode == SERVER_LIST) {
       cout << "todo";
   } else {
-      throwError("[List of Files]: Invalid option");
+      throwError("[Folder::listFiles]: Invalid mode");
   }
 }
