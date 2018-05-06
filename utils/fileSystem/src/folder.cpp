@@ -127,7 +127,8 @@ void Folder::listFiles(int mode, string userId) {
     userFolderPath = homePath + "/sync_dir_" + userId;
     listFolder(userFolderPath);
   } else if (mode == SERVER_LIST) {
-      cout << "todo";
+      string userFolderDB = DATABASE + userId;
+      listFolder(userFolderDB);
   } else {
       throwError("[Folder::listFiles]: Invalid mode");
   }

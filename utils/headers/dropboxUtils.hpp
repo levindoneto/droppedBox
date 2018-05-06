@@ -34,7 +34,7 @@
 #define ACCESS_TIME_LABEL "        Access Time      |"
 #define MODIFICATION_TIME_LABEL "    Modificatin Time      |"
 #define CREATION_TIME_LABEL "      Creation Time      "
-
+#define DATABASE "db/clients/sync_dir_"
 
 /*  IN_CREATE – File/directory created in watched directory
     IN_DELETE – File/directory deleted from watched directory

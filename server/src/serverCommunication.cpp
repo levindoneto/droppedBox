@@ -63,6 +63,7 @@ ServerCommunication::ServerCommunication(int port) {
 		if (status < 0) {
       throwError("[ServerCommunication::ServerCommunication]: Error on recvfrom");
     }
+    if ()
     cout << buffer << endl;
 
     if (status < 0) {
