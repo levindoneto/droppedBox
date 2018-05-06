@@ -1,3 +1,4 @@
+#pragma once
 #include <string>
 
 #define UNDEF -1 // not specified informationC
@@ -22,6 +23,14 @@
 #define INVALID_OPTION "$ An invalid option was given"
 
 #define CREATE_FILE 0
+#define CHUNCK_SIZE 1024
+
+typedef struct datagram {
+   int  chunckId;
+   char  chunck[CHUNCK_SIZE];
+} Datagram;
+
+#define BUFFER_SIZE sizeof(datagram)
 
 /*  IN_CREATE – File/directory created in watched directory
     IN_DELETE – File/directory deleted from watched directory

@@ -19,15 +19,17 @@ using namespace std;
 #define TRUE 1
 
 ServerCommunication::ServerCommunication(int port) {
-  int socketDesc, itr, status;
+  int socketDesc, itr, status, lastChunck = 1;
   socklen_t clilen;
   struct sockaddr_in serverAddress;
   struct sockaddr_in clientAddress;
+  Datagram receiveChunck;
   char buffer[BUFFER_SIZE];
   fflush(stdin);
   char fname[20], ack[10];
   FILE *fp;
   unsigned int fileSize;
+  //struct datagram receiveChunck;
 
   // Open socket
 	if ((socketDesc = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
@@ -90,8 +92,8 @@ ServerCommunication::ServerCommunication(int port) {
   while(itr * CHUNCK_SIZE < fileSize) {
     status = recvfrom(
       socketDesc,
-      &datagram,
-      sizeof(datagram),
+      &receiveChunck,
+      sizeof(receiveChunck),
       0,
       (struct sockaddr *) &clientAddress,
       &clilen
@@ -100,32 +102,34 @@ ServerCommunication::ServerCommunication(int port) {
       throwError("Error on recvfrom");
     }
 
-    printf("%d\n", datagram.chunckId);
-    sprintf(ack, "%d", datagram.chunckId);
+    //printf("%d\n", receiveChunck.chunckId);
+    sprintf(ack, "%d", receiveChunck.chunckId);
 
     status = sendto(
       socketDesc,
       ack,
-      sizeof(datagram.chunckId),
+      sizeof(int),
       0,
       (struct sockaddr *) &clientAddress,
       sizeof(struct sockaddr)
     );
 
     if (status  < 0) {
-      throwError("Error on sending datagram to the created socket");
+      throwError("Error on sending receiveChunck to the created socket");
     }
-
-    fwrite(datagram.chunck, CHUNCK_SIZE, 1, fp);
-    memset(datagram.chunck, 0, CHUNCK_SIZE);
-    itr++;
+    if(lastChunck != receiveChunck.chunckId) {
+      fwrite(receiveChunck.chunck, CHUNCK_SIZE, 1, fp);
+      memset(receiveChunck.chunck, 0, CHUNCK_SIZE);
+      itr++;
+    }
+    lastChunck = receiveChunck.chunckId;
   }
 
-  memset(datagram.chunck, 0, (fileSize % CHUNCK_SIZE));
+  memset(receiveChunck.chunck, 0, (fileSize % CHUNCK_SIZE));
   status = recvfrom(
     socketDesc,
-    &datagram,
-    sizeof(datagram),
+    &receiveChunck,
+    sizeof(receiveChunck),
     0,
     (struct sockaddr *) &clientAddress,
     &clilen
@@ -134,7 +138,7 @@ ServerCommunication::ServerCommunication(int port) {
     throwError("Error on recvfrom");
   }
 
-  fwrite(datagram.chunck,(fileSize % CHUNCK_SIZE), 1, fp);
+  fwrite(receiveChunck.chunck,(fileSize % CHUNCK_SIZE), 1, fp);
   memset(buffer, 0, CHUNCK_SIZE);
   fclose(fp);
   fflush(stdin);
