@@ -8,18 +8,18 @@
 using namespace std;
 
 void showMenu () {
-  cout << "******* DroppedBox *******" << endl
-    << "Type HELP for obtaiing help with the available commands" << endl << endl;
+  cout << "********************** DroppedBox *********************" << endl
+       << "Type HELP for obtaiing help with the available commands" << endl << endl;
 }
 
 void showHelp() {
-  cout << "Available options:" << endl
-    << "upload <path/filename.ext>" << endl
-    << "download <filename.ext>" << endl
-    << "list_server" << endl
-    << "list_client" << endl
-    << "get_sync_directory" << endl
-    << "exit" << endl << endl;
+  cout << "  Available options:" << endl
+    << "  upload <path/filename.ext>" << endl
+    << "  download <filename.ext>" << endl
+    << "  list_server" << endl
+    << "  list_client" << endl
+    << "  get_sync_directory" << endl
+    << "  exit" << endl << endl;
 }
 
 vector<string> parseUserCommand(const string& input, const string& separator) {

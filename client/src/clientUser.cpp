@@ -12,14 +12,23 @@ ClientUser::ClientUser(string userId, Folder *userFolder) {
   this->isSync = false;
   this->userFolder = userFolder;
   this->device = NULL;
+  this->numberOfFiles = 0;
 }
-
 
 ClientUser::ClientUser(string userId, Device *device, Folder *userFolder) {
   this->userId = userId;
   this->isSync = false;
   this->userFolder = userFolder;
   this->device = device;
+  this->numberOfFiles = 0;
+}
+
+ClientUser::ClientUser(string userId, Device *device, Folder *userFolder, int numberOfFiles) {
+  this->userId = userId;
+  this->isSync = false;
+  this->userFolder = userFolder;
+  this->device = device;
+  this->numberOfFiles = numberOfFiles;
 }
 
 string ClientUser::getUserId() {
@@ -28,6 +37,14 @@ string ClientUser::getUserId() {
 
 Folder* ClientUser::getUserFolder() {
   return this->userFolder;
+}
+
+string ClientUser::getUserConnectedDevicesToString() {
+  return "TODO: parse device list";
+}
+
+int ClientUser::getNumberOfFiles() {
+  return this->numberOfFiles;
 }
 
 void ClientUser::setUserFolder(Folder* userFolder) {

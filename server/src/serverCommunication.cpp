@@ -1,10 +1,9 @@
 #include "../headers/serverCommunication.hpp"
 #include "../../utils/headers/dropboxUtils.hpp"
+#include "../../utils/headers/udpUtils.hpp"
 #include "../../utils/fileSystem/headers/folder.hpp"
-
 #include <iostream>
 #include <string>
-
 #include <sys/types.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -32,23 +31,20 @@ ServerCommunication::ServerCommunication(int port) {
   //struct datagram receiveChunck;
 
   // Open socket
-	if ((socketDesc = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-    throwError("Error on opening socket");
-  }
+	socketDesc = openSocket();
 
   serverAddress.sin_family = AF_INET;
   serverAddress.sin_port = htons(port);
   serverAddress.sin_addr.s_addr = INADDR_ANY;
   bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
 
-  if (
-    bind(
+  if ( bind (
       socketDesc,
       (struct sockaddr *) &serverAddress,
       sizeof(struct sockaddr)
     ) < 0
   ) {
-    throwError("Error on on binding");
+    throwError("[ServerCommunication::ServerCommunication]: Error on on binding");
   }
 
   clilen = sizeof(struct sockaddr_in);
@@ -57,6 +53,7 @@ ServerCommunication::ServerCommunication(int port) {
   folder->createFolder("db/");
   folder->createFolder("db/clients");
 
+<<<<<<< HEAD
 	status = recvfrom(
     socketDesc,
     buffer,
@@ -91,6 +88,11 @@ ServerCommunication::ServerCommunication(int port) {
 
   while(itr * CHUNCK_SIZE < fileSize) {
     status = recvfrom(
+=======
+  /* Receive requests from the client side */
+  while (TRUE) {
+		status = recvfrom(
+>>>>>>> master
       socketDesc,
       &receiveChunck,
       sizeof(receiveChunck),
@@ -98,6 +100,7 @@ ServerCommunication::ServerCommunication(int port) {
       (struct sockaddr *) &clientAddress,
       &clilen
     );
+<<<<<<< HEAD
     if (status < 0) {
       throwError("Error on recvfrom");
     }
@@ -121,6 +124,15 @@ ServerCommunication::ServerCommunication(int port) {
       fwrite(receiveChunck.chunck, CHUNCK_SIZE, 1, fp);
       memset(receiveChunck.chunck, 0, CHUNCK_SIZE);
       itr++;
+=======
+		if (status < 0) {
+      throwError("[ServerCommunication::ServerCommunication]: Error on recvfrom");
+    }
+    cout << buffer << endl;
+
+    if (status < 0) {
+      throwError("Error on sending datagram to the created socket");
+>>>>>>> master
     }
     lastChunck = receiveChunck.chunckId;
   }

@@ -15,15 +15,16 @@ class Process {
       string parameter,
       ClientUser* user,
       int port,
-      char* host
+      string host,
+      int socketDesc
     );
     int getProcessId();
 
     // Functions which the user has access
     int upload(string filePath, ClientUser* user, int port, char* host);
     int download(string filePath, ClientUser* user);
-    int listServer(ClientUser* user);
-    int listClient(ClientUser* user);
+    int listServer(ClientUser* user, int port, string host, int socketDesc);
+    int listClient(ClientUser* user, int port, string host, int socketDesc);
     int getSyncDir(ClientUser* user);
     int exitApp(ClientUser* user);
 };

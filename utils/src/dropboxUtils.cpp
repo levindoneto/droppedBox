@@ -6,16 +6,19 @@
 #include "../headers/dropboxUtils.hpp"
 
 using namespace std;
-string clientFolderPath;
+//string clientFolderPath;
 
 void throwError (char* errorMessage) {
   perror(errorMessage);
   exit(TRUE);
 }
 
+// TODO: Remake this function to make it OO
+
 void getClientFolderPath(string folderPath) {
   clientFolderPath = folderPath;
 }
+
 
 unsigned int fileSize(string filePath) {
   const char *filePathChar = filePath.c_str();
@@ -35,6 +38,10 @@ void *inotifyEvent(void*) {
   //cout << clientFolderPath << '\n';
 
   const char *folder = clientFolderPath.c_str();
+  //cout << "sync_dir_lgtneto" << '\n'; // TODO: Change to the user folder
+
+  //const char *folder = "sync_dir_lgtneto".c_str();
+//  char *folder = "~sync_dir_lgtneto"; // TODO: Change to the user folder
   init = inotify_init();
   if (init == ERROR) {
     throwError("Could not initialize inotify");
