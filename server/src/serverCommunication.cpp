@@ -29,20 +29,19 @@ ServerCommunication::ServerCommunication(int port) {
 
   // Open socket
 	socketDesc = openSocket();
-  
+
   serverAddress.sin_family = AF_INET;
   serverAddress.sin_port = htons(port);
   serverAddress.sin_addr.s_addr = INADDR_ANY;
   bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
 
-  if (
-    bind(
+  if ( bind (
       socketDesc,
       (struct sockaddr *) &serverAddress,
       sizeof(struct sockaddr)
     ) < 0
   ) {
-    throwError("Error on on binding");
+    throwError("[ServerCommunication::ServerCommunication]: Error on on binding");
   }
 
   clilen = sizeof(struct sockaddr_in);
@@ -51,8 +50,8 @@ ServerCommunication::ServerCommunication(int port) {
   folder->createFolder("db/");
   folder->createFolder("db/clients");
 
+  /* Receive requests from the client side */
   while (TRUE) {
-    /* Receive from socket */
 		status = recvfrom(
       socketDesc,
       buffer,
@@ -62,21 +61,11 @@ ServerCommunication::ServerCommunication(int port) {
       &clilen
     );
 		if (status < 0) {
-      throwError("Error on recvfrom");
+      throwError("[ServerCommunication::ServerCommunication]: Error on recvfrom");
     }
     cout << buffer << endl;
 
-    // Send datagram to the created socket
-    status = sendto(
-      socketDesc,
-      "Got your datagram\n",
-      17,
-      0,
-      (struct sockaddr *) &clientAddress,
-      sizeof(struct sockaddr)
-    );
-
-    if (status  < 0) {
+    if (status < 0) {
       throwError("Error on sending datagram to the created socket");
     }
   }
