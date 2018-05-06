@@ -55,7 +55,7 @@ int main (int argc, char **argv) {
     resp = proc->managerCommands(command, parameter, user, port, hostConn, socket);
   }
   delete[] hostConn;
-  //close(clientSocket); // Put it in closeSession
+
   exit(TRUE);
 
   return 0;

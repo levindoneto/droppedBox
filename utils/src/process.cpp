@@ -36,6 +36,7 @@ bool Process::managerCommands(
         string clientRequest = "[Client Request]: The user " + user->getUserId()
           + " has logged off from the DroppedBox";
         writeToSocket(clientRequest, socketDesc, host, port);
+        closeSocket(socketDesc);
         return EXIT;
       } else if (resp == EXIT_OPT_WRONG) {
           exitApp(user);

@@ -39,7 +39,6 @@ int writeToSocket(string request, int socketDesc, string host, int port) {
   if (status < 0 || nBytes < 0) {
     throwError("[writeToSocket]: Error on sending message");
   }
-
   return SUCCESS;
 }
 
@@ -59,4 +58,8 @@ int openSocket() {
     throwError("[openSocket]: Error on opening socket");
   }
   return socketDesc;
+}
+
+void closeSocket(int socketDesc) {
+  close(socketDesc);
 }
