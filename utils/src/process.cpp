@@ -63,13 +63,15 @@ int Process::download(string filePath, ClientUser* user) {
 }
 
 int Process::listServer(ClientUser* user, int port, string host, int socketDesc) {
-  string clientRequest = "[Client Request]: List all the files on the server side for the client "
+  string clientRequest = "[Client Request]: List all the files on the server side for the user "
     + user->getUserId() + " via the socket " + to_string(socketDesc);
-  cout << "It has to be implemented" << endl;
+  writeToSocket(clientRequest, socketDesc, host, port);
+  Folder* procFolder = new Folder();
+  procFolder->listFiles(SERVER_LIST, user->getUserId());
 }
 
 int Process::listClient(ClientUser* user, int port, string host, int socketDesc) {
-  string clientRequest = "[Client Request]: List all the files on the client side for the client "
+  string clientRequest = "[Client Request]: List all the files on the client side for the user "
      + user->getUserId() + " via the socket " + to_string(socketDesc);
   writeToSocket(clientRequest, socketDesc, host, port);
   Folder* procFolder = new Folder();

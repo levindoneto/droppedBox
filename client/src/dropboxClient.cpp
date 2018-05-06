@@ -35,7 +35,7 @@ int main (int argc, char **argv) {
     throwError("[Client]: Invalid use of the application");
   }
 
-  cout << "** The user " << username << " has successfully logged in **" << endl;
+  cout << endl << "**** The user " << username << " has successfully logged in ****" << endl;
   // string -> char*
   char *hostConn = new char[host.size()+1];
   strcpy(hostConn, host.c_str());
