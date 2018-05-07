@@ -81,7 +81,7 @@ ServerCommunication::ServerCommunication(int port) {
   }
 
   fileSize = atoi(buffer);
-  printf("%d\n", fileSize);
+  //printf("%d\n", fileSize);
 
   fp = fopen(fname, "wb");
   itr = 1;
@@ -101,8 +101,8 @@ ServerCommunication::ServerCommunication(int port) {
       throwError("[ServerCommunication::ServerCommunication]: Error on receiving datagram");
     }
 
-    printf("%d\n", receiveChunck.chunckId);
-    sprintf(ack, "%d", receiveChunck.chunckId);
+    //printf("%d\n", receiveChunck.chunckId);
+    //sprintf(ack, "%d", receiveChunck.chunckId);
 
     status = sendto(
       socketDesc,
@@ -117,7 +117,6 @@ ServerCommunication::ServerCommunication(int port) {
       throwError("[ServerCommunication::ServerCommunication]: Error on sending ack");
     }
     if (lastChunck != receiveChunck.chunckId) {
-      printf("testeeeeeeee\n");
       fwrite(receiveChunck.chunck, CHUNCK_SIZE, 1, fp);
       memset(receiveChunck.chunck, 0, CHUNCK_SIZE);
       itr++;
@@ -135,7 +134,7 @@ ServerCommunication::ServerCommunication(int port) {
     &clilen
   );
   if (status < 0) {
-    throwError("Error on recvfrom");
+    throwError("[ServerCommunication::ServerCommunication]: Error on recvfrom");
   }
 
   fwrite(receiveChunck.chunck,(fileSize % CHUNCK_SIZE), 1, fp);

@@ -87,12 +87,12 @@ int Process::upload(string fileName, ClientUser* user, int port, string host) {
   // Get host
   server = gethostbyname(hostChar);
   if (server == NULL) {
-    throwError("The host does not exist");
+    throwError("[Process::upload]: The host does not exist");
   }
 
   // Open udp socket using the defaul protocol
   if ((socketDesc = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-    throwError("Error on opening socket");
+    throwError("[Process::upload]: Error on opening socket");
   }
 
   serverAddress.sin_family = AF_INET; // IPv4
@@ -109,12 +109,12 @@ int Process::upload(string fileName, ClientUser* user, int port, string host) {
     sizeof(struct sockaddr_in)
   );
   if (status < 0) {
-    throwError("Error on sending message");
+    throwError("[Process::upload]: Error on sending message");
   }
 
   size = fileSize(filePath);
   //printf("%d\n", size);
-  sprintf(str, "%d", size);
+  //sprintf(str, "%d", size);
 
   status = sendto(
     socketDesc,
@@ -125,7 +125,7 @@ int Process::upload(string fileName, ClientUser* user, int port, string host) {
     sizeof(struct sockaddr_in)
   );
   if (status < 0) {
-    throwError("Error on sending message");
+    throwError("[Process::upload]: Error on sending message");
   }
   const char *filePathChar = filePath.c_str();
   file = fopen(filePathChar, "rb");
@@ -143,7 +143,7 @@ int Process::upload(string fileName, ClientUser* user, int port, string host) {
       sizeof(struct sockaddr_in)
     );
     if (status < 0) {
-      throwError("Error on sending message");
+      throwError("[Process::upload]: Error on sending message");
     }
 
     //printf("%s\n", sendChunck.chunck);
@@ -158,16 +158,17 @@ int Process::upload(string fileName, ClientUser* user, int port, string host) {
       &lenSckAddr
     );
     if (status < 0) {
-      throwError("Error on receive ack");
+      throwError("[Process::upload]: Error on receive ack");
     }
+
     //printf("%s\n", ack);
-    printf("%d\n", atoi(ack));
+    //printf("%d\n", atoi(ack));
 
     if(atoi(ack) == sendChunck.chunckId) {
       memset(sendChunck.chunck, 0, CHUNCK_SIZE);
       fread(sendChunck.chunck, CHUNCK_SIZE, 1, file);
       itr++;
-      sendChunck.chunckId++;
+      sendChunck.chunckId = sendChunck.chunckId%1000 + 1;
     }
   }
 
@@ -182,7 +183,7 @@ int Process::upload(string fileName, ClientUser* user, int port, string host) {
     sizeof(struct sockaddr_in)
   );
   if (status < 0) {
-    throwError("Error on sending message");
+    throwError("[Process::upload]: Error on sending message");
   }
 
   memset(sendChunck.chunck, 0, CHUNCK_SIZE);
