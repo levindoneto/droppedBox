@@ -102,6 +102,18 @@ int Process::upload(string fileName, ClientUser* user, int port, string host) {
 
   status = sendto(
     socketDesc,
+    UPLOAD,
+    CHUNCK_SIZE,
+    0,
+    (const struct sockaddr *) &serverAddress,
+    sizeof(struct sockaddr_in)
+  );
+  if (status < 0) {
+    throwError("Error on sending message");
+  }
+
+  status = sendto(
+    socketDesc,
     fileNameChar,
     BUFFER_SIZE,
     0,
@@ -114,7 +126,7 @@ int Process::upload(string fileName, ClientUser* user, int port, string host) {
 
   size = fileSize(filePath);
   //printf("%d\n", size);
-  //sprintf(str, "%d", size);
+  sprintf(str, "%d", size);
 
   status = sendto(
     socketDesc,
@@ -153,7 +165,7 @@ int Process::upload(string fileName, ClientUser* user, int port, string host) {
       socketDesc,
       ack,
       sizeof(int),
-      0,
+      MSG_OOB,
       (struct sockaddr *) &from,
       &lenSckAddr
     );
@@ -188,7 +200,7 @@ int Process::upload(string fileName, ClientUser* user, int port, string host) {
 
   memset(sendChunck.chunck, 0, CHUNCK_SIZE);
   fclose(file);
-  close(socketDesc);
+  //close(socketDesc);
 }
 
 int Process::download(string filePath, ClientUser* user) {
@@ -196,15 +208,15 @@ int Process::download(string filePath, ClientUser* user) {
 }
 
 int Process::listServer(ClientUser* user, int port, string host, int socketDesc) {
-  //string clientRequest = "[Client Request]: List files on the server side";
-  //writeToSocket(clientRequest, socketDesc, host, port);
+  string clientRequest = "[Client Request]: List files on the server side";
+  writeToSocket(clientRequest, socketDesc, host, port);
   Folder* procFolder = new Folder();
   procFolder->listFiles(SERVER_LIST, user->getUserId());
 }
 
 int Process::listClient(ClientUser* user, int port, string host, int socketDesc) {
-  //string clientRequest = "[Client Request]: List files on the client side";
-  //writeToSocket(clientRequest, socketDesc, host, port);
+  string clientRequest = "[Client Request]: List files on the client side";
+  writeToSocket(clientRequest, socketDesc, host, port);
   Folder* procFolder = new Folder();
   procFolder->listFiles(CLIENT_LIST, user->getUserId());
 }
