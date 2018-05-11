@@ -21,7 +21,7 @@ class Process {
     int getProcessId();
 
     // Functions which the user has access
-    int upload(string filePath, ClientUser* user);
+    int upload(string filePath, ClientUser* user, int port, string host);
     int download(string filePath, ClientUser* user);
     int listServer(ClientUser* user, int port, string host, int socketDesc);
     int listClient(ClientUser* user, int port, string host, int socketDesc);

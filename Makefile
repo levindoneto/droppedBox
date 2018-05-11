@@ -1,6 +1,6 @@
 CC = g++
 INCLUDE = -I./util
-FLAGS = -O2 -pthread -std=gnu++11
+FLAGS = -O2 -Wall -pthread -std=gnu++11
 CFLAGS = $(FLAGS) $(INCLUDE)
 UTILS_C = utils/src/device.o utils/src/ui.o utils/src/communication.o utils/src/udpUtils.o\
  utils/src/dropboxUtils.o utils/fileSystem/src/folder.o utils/fileSystem/src/file.o\
@@ -23,4 +23,4 @@ dropboxClient: $(UTILS_C) client/src/dropboxClient.o client/src/clientCommunicat
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f *~ *. ./*/*.o ./*/*.out dropboxClient dropboxServer
+	rm -f *~ *. ./*/*/*/*.o ./*/*/*/*.out dropboxClient dropboxServer

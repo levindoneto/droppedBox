@@ -1,3 +1,6 @@
+#pragma once
+#include <string>
+
 #define UNDEF -1 // not specified informationC
 #define INIT 0 // for initialization of parameters
 #define DEF 1 // specified information without worked out values
@@ -21,7 +24,7 @@
 #define INVALID_OPTION "$ An invalid option was given"
 #define CLIENT_LIST 0
 #define SERVER_LIST 1
-#define BUFFER_SIZE 1024
+//#define BUFFER_SIZE 1024
 #define CURRENT_FOLDER "."
 #define CREATE_FILE 0
 #define EMPTY_PATH ""
@@ -35,6 +38,13 @@
 #define MODIFICATION_TIME_LABEL "    Modificatin Time      |"
 #define CREATION_TIME_LABEL "      Creation Time      "
 #define DATABASE "db/clients/sync_dir_"
+#define CHUNCK_SIZE 1024
+#define BUFFER_SIZE sizeof(datagram)
+
+typedef struct datagram {
+   int  chunckId;
+   char  chunck[CHUNCK_SIZE];
+} Datagram;
 
 /*  IN_CREATE – File/directory created in watched directory
     IN_DELETE – File/directory deleted from watched directory
@@ -56,7 +66,6 @@ using namespace std;
 
 // Function which takes a string, and shows it, followed by exiting the app
 void throwError (char* errorMessage);
-
-//void getClientFolderPath(string folderPath);
-
+void getClientFolderPath(string folderPath);
+unsigned int fileSize(string filePath);
 void *inotifyEvent(void*);
