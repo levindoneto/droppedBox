@@ -28,13 +28,32 @@ bool Process::managerCommands(
   string host,
   int socketDesc
 ) {
+  int status;
   int resp;
   if (command.compare(UPLOAD) == EQUAL) {
     resp = upload(parameter, user, port, host);
   } else if (command.compare(DOWNLOAD) == EQUAL) {
       resp = download(parameter, user);
   } else if (command.compare(LIST_SERVER) == EQUAL) {
-      resp = listServer();
+      const char *hostChar = host.c_str();
+      struct hostent *server;
+      server = gethostbyname(hostChar);
+      struct sockaddr_in serverAddress;
+      serverAddress.sin_family = AF_INET; // IPv4
+      serverAddress.sin_port = htons(port);
+      serverAddress.sin_addr = *((struct in_addr *)server->h_addr);
+      bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
+      status = sendto(
+        socketDesc,
+        LIST_SERVER,
+        CHUNCK_SIZE,
+        0,
+        (const struct sockaddr *) &serverAddress,
+        sizeof(struct sockaddr_in)
+      );
+      if (status < 0) {
+        throwError("Error on sending message");
+      }
   } else if (command.compare(LIST_CLIENT) == EQUAL) {
       resp = listClient(user, port, host, socketDesc);
   } else if (command.compare(GET_SYNC_DIR) == EQUAL) {
