@@ -40,6 +40,7 @@
 #define DATABASE "db/clients/sync_dir_"
 #define CHUNCK_SIZE 1024
 #define BUFFER_SIZE sizeof(datagram)
+#define NO_USER ""
 
 typedef struct datagram {
    int  chunckId;

@@ -1,6 +1,7 @@
 #include "../headers/serverCommunication.hpp"
 #include "../../utils/headers/dropboxUtils.hpp"
 #include "../../utils/headers/udpUtils.hpp"
+#include "../../utils/headers/process.hpp"
 #include "../../utils/fileSystem/headers/folder.hpp"
 #include <iostream>
 #include <string>
@@ -30,7 +31,7 @@ void ServerCommunication::serverComm(int port) {
   char fname[20], ack[10];
   FILE *fp;
   unsigned int fileSize;
-  //struct datagram receiveChunck;
+  Process* proc = new Process();
 
   // Open socket
 	socketDesc = openSocket();
@@ -40,7 +41,7 @@ void ServerCommunication::serverComm(int port) {
   serverAddress.sin_addr.s_addr = INADDR_ANY;
   bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
 
-  if ( bind (
+  if (bind (
       socketDesc,
       (struct sockaddr *) &serverAddress,
       sizeof(struct sockaddr)
@@ -50,11 +51,16 @@ void ServerCommunication::serverComm(int port) {
   }
 
   clilen = sizeof(struct sockaddr_in);
-  sprintf(buffer, "%s", "message");
+  //sprintf(buffer, "%s", "message");
 
+  Folder* folder = new Folder("");
+  folder->createFolder("db/");
+  folder->createFolder("db/clients");
+
+  // Receive clients' requests
   while (TRUE) {
     do {
-  		status = recvfrom(
+      status = recvfrom(
         socketDesc,
         buffer,
         CHUNCK_SIZE,
@@ -65,106 +71,113 @@ void ServerCommunication::serverComm(int port) {
   		if (status < 0) {
         throwError("[ServerCommunication::ServerCommunication]: Error on recvfrom");
       }
+
       if (strcmp(buffer, UPLOAD) != 0) {
         cout << buffer << endl;
       }
-    } while (strcmp(buffer, UPLOAD) != 0);
+    } while (strcmp(buffer, UPLOAD) != 0 || strcmp(buffer, LIST_SERVER) != 0);
 
-    Folder* folder = new Folder("");
-    folder->createFolder("db/");
-    folder->createFolder("db/clients");
-  	status = recvfrom(
-      socketDesc,
-      buffer,
-      CHUNCK_SIZE,
-      MSG_OOB,
-      (struct sockaddr *) &clientAddress,
-      &clilen
-    );
-  	if (status < 0) {
-      throwError("Error on recvfrom");
-    }
-
-    strcpy(fname, buffer);
-    printf("%s\n", fname);
-
-    status = recvfrom(
-      socketDesc,
-      buffer,
-      CHUNCK_SIZE,
-      0,
-      (struct sockaddr *) &clientAddress,
-      &clilen
-    );
-  	if (status < 0) {
-      throwError("Error on recvfrom");
-    }
-
-    fileSize = atoi(buffer);
-    //printf("%d\n", fileSize);
-
-    fp = fopen(fname, "wb");
-    itr = 1;
-    memset(buffer, 0, CHUNCK_SIZE);
-
-    while(itr * CHUNCK_SIZE < fileSize) {
+    if (strcmp(buffer, UPLOAD) == EQUAL) {
       status = recvfrom(
         socketDesc,
-        &receiveChunck,
-        sizeof(receiveChunck),
+        buffer,
+        CHUNCK_SIZE,
         MSG_OOB,
         (struct sockaddr *) &clientAddress,
         &clilen
       );
-
       if (status < 0) {
-        throwError("[ServerCommunication::ServerCommunication]: Error on receiving datagram");
+        throwError("Error on recvfrom");
       }
 
-      printf("%d\n", receiveChunck.chunckId);
-      sprintf(ack, "%d", receiveChunck.chunckId);
+      strcpy(fname, buffer);
+      printf("%s\n", fname);
 
-      status = sendto(
+      status = recvfrom(
         socketDesc,
-        ack,
-        sizeof(int),
+        buffer,
+        CHUNCK_SIZE,
         0,
         (struct sockaddr *) &clientAddress,
-        sizeof(struct sockaddr)
+        &clilen
       );
+      if (status < 0) {
+        throwError("Error on recvfrom");
+      }
 
+      fileSize = atoi(buffer);
+      //printf("%d\n", fileSize);
+
+      fp = fopen(fname, "wb");
+      itr = 1;
+      memset(buffer, 0, CHUNCK_SIZE);
+
+      while(itr * CHUNCK_SIZE < fileSize) {
+        status = recvfrom(
+          socketDesc,
+          &receiveChunck,
+          sizeof(receiveChunck),
+          MSG_OOB,
+          (struct sockaddr *) &clientAddress,
+          &clilen
+        );
+
+        if (status < 0) {
+          throwError("[ServerCommunication::ServerCommunication]: Error on receiving datagram");
+        }
+
+        printf("%d\n", receiveChunck.chunckId);
+        sprintf(ack, "%d", receiveChunck.chunckId);
+
+        status = sendto(
+          socketDesc,
+          ack,
+          sizeof(int),
+          0,
+          (struct sockaddr *) &clientAddress,
+          sizeof(struct sockaddr)
+        );
+
+        if (status < 0) {
+          throwError("[ServerCommunication::ServerCommunication]: Error on sending ack");
+        }
+        if (lastChunck != receiveChunck.chunckId) {
+          fwrite(receiveChunck.chunck, CHUNCK_SIZE, 1, fp);
+          memset(receiveChunck.chunck, 0, CHUNCK_SIZE);
+          itr++;
+        }
+        lastChunck = receiveChunck.chunckId;
+      }
+
+      memset(receiveChunck.chunck, 0, (fileSize % CHUNCK_SIZE));
+      status = recvfrom(
+        socketDesc,
+        &receiveChunck,
+        sizeof(receiveChunck),
+        0,
+        (struct sockaddr *) &clientAddress,
+        &clilen
+      );
       if (status < 0) {
         throwError("[ServerCommunication::ServerCommunication]: Error on sending ack");
       }
-      if (lastChunck != receiveChunck.chunckId) {
-        fwrite(receiveChunck.chunck, CHUNCK_SIZE, 1, fp);
-        memset(receiveChunck.chunck, 0, CHUNCK_SIZE);
-        itr++;
-      }
-      lastChunck = receiveChunck.chunckId;
+
+      fwrite(receiveChunck.chunck,(fileSize % CHUNCK_SIZE), 1, fp);
+      memset(buffer, 0, CHUNCK_SIZE);
+      fclose(fp);
+      fflush(stdin);
+
+      cout << fname << " has been received" << endl;
+
+      sprintf(buffer, "%s", fname);
+    }
+    else if (strcmp(buffer, LIST_SERVER) == EQUAL) {
+      proc->listServer();
     }
 
-    memset(receiveChunck.chunck, 0, (fileSize % CHUNCK_SIZE));
-    status = recvfrom(
-      socketDesc,
-      &receiveChunck,
-      sizeof(receiveChunck),
-      0,
-      (struct sockaddr *) &clientAddress,
-      &clilen
-    );
-    if (status < 0) {
-      throwError("[ServerCommunication::ServerCommunication]: Error on sending ack");
-    }
 
-    fwrite(receiveChunck.chunck,(fileSize % CHUNCK_SIZE), 1, fp);
-    memset(buffer, 0, CHUNCK_SIZE);
-    fclose(fp);
-    fflush(stdin);
 
-    cout << fname << " has been received" << endl;
 
-    sprintf(buffer, "%s", fname);
   }
 
   close(socketDesc);

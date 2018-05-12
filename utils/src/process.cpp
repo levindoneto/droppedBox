@@ -29,17 +29,17 @@ bool Process::managerCommands(
   int socketDesc
 ) {
   int resp;
-  if (command.compare(UPLOAD) == 0) {
+  if (command.compare(UPLOAD) == EQUAL) {
     resp = upload(parameter, user, port, host);
-  } else if (command.compare(DOWNLOAD) == 0) {
+  } else if (command.compare(DOWNLOAD) == EQUAL) {
       resp = download(parameter, user);
-  } else if (command.compare(LIST_SERVER) == 0) {
-      resp = listServer(user, port, host, socketDesc);
-  } else if (command.compare(LIST_CLIENT) == 0) {
+  } else if (command.compare(LIST_SERVER) == EQUAL) {
+      resp = listServer();
+  } else if (command.compare(LIST_CLIENT) == EQUAL) {
       resp = listClient(user, port, host, socketDesc);
-  } else if (command.compare(GET_SYNC_DIR) == 0) {
+  } else if (command.compare(GET_SYNC_DIR) == EQUAL) {
       resp = getSyncDir(user);
-  } else if (command.compare(EXIT_APP) == 0) {
+  } else if (command.compare(EXIT_APP) == EQUAL) {
       resp = exitApp(user);
       if (resp == EXIT_OPT_YES) {
         //string clientRequest = "[Client Request]: Log off user";
@@ -60,6 +60,10 @@ bool Process::managerCommands(
 
 int Process::getProcessId() {
   return this->processId;
+}
+
+void Process::setLoggedUser(ClientUser* user) {
+  this->user = user;
 }
 
 int Process::upload(string fileName, ClientUser* user, int port, string host) {
@@ -91,7 +95,7 @@ int Process::upload(string fileName, ClientUser* user, int port, string host) {
   }
 
   // Open udp socket using the defaul protocol
-  if ((socketDesc = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
+  if ((socketDesc = socket(AF_INET, SOCK_DGRAM, 0)) == ERROR) {
     throwError("[Process::upload]: Error on opening socket");
   }
 
@@ -207,11 +211,9 @@ int Process::download(string filePath, ClientUser* user) {
   cout << "It has to be implemented" << endl;
 }
 
-int Process::listServer(ClientUser* user, int port, string host, int socketDesc) {
-  string clientRequest = "[Client Request]: List files on the server side";
-  writeToSocket(clientRequest, socketDesc, host, port);
+int Process::listServer() {
   Folder* procFolder = new Folder();
-  procFolder->listFiles(SERVER_LIST, user->getUserId());
+  procFolder->listFiles(SERVER_LIST, this->user->getUserId());
 }
 
 int Process::listClient(ClientUser* user, int port, string host, int socketDesc) {
