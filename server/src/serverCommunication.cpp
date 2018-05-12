@@ -17,7 +17,9 @@ using namespace std;
 
 #define TRUE 1
 
-ServerCommunication::ServerCommunication(int port) {
+ServerCommunication::ServerCommunication() {}
+
+void ServerCommunication::serverComm(int port) {
   int socketDesc, itr, status, lastChunck = 0;
   socklen_t clilen;
   struct sockaddr_in serverAddress;
@@ -50,7 +52,7 @@ ServerCommunication::ServerCommunication(int port) {
   clilen = sizeof(struct sockaddr_in);
   sprintf(buffer, "%s", "message");
 
-while (TRUE) {
+  while (TRUE) {
     do {
   		status = recvfrom(
         socketDesc,
@@ -66,7 +68,7 @@ while (TRUE) {
       if (strcmp(buffer, UPLOAD) != 0) {
         cout << buffer << endl;
       }
-    } while (strcmp(buffer, "upload") != 0);
+    } while (strcmp(buffer, UPLOAD) != 0);
 
     Folder* folder = new Folder("");
     folder->createFolder("db/");
@@ -97,7 +99,6 @@ while (TRUE) {
   	if (status < 0) {
       throwError("Error on recvfrom");
     }
-
 
     fileSize = atoi(buffer);
     //printf("%d\n", fileSize);
