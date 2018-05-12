@@ -6,4 +6,5 @@ class ServerCommunication: public Communication {
     ServerCommunication(int socketDesc, int port);
     ServerCommunication(int port);
     ServerCommunication();
+    void serverComm(int port);
 };
