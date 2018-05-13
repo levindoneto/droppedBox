@@ -53,7 +53,6 @@ void ServerCommunication::serverComm(int port) {
 
   clilen = sizeof(struct sockaddr_in);
   //sprintf(buffer, "%s", "message");
-
   Folder* folder = new Folder("");
   folder->createFolder("db/");
   folder->createFolder("db/clients");
@@ -77,6 +76,18 @@ void ServerCommunication::serverComm(int port) {
         setLoggedUser(buffer);
       }
     } while (strcmp(buffer, UPLOAD) != 0 && strcmp(buffer, LIST_SERVER) != 0);
+
+  	status = recvfrom(
+      socketDesc,
+      buffer,
+      CHUNCK_SIZE,
+      MSG_OOB,
+      (struct sockaddr *) &clientAddress,
+      &clilen
+    );
+  	if (status < 0) {
+      throwError("Error on recvfrom");
+    }
 
     if (strcmp(buffer, UPLOAD) == EQUAL) {
       status = recvfrom(
