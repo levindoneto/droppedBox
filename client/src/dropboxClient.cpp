@@ -46,7 +46,7 @@ int main (int argc, char **argv) {
   Process* proc = new Process();
 
   socket = c->loginServer(hostConn, port, user);
-  proc->setLoggedUser(user);
+  //proc->setLoggedUser(user);
 
   showMenu();
   while(resp) {

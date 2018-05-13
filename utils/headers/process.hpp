@@ -7,7 +7,7 @@ using namespace std;
 class Process {
   private:
     int processId;
-    ClientUser* user;
+    string loggedUserId;
   public:
     Process() {};
     ~Process();
@@ -24,9 +24,9 @@ class Process {
     // Functions which the user has access
     int upload(string filePath, ClientUser* user, int port, string host);
     int download(string filePath, ClientUser* user);
-    int listServer();
+    int listServer(ClientUser* user, int port, string host, int socketDesc);
     int listClient(ClientUser* user, int port, string host, int socketDesc);
     int getSyncDir(ClientUser* user);
     int exitApp(ClientUser* user);
-    void setLoggedUser(ClientUser* user);
+    //void setLoggedUser(ClientUser* user);
 };

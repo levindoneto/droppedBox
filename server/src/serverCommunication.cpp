@@ -18,7 +18,9 @@ using namespace std;
 
 #define TRUE 1
 
-ServerCommunication::ServerCommunication() {}
+ServerCommunication::ServerCommunication() {
+  setLoggedUser("");
+}
 
 void ServerCommunication::serverComm(int port) {
   int socketDesc, itr, status, lastChunck = 0;
@@ -31,7 +33,6 @@ void ServerCommunication::serverComm(int port) {
   char fname[20], ack[10];
   FILE *fp;
   unsigned int fileSize;
-  Process* proc = new Process();
 
   // Open socket
 	socketDesc = openSocket();
@@ -71,11 +72,11 @@ void ServerCommunication::serverComm(int port) {
   		if (status < 0) {
         throwError("[ServerCommunication::ServerCommunication]: Error on recvfrom");
       }
-
-      if (strcmp(buffer, UPLOAD) != 0) {
-        cout << buffer << endl;
+      const char *loggedUserIdChar = (getLoggedUser()).c_str();
+      if (strcmp(loggedUserIdChar, "") == EQUAL) {
+        setLoggedUser(buffer);
       }
-    } while (strcmp(buffer, UPLOAD) != 0 || strcmp(buffer, LIST_SERVER) != 0);
+    } while (strcmp(buffer, UPLOAD) != 0 && strcmp(buffer, LIST_SERVER) != 0);
 
     if (strcmp(buffer, UPLOAD) == EQUAL) {
       status = recvfrom(
@@ -172,14 +173,30 @@ void ServerCommunication::serverComm(int port) {
       sprintf(buffer, "%s", fname);
     }
     else if (strcmp(buffer, LIST_SERVER) == EQUAL) {
-      proc->listServer();
+      folder->listFiles(SERVER_LIST, getLoggedUser());
+      status = sendto(
+        socketDesc,
+        ack,
+        sizeof(int),
+        0,
+        (struct sockaddr *) &clientAddress,
+        sizeof(struct sockaddr)
+      );
+
+      if (status < 0) {
+        throwError("[ServerCommunication::ServerCommunication]: Error on sending ack");
+      }
     }
-
-
-
-
   }
 
   close(socketDesc);
 
+}
+
+void ServerCommunication::setLoggedUser(string loggedUserId) {
+  this->loggedUserId = loggedUserId;
+}
+
+string ServerCommunication::getLoggedUser() {
+  return this->loggedUserId;
 }

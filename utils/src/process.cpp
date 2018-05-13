@@ -35,25 +35,7 @@ bool Process::managerCommands(
   } else if (command.compare(DOWNLOAD) == EQUAL) {
       resp = download(parameter, user);
   } else if (command.compare(LIST_SERVER) == EQUAL) {
-      const char *hostChar = host.c_str();
-      struct hostent *server;
-      server = gethostbyname(hostChar);
-      struct sockaddr_in serverAddress;
-      serverAddress.sin_family = AF_INET; // IPv4
-      serverAddress.sin_port = htons(port);
-      serverAddress.sin_addr = *((struct in_addr *)server->h_addr);
-      bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
-      status = sendto(
-        socketDesc,
-        LIST_SERVER,
-        CHUNCK_SIZE,
-        0,
-        (const struct sockaddr *) &serverAddress,
-        sizeof(struct sockaddr_in)
-      );
-      if (status < 0) {
-        throwError("Error on sending message");
-      }
+      resp = listServer(user, port, host, socketDesc);
   } else if (command.compare(LIST_CLIENT) == EQUAL) {
       resp = listClient(user, port, host, socketDesc);
   } else if (command.compare(GET_SYNC_DIR) == EQUAL) {
@@ -81,9 +63,11 @@ int Process::getProcessId() {
   return this->processId;
 }
 
-void Process::setLoggedUser(ClientUser* user) {
-  this->user = user;
+/*
+void Process::setLoggedUserId(ClientUser* user) {
+  this->loggedUserId = "user->getUserId()";
 }
+*/
 
 int Process::upload(string fileName, ClientUser* user, int port, string host) {
   int socketDesc;
@@ -230,9 +214,28 @@ int Process::download(string filePath, ClientUser* user) {
   cout << "It has to be implemented" << endl;
 }
 
-int Process::listServer() {
-  Folder* procFolder = new Folder();
-  procFolder->listFiles(SERVER_LIST, this->user->getUserId());
+int Process::listServer(ClientUser* user, int port, string host, int socketDesc) {
+  const char *hostChar = host.c_str();
+  struct hostent *server;
+  server = gethostbyname(hostChar);
+  struct sockaddr_in serverAddress;
+  serverAddress.sin_family = AF_INET; // IPv4
+  serverAddress.sin_port = htons(port);
+  serverAddress.sin_addr = *((struct in_addr *)server->h_addr);
+  bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
+  int status = sendto(
+    socketDesc,
+    LIST_SERVER,
+    CHUNCK_SIZE,
+    0,
+    (const struct sockaddr *) &serverAddress,
+    sizeof(struct sockaddr_in)
+  );
+  if (status < 0) {
+    throwError("Error on sending message");
+  }
+  //Folder* procFolder = new Folder();
+  //procFolder->listFiles(SERVER_LIST, this->user->getUserId());
 }
 
 int Process::listClient(ClientUser* user, int port, string host, int socketDesc) {
