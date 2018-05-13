@@ -214,6 +214,19 @@ int Process::download(string filePath, ClientUser* user) {
   cout << "It has to be implemented" << endl;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 int Process::listServer(ClientUser* user, int port, string host, int socketDesc) {
   const char *hostChar = host.c_str();
   struct hostent *server;
@@ -222,6 +235,7 @@ int Process::listServer(ClientUser* user, int port, string host, int socketDesc)
   struct sockaddr_in from;
   char listFromServer[CHUNCK_SIZE];
   unsigned int lenSckAddr;
+  char ack[10];
 
   serverAddress.sin_family = AF_INET; // IPv4
   serverAddress.sin_port = htons(port);
@@ -240,19 +254,23 @@ int Process::listServer(ClientUser* user, int port, string host, int socketDesc)
   if (status < 0) {
     throwError("Error on sending message");
   }
-
+  cout << "befoire recv" << endl;
+  while (TRUE) {
     status = recvfrom(
       socketDesc,
-      listFromServer,
-      CHUNCK_SIZE,
-      MSG_OOB,
-      (struct sockaddr *) &from,
+      ack,
+      sizeof(int),
+      0,
+      (struct sockaddr *) &serverAddress,
       &lenSckAddr
     );
     if (status < 0) {
-      throwError("[Process::listServer]: Error on receive ack");
+      throwError("[Process::upload]: Error on receive ack");
     }
+  }
 
+
+  cout << "client" << ack << endl;
 
 
 

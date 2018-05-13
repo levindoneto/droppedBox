@@ -53,10 +53,6 @@ void ServerCommunication::serverComm(int port) {
 
   clilen = sizeof(struct sockaddr_in);
   //sprintf(buffer, "%s", "message");
-<<<<<<< HEAD
-
-=======
->>>>>>> c14f5a53db127ed114b95c0fe3fb758a0b1aa8dc
   Folder* folder = new Folder("");
   folder->createFolder("db/");
   folder->createFolder("db/clients");
@@ -80,8 +76,6 @@ void ServerCommunication::serverComm(int port) {
         setLoggedUser(buffer);
       }
     } while (strcmp(buffer, UPLOAD) != 0 && strcmp(buffer, LIST_SERVER) != 0);
-<<<<<<< HEAD
-=======
 
   	status = recvfrom(
       socketDesc,
@@ -94,7 +88,6 @@ void ServerCommunication::serverComm(int port) {
   	if (status < 0) {
       throwError("Error on recvfrom");
     }
->>>>>>> c14f5a53db127ed114b95c0fe3fb758a0b1aa8dc
 
     if (strcmp(buffer, UPLOAD) == EQUAL) {
       status = recvfrom(
@@ -194,20 +187,22 @@ void ServerCommunication::serverComm(int port) {
     else if (strcmp(buffer, LIST_SERVER) == EQUAL) {
       string listServerToClient = folder->listFiles(SERVER_LIST, getLoggedUser());
       const char *listServerToClientChar = listServerToClient.c_str();
+      char ack[10];
+      sprintf(ack, "%d", 5);
+      cout << "server" << ack;
 
-/*
       status = sendto(
         socketDesc,
-        listServerToClientChar,
-        CHUNCK_SIZE,
+        ack,
+        sizeof(int),
         MSG_OOB,
         (struct sockaddr *) &clientAddress,
         sizeof(struct sockaddr)
       );
-*/
       if (status < 0) {
-        throwError("[ServerCommunication::ServerCommunication]: Error on sending ack");
+        throwError("Error on SEND");
       }
+
     }
   }
 
