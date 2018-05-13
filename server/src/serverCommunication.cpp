@@ -172,17 +172,21 @@ void ServerCommunication::serverComm(int port) {
 
       sprintf(buffer, "%s", fname);
     }
+
     else if (strcmp(buffer, LIST_SERVER) == EQUAL) {
-      folder->listFiles(SERVER_LIST, getLoggedUser());
+      string listServerToClient = folder->listFiles(SERVER_LIST, getLoggedUser());
+      const char *listServerToClientChar = listServerToClient.c_str();
+
+/*
       status = sendto(
         socketDesc,
-        ack,
-        sizeof(int),
-        0,
+        listServerToClientChar,
+        CHUNCK_SIZE,
+        MSG_OOB,
         (struct sockaddr *) &clientAddress,
         sizeof(struct sockaddr)
       );
-
+*/
       if (status < 0) {
         throwError("[ServerCommunication::ServerCommunication]: Error on sending ack");
       }

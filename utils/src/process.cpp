@@ -219,10 +219,16 @@ int Process::listServer(ClientUser* user, int port, string host, int socketDesc)
   struct hostent *server;
   server = gethostbyname(hostChar);
   struct sockaddr_in serverAddress;
+  struct sockaddr_in from;
+  char listFromServer[CHUNCK_SIZE];
+  unsigned int lenSckAddr;
+
   serverAddress.sin_family = AF_INET; // IPv4
   serverAddress.sin_port = htons(port);
   serverAddress.sin_addr = *((struct in_addr *)server->h_addr);
   bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
+
+  // Send the request for getting the server list
   int status = sendto(
     socketDesc,
     LIST_SERVER,
@@ -234,8 +240,24 @@ int Process::listServer(ClientUser* user, int port, string host, int socketDesc)
   if (status < 0) {
     throwError("Error on sending message");
   }
-  //Folder* procFolder = new Folder();
-  //procFolder->listFiles(SERVER_LIST, this->user->getUserId());
+
+    status = recvfrom(
+      socketDesc,
+      listFromServer,
+      CHUNCK_SIZE,
+      MSG_OOB,
+      (struct sockaddr *) &from,
+      &lenSckAddr
+    );
+    if (status < 0) {
+      throwError("[Process::listServer]: Error on receive ack");
+    }
+
+
+
+
+  cout << listFromServer;
+
 }
 
 int Process::listClient(ClientUser* user, int port, string host, int socketDesc) {
