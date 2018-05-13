@@ -27,6 +27,7 @@ int main (int argc, char* argv[]) {
     throwError("[Server]: Invalid use of the application");
   }
 
-  ServerCommunication* s = new ServerCommunication(port);
+  ServerCommunication* s = new ServerCommunication();
+  s->serverComm(port);
   return 0;
 }

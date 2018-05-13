@@ -7,6 +7,7 @@ using namespace std;
 class Process {
   private:
     int processId;
+    string loggedUserId;
   public:
     Process() {};
     ~Process();
@@ -27,4 +28,5 @@ class Process {
     int listClient(ClientUser* user, int port, string host, int socketDesc);
     int getSyncDir(ClientUser* user);
     int exitApp(ClientUser* user);
+    //void setLoggedUser(ClientUser* user);
 };
