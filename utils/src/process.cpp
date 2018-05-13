@@ -258,8 +258,8 @@ int Process::listServer(ClientUser* user, int port, string host, int socketDesc)
   while (TRUE) {
     status = recvfrom(
       socketDesc,
-      ack,
-      sizeof(int),
+      listFromServer,
+      CHUNCK_SIZE,
       0,
       (struct sockaddr *) &serverAddress,
       &lenSckAddr
@@ -267,10 +267,11 @@ int Process::listServer(ClientUser* user, int port, string host, int socketDesc)
     if (status < 0) {
       throwError("[Process::upload]: Error on receive ack");
     }
+    cout << "client" << listFromServer << endl;
   }
 
 
-  cout << "client" << ack << endl;
+
 
 
 

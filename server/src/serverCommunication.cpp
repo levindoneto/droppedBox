@@ -77,18 +77,6 @@ void ServerCommunication::serverComm(int port) {
       }
     } while (strcmp(buffer, UPLOAD) != 0 && strcmp(buffer, LIST_SERVER) != 0);
 
-  	status = recvfrom(
-      socketDesc,
-      buffer,
-      CHUNCK_SIZE,
-      MSG_OOB,
-      (struct sockaddr *) &clientAddress,
-      &clilen
-    );
-  	if (status < 0) {
-      throwError("Error on recvfrom");
-    }
-
     if (strcmp(buffer, UPLOAD) == EQUAL) {
       status = recvfrom(
         socketDesc,
@@ -185,6 +173,7 @@ void ServerCommunication::serverComm(int port) {
     }
 
     else if (strcmp(buffer, LIST_SERVER) == EQUAL) {
+      fflush(stdin);
       string listServerToClient = folder->listFiles(SERVER_LIST, getLoggedUser());
       const char *listServerToClientChar = listServerToClient.c_str();
       char ack[10];
@@ -193,9 +182,9 @@ void ServerCommunication::serverComm(int port) {
 
       status = sendto(
         socketDesc,
-        ack,
-        sizeof(int),
-        MSG_OOB,
+        listServerToClientChar,
+        sizeof(listServerToClientChar),
+        0,
         (struct sockaddr *) &clientAddress,
         sizeof(struct sockaddr)
       );
