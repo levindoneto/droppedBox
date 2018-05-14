@@ -77,18 +77,6 @@ void ServerCommunication::serverComm(int port) {
       }
     } while (strcmp(buffer, UPLOAD) != 0 && strcmp(buffer, LIST_SERVER) != 0);
 
-  	status = recvfrom(
-      socketDesc,
-      buffer,
-      CHUNCK_SIZE,
-      MSG_OOB,
-      (struct sockaddr *) &clientAddress,
-      &clilen
-    );
-  	if (status < 0) {
-      throwError("Error on recvfrom");
-    }
-
     if (strcmp(buffer, UPLOAD) == EQUAL) {
       status = recvfrom(
         socketDesc,

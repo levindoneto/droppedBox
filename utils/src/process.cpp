@@ -20,7 +20,7 @@ Process::~Process() {
   cout << "Destroying process..." << endl;
 }
 
-bool Process::managerCommands(
+int Process::managerCommands(
   string command,
   string parameter,
   ClientUser* user,
@@ -208,10 +208,12 @@ int Process::upload(string fileName, ClientUser* user, int port, string host) {
   memset(sendChunck.chunck, 0, CHUNCK_SIZE);
   fclose(file);
   //close(socketDesc);
+  return !EXIT;
 }
 
 int Process::download(string filePath, ClientUser* user) {
   cout << "It has to be implemented" << endl;
+
 }
 
 int Process::listServer(ClientUser* user, int port, string host, int socketDesc) {
@@ -241,7 +243,7 @@ int Process::listServer(ClientUser* user, int port, string host, int socketDesc)
   if (status < 0) {
     throwError("Error on sending message");
   }
-  cout << "befoire recv" << endl;
+
   while (TRUE) {
     status = recvfrom(
       socketDesc,
@@ -255,8 +257,8 @@ int Process::listServer(ClientUser* user, int port, string host, int socketDesc)
       throwError("[Process::upload]: Error on receive ack");
     }
     cout << listFromServer << endl;
+    return !EXIT;
   }
-  cout << listFromServer;
 }
 
 int Process::listClient(ClientUser* user, int port, string host, int socketDesc) {
@@ -264,10 +266,11 @@ int Process::listClient(ClientUser* user, int port, string host, int socketDesc)
   writeToSocket(clientRequest, socketDesc, host, port);
   Folder* procFolder = new Folder();
   procFolder->listFiles(CLIENT_LIST, user->getUserId());
+  return !EXIT;
 }
 
 int Process::getSyncDir(ClientUser* user) {
-  cout << "It has to be implemented" << endl;
+  return !EXIT;
 }
 
 int Process::exitApp(ClientUser* user) {
@@ -282,7 +285,6 @@ int Process::exitApp(ClientUser* user) {
     return EXIT_OPT_YES;
   } else if (userAnswer.compare("no") == 0 || userAnswer.compare("NO") == 0) {
       cout << "$ You can stay logged in then!" << endl;
-      return EXIT_OPT_NO;
   } else {
       cout << INVALID_OPTION << endl;
       return EXIT_OPT_WRONG;
