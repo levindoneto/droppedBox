@@ -24,4 +24,5 @@ class Folder {
     void listFolder(string folderPath);
     string listFolderToString(string folderPath);
     string listFiles(int mode, string userId);
+    string getHome();
 };

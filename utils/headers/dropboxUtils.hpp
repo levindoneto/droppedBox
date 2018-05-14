@@ -49,6 +49,7 @@
 #define FORMAT_NAME_FILE_S " "
 #define FILENAME_SIZE 30
 #define ACK_SIZE 10
+#define SLASH "/"
 
 typedef struct datagram {
    int  chunckId;
