@@ -62,6 +62,7 @@ int ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
   struct hostent *host;
   string clientFolderPath;
   string serverFolderPath;
+   UserInfo userInfo = {};
 
   // Thread for synchronization
   pthread_t syn_th;
@@ -90,8 +91,12 @@ int ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
   folder->createFolder(clientFolderPath);
   folder->createFolder(serverFolderPath);
 
-  string clientMessage = user->getUserId();
-  writeToSocket(clientMessage, socketDesc, ip, port);
+  string message = "[Client Login]: User " + user->getUserId()
+      + " has logged in via the socket " + to_string(socketDesc);
+  message.copy(userInfo.message, message.length(), 0);
+  string userId = user->getUserId();
+  userId.copy(userInfo.userId, userId.length(), 0);
+  writeToSocket(userInfo, socketDesc, ip, port);
   //getClientFolderPath(clientFolderPath); // TODO: change this in dropboxUtils
 
   // Create thread for monitoring synchronized user folder

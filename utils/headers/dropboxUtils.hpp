@@ -46,7 +46,7 @@
 #define MODIFICATION_TIME_LABEL_S "    Modificatin Time      |"
 #define CREATION_TIME_LABEL_S "      Creation Time       |"
 #define BREAK_LINE "\n"
-#define FORMAT_NAME_FILE_S "        "
+#define FORMAT_NAME_FILE_S " "
 #define FILENAME_SIZE 30
 #define ACK_SIZE 10
 
@@ -54,6 +54,11 @@ typedef struct datagram {
    int  chunckId;
    char  chunck[CHUNCK_SIZE];
 } Datagram;
+
+typedef struct userInfo {
+   char  userId[CHUNCK_SIZE/8];
+   char  message[CHUNCK_SIZE*7/8];
+} UserInfo;
 
 /*  IN_CREATE – File/directory created in watched directory
     IN_DELETE – File/directory deleted from watched directory

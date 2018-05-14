@@ -23,16 +23,23 @@ ServerCommunication::ServerCommunication() {
 }
 
 void ServerCommunication::serverComm(int port) {
-  int socketDesc, itr, status, lastChunck = 0;
+  int socketDesc, itr = 1, status, lastChunck = 0;
   socklen_t clilen;
   struct sockaddr_in serverAddress;
   struct sockaddr_in clientAddress;
   Datagram receiveChunck;
+  Datagram sendChunck;
+  UserInfo userInfo = {};
   char buffer[CHUNCK_SIZE];
   fflush(stdin);
-  char fname[FILENAME_SIZE], ack[ACK_SIZE];
+  char fname[20], ack[10], str[10];
   FILE *fp;
-  unsigned int fileSize;
+  unsigned int filesizeInt;
+  string database = DATABASE;
+  string userInfoId;
+  string slash = "/";
+  string filePathDB;
+  const char *filePathDBChar;
 
   // Open socket
 	socketDesc = openSocket();
@@ -62,8 +69,8 @@ void ServerCommunication::serverComm(int port) {
     do {
       status = recvfrom(
         socketDesc,
-        buffer,
-        CHUNCK_SIZE,
+        &userInfo,
+        sizeof(userInfo),
         MSG_OOB,
         (struct sockaddr *) &clientAddress,
         &clilen
@@ -71,13 +78,22 @@ void ServerCommunication::serverComm(int port) {
   		if (status < 0) {
         throwError("[ServerCommunication::ServerCommunication]: Error on recvfrom");
       }
+
+      if (strcmp(userInfo.message, UPLOAD) != 0 && strcmp(userInfo.message, DOWNLOAD) != 0 && strcmp(userInfo.message, LIST_SERVER) != 0) {
+        cout << userInfo.message << endl;
+      }
+
       const char *loggedUserIdChar = (getLoggedUser()).c_str();
       if (strcmp(loggedUserIdChar, "") == EQUAL) {
-        setLoggedUser(buffer);
+        setLoggedUser(userInfo.userId);
       }
-    } while (strcmp(buffer, UPLOAD) != 0 && strcmp(buffer, LIST_SERVER) != 0);
+      string userIdLogged;
+      userIdLogged = userInfo.userId;
+      string userPath = "db/clients/sync_dir_" + userIdLogged;
+      folder->createFolder("db/clients/" + userIdLogged);
+    } while (strcmp(userInfo.message, UPLOAD) != 0 && strcmp(userInfo.message, DOWNLOAD) != 0  && strcmp(userInfo.message, LIST_SERVER) != 0);
 
-    if (strcmp(buffer, UPLOAD) == EQUAL) {
+    if (strcmp(userInfo.message, UPLOAD) == EQUAL) {
       status = recvfrom(
         socketDesc,
         buffer,
@@ -90,91 +106,180 @@ void ServerCommunication::serverComm(int port) {
         throwError("Error on recvfrom");
       }
 
-      strcpy(fname, buffer);
-      printf("%s\n", fname);
+    userInfoId = userInfo.userId;
+    filePathDB = database + userInfoId + slash + buffer;
+    filePathDBChar = filePathDB.c_str();
+    fp = fopen(filePathDBChar, "wb");
 
-      status = recvfrom(
-        socketDesc,
-        buffer,
-        CHUNCK_SIZE,
-        0,
-        (struct sockaddr *) &clientAddress,
-        &clilen
-      );
-      if (status < 0) {
-        throwError("Error on recvfrom");
-      }
+    status = recvfrom(
+      socketDesc,
+      buffer,
+      CHUNCK_SIZE,
+      0,
+      (struct sockaddr *) &clientAddress,
+      &clilen
+    );
+    if (status < 0) {
+      throwError("Error on recvfrom");
+    }
 
-      fileSize = atoi(buffer);
-      //printf("%d\n", fileSize);
+  filesizeInt = atoi(buffer);
 
-      fp = fopen(fname, "wb");
-      itr = 1;
-      memset(buffer, 0, CHUNCK_SIZE);
+    itr = 1;
+    memset(buffer, 0, CHUNCK_SIZE);
 
-      while(itr * CHUNCK_SIZE < fileSize) {
-        status = recvfrom(
-          socketDesc,
-          &receiveChunck,
-          sizeof(receiveChunck),
-          MSG_OOB,
-          (struct sockaddr *) &clientAddress,
-          &clilen
-        );
-
-        if (status < 0) {
-          throwError("[ServerCommunication::ServerCommunication]: Error on receiving datagram");
-        }
-
-        //printf("%d\n", receiveChunck.chunckId);
-        sprintf(ack, "%d", receiveChunck.chunckId);
-
-        status = sendto(
-          socketDesc,
-          ack,
-          sizeof(int),
-          0,
-          (struct sockaddr *) &clientAddress,
-          sizeof(struct sockaddr)
-        );
-
-        if (status < 0) {
-          throwError("[ServerCommunication::ServerCommunication]: Error on sending ack");
-        }
-        if (lastChunck != receiveChunck.chunckId) {
-          fwrite(receiveChunck.chunck, CHUNCK_SIZE, 1, fp);
-          memset(receiveChunck.chunck, 0, CHUNCK_SIZE);
-          itr++;
-        }
-        lastChunck = receiveChunck.chunckId;
-      }
-
-      memset(receiveChunck.chunck, 0, (fileSize % CHUNCK_SIZE));
+    while(itr * CHUNCK_SIZE < filesizeInt) {
       status = recvfrom(
         socketDesc,
         &receiveChunck,
         sizeof(receiveChunck),
+        MSG_OOB,
+        (struct sockaddr *) &clientAddress,
+        &clilen
+      );
+
+      if (status < 0) {
+        throwError("[ServerCommunication::ServerCommunication]: Error on receiving datagram");
+      }
+
+      fflush(stdin);
+      sprintf(ack, "%d", receiveChunck.chunckId);
+
+      status = sendto(
+        socketDesc,
+        ack,
+        sizeof(int),
         0,
+        (struct sockaddr *) &clientAddress,
+        sizeof(struct sockaddr)
+      );
+
+      if (status < 0) {
+        throwError("[ServerCommunication::ServerCommunication]: Error on sending ack");
+      }
+      if (lastChunck != receiveChunck.chunckId) {
+        fwrite(receiveChunck.chunck, CHUNCK_SIZE, 1, fp);
+        memset(receiveChunck.chunck, 0, CHUNCK_SIZE);
+        itr++;
+      }
+      lastChunck = receiveChunck.chunckId;
+    }
+
+    memset(receiveChunck.chunck, 0, (filesizeInt % CHUNCK_SIZE));
+    status = recvfrom(
+      socketDesc,
+      &receiveChunck,
+      sizeof(receiveChunck),
+      0,
+      (struct sockaddr *) &clientAddress,
+      &clilen
+    );
+    if (status < 0) {
+      throwError("[ServerCommunication::ServerCommunication]: Error on sending ack");
+    }
+
+    fwrite(receiveChunck.chunck,(filesizeInt % CHUNCK_SIZE), 1, fp);
+    memset(buffer, 0, CHUNCK_SIZE);
+    fclose(fp);
+    fflush(stdin);
+
+    cout << fname << " has been received" << endl;
+
+    sprintf(buffer, "%s", fname);
+    }
+    else if (strcmp(userInfo.message, DOWNLOAD) == 0) {
+    status = recvfrom(
+      socketDesc,
+      buffer,
+      CHUNCK_SIZE,
+      MSG_OOB,
+      (struct sockaddr *) &clientAddress,
+      &clilen
+    );
+    if (status < 0) {
+      throwError("Error on recvfrom");
+    }
+
+    userInfoId = userInfo.userId;
+    filePathDB = database + userInfoId + slash + buffer;
+    filePathDBChar = filePathDB.c_str();
+    fp = fopen(filePathDBChar, "rb");
+    filesizeInt = fileSize(filePathDBChar);
+
+    sprintf(str, "%d", filesizeInt);
+
+    status = sendto(
+      socketDesc,
+      str,
+      CHUNCK_SIZE,
+      0,
+      (const struct sockaddr *) &clientAddress,
+      sizeof(struct sockaddr_in)
+    );
+    if (status < 0) {
+      throwError("[Process::upload]: Error on sending message");
+    }
+
+    memset(sendChunck.chunck, 0, CHUNCK_SIZE);
+    fread(sendChunck.chunck, CHUNCK_SIZE, 1, fp);
+    sendChunck.chunckId = 1;
+
+    while(itr * CHUNCK_SIZE < filesizeInt){
+      status = sendto(
+        socketDesc,
+        &sendChunck,
+        sizeof(sendChunck),
+        0,
+        (const struct sockaddr *) &clientAddress,
+        sizeof(struct sockaddr_in)
+      );
+      if (status < 0) {
+        throwError("[Process::upload]: Error on sending message");
+      }
+      fflush(stdin);
+      status = recvfrom(
+        socketDesc,
+        ack,
+        sizeof(int),
+        MSG_OOB,
         (struct sockaddr *) &clientAddress,
         &clilen
       );
       if (status < 0) {
-        throwError("[ServerCommunication::ServerCommunication]: Error on sending ack");
+        throwError("[Process::upload]: Error on receive ack");
       }
 
-      fwrite(receiveChunck.chunck,(fileSize % CHUNCK_SIZE), 1, fp);
-      memset(buffer, 0, CHUNCK_SIZE);
-      fclose(fp);
-      fflush(stdin);
-
-      cout << fname << " has been received on the server side" << endl;
-
-      sprintf(buffer, "%s", fname);
+      if(atoi(ack) == sendChunck.chunckId) {
+        memset(sendChunck.chunck, 0, CHUNCK_SIZE);
+        fread(sendChunck.chunck, CHUNCK_SIZE, 1, fp);
+        itr++;
+        sendChunck.chunckId = sendChunck.chunckId%1000 + 1;
+      }
     }
 
-    else if (strcmp(buffer, LIST_SERVER) == EQUAL) {
+    fread(sendChunck.chunck, (filesizeInt % CHUNCK_SIZE), 1, fp);
+
+    status = sendto(
+      socketDesc,
+      &sendChunck,
+      sizeof(sendChunck),
+      0,
+      (const struct sockaddr *) &clientAddress,
+      sizeof(struct sockaddr_in)
+    );
+    if (status < 0) {
+      throwError("[Process::upload]: Error on sending message");
+    }
+
+    memset(sendChunck.chunck, 0, CHUNCK_SIZE);
+    fclose(fp);
+    sprintf(userInfo.message, "%s", fname);
+  }
+
+    else if (strcmp(userInfo.message, LIST_SERVER) == EQUAL) {
+
       fflush(stdin);
-      string listServerToClient = folder->listFiles(SERVER_LIST, getLoggedUser());
+      string listServerToClient = folder->listFiles(SERVER_LIST, userInfo.userId);
       char listServerToClientChar[CHUNCK_SIZE];
       listServerToClient.copy(listServerToClientChar, listServerToClient.length(), 0);
 
