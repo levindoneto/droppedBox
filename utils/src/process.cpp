@@ -85,7 +85,7 @@ int Process::upload(string fileName, ClientUser* user, int port, string host) {
   string homePath = getpwuid(getuid())->pw_dir;
   string filePath = homePath + "/sync_dir_" + user->getUserId() + "/" + fileName;
   unsigned int size;
-  char str[10], ack[10];
+  char str[ACK_SIZE], ack[ACK_SIZE];
   FILE *file;
   int itr = 1;
   //struct datagram sendChunck;
@@ -214,19 +214,6 @@ int Process::download(string filePath, ClientUser* user) {
   cout << "It has to be implemented" << endl;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 int Process::listServer(ClientUser* user, int port, string host, int socketDesc) {
   const char *hostChar = host.c_str();
   struct hostent *server;
@@ -235,7 +222,7 @@ int Process::listServer(ClientUser* user, int port, string host, int socketDesc)
   struct sockaddr_in from;
   char listFromServer[CHUNCK_SIZE];
   unsigned int lenSckAddr;
-  char ack[10];
+  char ack[ACK_SIZE];
 
   serverAddress.sin_family = AF_INET; // IPv4
   serverAddress.sin_port = htons(port);
@@ -267,16 +254,9 @@ int Process::listServer(ClientUser* user, int port, string host, int socketDesc)
     if (status < 0) {
       throwError("[Process::upload]: Error on receive ack");
     }
-    cout << "client" << listFromServer << endl;
+    cout << listFromServer << endl;
   }
-
-
-
-
-
-
   cout << listFromServer;
-
 }
 
 int Process::listClient(ClientUser* user, int port, string host, int socketDesc) {

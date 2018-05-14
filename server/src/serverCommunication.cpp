@@ -30,7 +30,7 @@ void ServerCommunication::serverComm(int port) {
   Datagram receiveChunck;
   char buffer[CHUNCK_SIZE];
   fflush(stdin);
-  char fname[20], ack[10];
+  char fname[FILENAME_SIZE], ack[ACK_SIZE];
   FILE *fp;
   unsigned int fileSize;
 
@@ -126,7 +126,7 @@ void ServerCommunication::serverComm(int port) {
           throwError("[ServerCommunication::ServerCommunication]: Error on receiving datagram");
         }
 
-        printf("%d\n", receiveChunck.chunckId);
+        //printf("%d\n", receiveChunck.chunckId);
         sprintf(ack, "%d", receiveChunck.chunckId);
 
         status = sendto(
@@ -167,7 +167,7 @@ void ServerCommunication::serverComm(int port) {
       fclose(fp);
       fflush(stdin);
 
-      cout << fname << " has been received" << endl;
+      cout << fname << " has been received on the server side" << endl;
 
       sprintf(buffer, "%s", fname);
     }
@@ -177,9 +177,6 @@ void ServerCommunication::serverComm(int port) {
       string listServerToClient = folder->listFiles(SERVER_LIST, getLoggedUser());
       char listServerToClientChar[CHUNCK_SIZE];
       listServerToClient.copy(listServerToClientChar, listServerToClient.length(), 0);
-      char ack[10];
-      sprintf(ack, "%d", 5);
-      cout << "server" << ack;
 
       status = sendto(
         socketDesc,
@@ -190,9 +187,8 @@ void ServerCommunication::serverComm(int port) {
         sizeof(struct sockaddr)
       );
       if (status < 0) {
-        throwError("Error on SEND");
+        throwError("[ServerCommunication::serverComm]: Error on sending the list of files");
       }
-
     }
   }
 
