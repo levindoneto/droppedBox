@@ -47,6 +47,8 @@
 #define CREATION_TIME_LABEL_S "      Creation Time       |"
 #define BREAK_LINE "\n"
 #define FORMAT_NAME_FILE_S "        "
+#define FILENAME_SIZE 30
+#define ACK_SIZE 10
 
 typedef struct datagram {
    int  chunckId;
