@@ -11,10 +11,9 @@
 
 using namespace std;
 
-int writeToSocket(string request, int socketDesc, string host, int port) {
+int writeToSocket(UserInfo user, int socketDesc, string host, int port) {
   int status;
   unsigned int lenSckAddr;
-  const char *requestChar = request.c_str();
   const char *hostChar = host.c_str();
   int nBytes;
   struct sockaddr_in serverAddress;
@@ -29,8 +28,8 @@ int writeToSocket(string request, int socketDesc, string host, int port) {
 
   status = sendto(
     socketDesc,
-    requestChar,
-    CHUNCK_SIZE,
+    &user,
+    sizeof(user),
     0,
     (const struct sockaddr *) &serverAddress,
     sizeof(struct sockaddr_in)
@@ -41,6 +40,7 @@ int writeToSocket(string request, int socketDesc, string host, int port) {
   }
   return SUCCESS;
 }
+
 
 int readFromSocket(int socketDesc, char* buffer) {
   int status;

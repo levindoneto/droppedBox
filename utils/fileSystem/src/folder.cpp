@@ -70,7 +70,7 @@ string Folder::timesToString(vector<string> times, int mode) {
   string timesRaw = "";
   for(int i = 0; i < times.size(); i++) {
     times.at(i).erase(times.at(i).length()-1); // Remove \n
-    if (mode = CLIENT_LIST) {
+    if (mode == CLIENT_LIST) {
       timesRaw += " | " + times.at(i);
     } else {
       timesRaw += times.at(i) + " | ";
