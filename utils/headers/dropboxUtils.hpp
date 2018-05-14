@@ -14,7 +14,7 @@
 #define DOWNLOAD "download"
 #define LIST_SERVER "listserver"
 #define LIST_CLIENT "listclient"
-#define GET_SYNC_DIR "getsyncdirectory"
+#define GET_SYNC_DIR "getsyncdir"
 #define EXIT_APP "exit"
 #define HELP_C "HELP"
 #define HELP_L "help"
@@ -50,6 +50,7 @@
 #define FILENAME_SIZE 30
 #define ACK_SIZE 10
 #define SLASH "/"
+#define SEP_SYNC_DIR " "
 
 typedef struct datagram {
    int  chunckId;

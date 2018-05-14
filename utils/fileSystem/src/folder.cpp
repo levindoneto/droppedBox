@@ -186,3 +186,14 @@ string Folder::getHome() {
   homePath = getpwuid(getuid())->pw_dir; // Get user's home folder
   return homePath;
 }
+
+string Folder::filenameWithTimesToParse(string filename, vector<string> times) {
+  string filenameWithTimes;
+  filenameWithTimes += filename + SEP_SYNC_DIR;
+  for(int i = 0; i < times.size(); i++) {
+    times.at(i).erase(times.at(i).length()-1); // Remove \n
+    filenameWithTimes += times.at(i) + SEP_SYNC_DIR;
+  }
+
+  return filenameWithTimes;
+}
