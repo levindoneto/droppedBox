@@ -175,7 +175,8 @@ void ServerCommunication::serverComm(int port) {
     else if (strcmp(buffer, LIST_SERVER) == EQUAL) {
       fflush(stdin);
       string listServerToClient = folder->listFiles(SERVER_LIST, getLoggedUser());
-      const char *listServerToClientChar = listServerToClient.c_str();
+      char listServerToClientChar[CHUNCK_SIZE];
+      listServerToClient.copy(listServerToClientChar, listServerToClient.length(), 0);
       char ack[10];
       sprintf(ack, "%d", 5);
       cout << "server" << ack;
