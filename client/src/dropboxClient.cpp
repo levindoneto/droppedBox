@@ -17,7 +17,7 @@ int main (int argc, char **argv) {
   string command;
   string parameter;
   vector<string> commandToRun;
-  bool resp = true;
+  int resp = !EXIT;;
   int port = PORT; // Default port
   int socket;
 
@@ -49,7 +49,8 @@ int main (int argc, char **argv) {
   //proc->setLoggedUser(user);
 
   showMenu();
-  while(resp) {
+  while(resp != EXIT) {
+    fflush(stdin);
     commandToRun = getUserCommand();
     command = commandToRun.front();
     parameter = commandToRun.back();

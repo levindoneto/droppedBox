@@ -11,7 +11,7 @@ class Process {
   public:
     Process() {};
     ~Process();
-    bool managerCommands(
+    int managerCommands(
       string command,
       string parameter,
       ClientUser* user,
