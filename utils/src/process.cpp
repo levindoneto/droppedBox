@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <pwd.h>
+#include <dirent.h>
 
 #include "../headers/process.hpp"
 #include "../headers/ui.hpp"
@@ -398,6 +399,36 @@ int Process::listClient(ClientUser* user, int port, string host, int socketDesc)
 }
 
 int Process::getSyncDir(ClientUser* user) {
+  Folder* procFolder = new Folder();
+  string folderListStr;
+  string userFolderPath;
+  userFolderPath = procFolder->getHome() + "/sync_dir_" + user->getUserId();
+  const char *folder = userFolderPath.c_str();
+  DIR * dir = opendir(folder);
+  if (dir) {
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != EQUAL) {
+      if (entry->d_type != DT_DIR) { // If entry is a file
+        string filename = entry->d_name;
+        string slash = SLASH;
+        string filePath = userFolderPath + slash + filename;
+        folderListStr += procFolder->timesToString(procFolder->getTimes(filePath), SERVER_LIST);
+        folderListStr += entry->d_name;
+      }
+    }
+  }
+
+  /* GET FILE BY FILE
+     SEND THE FILE TO CLIENT (NAME, TIMES)
+             SERVER PARSES IT (get name and times, compare times and returns an ack:
+                ACK_DOWNLOAD:0,
+                ACK_UPLOAD:1,
+                ACK:SAME:2
+             )
+    CLIENT TREATS THE ACK
+
+  */
+
   return !EXIT;
 }
 

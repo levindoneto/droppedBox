@@ -109,8 +109,11 @@ void Folder::listFolder(string folderPath) {
     struct dirent *entry;
     while ((entry = readdir(dir)) != EQUAL) {
       if (entry->d_type != DT_DIR) { // If entry is a file
+        string filename = entry->d_name;
+        string slash = SLASH;
+        string filePath = folderPath + slash + filename;
         cout << left << setw(nameWidth) << setfill(separator) << entry->d_name;
-        cout << left << setw(numWidth) << setfill(separator) << timesToString(getTimes(folderPath), CLIENT_LIST) << endl;
+        cout << left << setw(numWidth) << setfill(separator) << timesToString(getTimes(filePath), CLIENT_LIST) << endl;
       }
     }
     closedir(dir);
@@ -141,7 +144,10 @@ string Folder::listFolderToString(string folderPath) {
     struct dirent *entry;
     while ((entry = readdir(dir)) != EQUAL) {
       if (entry->d_type != DT_DIR) { // If entry is a file
-        folderListStr += timesToString(getTimes(folderPath), SERVER_LIST);
+        string filename = entry->d_name;
+        string slash = SLASH;
+        string filePath = folderPath + slash + filename;
+        folderListStr += timesToString(getTimes(filePath), SERVER_LIST);
         folderListStr += formatLabelName + entry->d_name + br;
       }
     }
@@ -159,10 +165,8 @@ string Folder::listFolderToString(string folderPath) {
 string Folder::listFiles(int mode, string userId) {
   int i;
   if (mode == CLIENT_LIST) {
-    string homePath;
     string userFolderPath;
-    homePath = getpwuid(getuid())->pw_dir; // Get user's home folder
-    userFolderPath = homePath + "/sync_dir_" + userId;
+    userFolderPath = getHome() + "/sync_dir_" + userId;
     listFolder(userFolderPath);
     return userId;
   } else if (mode == SERVER_LIST) {
@@ -174,4 +178,11 @@ string Folder::listFiles(int mode, string userId) {
   } else {
       throwError("[Folder::listFiles]: Invalid mode");
   }
+}
+
+string Folder::getHome() {
+  string homePath;
+  string userFolderPath;
+  homePath = getpwuid(getuid())->pw_dir; // Get user's home folder
+  return homePath;
 }
