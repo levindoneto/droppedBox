@@ -13,6 +13,7 @@
 #include <string.h>
 #include <netdb.h>
 #include <stdio.h>
+#include <sys/stat.h>
 
 using namespace std;
 
@@ -295,6 +296,40 @@ void ServerCommunication::serverComm(int port) {
         throwError("[ServerCommunication::serverComm]: Error on sending the list of files");
       }
     }
+
+    else if (strcmp(userInfo.message, GET_SYNC_DIR) == EQUAL) {
+      char receiveTimes[CHUNCK_SIZE];
+      struct stat stats;
+
+      status = recvfrom(
+        socketDesc,
+        receiveTimes,
+        sizeof(receiveTimes),
+        MSG_OOB,
+        (struct sockaddr *) &clientAddress,
+        &clilen
+      );
+      if (status < 0) {
+        throwError("Error on recvfrom");
+      }
+
+      char* name;
+      char* timeChar;
+      name = strtok(receiveTimes, " ");
+      timeChar = strtok(NULL, " ");
+
+      time_t timeType1 = (time_t) atoll(timeChar);
+
+      if (stat(name, &stats) == ERROR) {
+        throwError("[serverCommunication::getSyncDir]: Error on getting to the file");
+      }
+
+      time_t timeType2 = time_t(stats.st_mtim.tv_sec);
+
+      int diff = difftime(timeType1, timeType2);
+    }
+
+
   }
 
   close(socketDesc);
