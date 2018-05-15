@@ -1,11 +1,88 @@
 #include <iostream>
 #include <string>
-#include <vector>
+#include <unistd.h>
+#include <string.h>
+#include <thread>
 
 #include "../headers/clientUser.hpp"
-#include "../../utils/headers/ui.hpp"
 
 using namespace std;
+
+void ClientUser::startThreads(){
+  thread inotifyThread = thread(&ClientUser::inotifyEvent, this);
+  thread syncDirThread = thread(&ClientUser::syncDirLoop, this);
+  thread commandLoopThread = thread(&ClientUser::commandLoop, this, c);
+  thread userLoop = thread(&ClientUser::userLoop, this);
+}
+
+void ClientUser::syncDirLoop() {
+  usleep(10000000); //10 seconds
+  cout << "ITS ALIVE! sync" << endl;
+  while(TRUE);
+}
+
+void ClientUser::commandLoop() {
+  cout << "ITS ALIVE! command" << endl;
+  while(TRUE);
+}
+
+void ClientUser::inotifyEvent() {
+  int init;
+  int i;
+  int watchedFolder;
+  int length;
+  char buffer[EVENT_BUF_LEN];
+
+  string folderStr = this->userFolder->getHome();
+  folderStr += "/sync_dir_" + this->userId;
+  cout << folderStr << endl;
+
+  char folder[CHUNCK_SIZE];
+  folderStr.copy(folder, folderStr.length(), 0);
+
+  init = inotify_init();
+  if (init == ERROR) {
+    throwError("Could not initialize inotify");
+  }
+
+  watchedFolder = inotify_add_watch(init, folder, INOTIFY_EVENTS);
+
+  if (watchedFolder == ERROR) {
+    throwError("It could not watch that folder");
+  }
+
+  while(TRUE) {
+    i = 0;
+    length = read(init, buffer, EVENT_BUF_LEN);
+
+    while (i < length) {
+      struct inotify_event *event = (struct inotify_event *) &buffer[i];
+      if (event->len) {
+        if (event->mask & IN_CREATE) {
+            cout << "Arquivo criado" << '\n';
+        }
+        if (IN_MODIFY) {
+
+        }
+        if (event->mask & IN_DELETE) {
+
+        }
+        if (IN_MOVED_FROM) {
+
+        }
+        if (IN_MOVED_TO) {
+
+        }
+        if (IN_OPEN || IN_ACCESS) {
+
+        }
+
+        i += EVENT_SIZE + event->len;
+      }
+    }
+  }
+}
+
 
 ClientUser::ClientUser(string userId, Folder *userFolder) {
   this->userId = userId;
