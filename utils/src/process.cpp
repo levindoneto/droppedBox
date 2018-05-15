@@ -445,7 +445,7 @@ int Process::getSyncDir(ClientUser* user, int port, string host, int socketDesc)
         string filePath = userFolderPath + slash + filenameClient;
         string requestNameTime;
         requestNameTime = procFolder->getFileWithModificationTime(filenameClient, filePath);
-        char requestNameTimeChar[CHUNCK_SIZE];
+        char requestNameTimeChar[CHUNCK_SIZE] = {};
         requestNameTime.copy(requestNameTimeChar, requestNameTime.length(), 0);
 
         // Send the the name and modification time for comparison on the server side

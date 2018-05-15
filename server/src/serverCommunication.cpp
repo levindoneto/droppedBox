@@ -80,7 +80,10 @@ void ServerCommunication::serverComm(int port) {
         throwError("[ServerCommunication::ServerCommunication]: Error on recvfrom");
       }
 
-      if (strcmp(userInfo.message, UPLOAD) != 0 && strcmp(userInfo.message, DOWNLOAD) != 0 && strcmp(userInfo.message, LIST_SERVER) != 0) {
+      if (strcmp(userInfo.message, UPLOAD) != 0 &&
+      strcmp(userInfo.message, DOWNLOAD) != 0 &&
+      strcmp(userInfo.message, LIST_SERVER) != 0
+      && strcmp(userInfo.message, GET_SYNC_DIR) != 0) {
         cout << userInfo.message << endl;
       }
 
@@ -92,7 +95,10 @@ void ServerCommunication::serverComm(int port) {
       userIdLogged = userInfo.userId;
       string userPath = "db/clients/sync_dir_" + userIdLogged;
       folder->createFolder("db/clients/" + userIdLogged);
-    } while (strcmp(userInfo.message, UPLOAD) != 0 && strcmp(userInfo.message, DOWNLOAD) != 0  && strcmp(userInfo.message, LIST_SERVER) != 0);
+    } while (strcmp(userInfo.message, UPLOAD) != 0 &&
+    strcmp(userInfo.message, DOWNLOAD) != 0 &&
+    strcmp(userInfo.message, LIST_SERVER) != 0  &&
+    strcmp(userInfo.message, GET_SYNC_DIR) != 0);
 
     if (strcmp(userInfo.message, UPLOAD) == EQUAL) {
       status = recvfrom(
@@ -298,7 +304,7 @@ void ServerCommunication::serverComm(int port) {
     }
 
     else if (strcmp(userInfo.message, GET_SYNC_DIR) == EQUAL) {
-      char receiveTimes[CHUNCK_SIZE];
+      char receiveTimes[CHUNCK_SIZE], ackGetSync[10];
       struct stat stats;
 
       status = recvfrom(
@@ -316,17 +322,71 @@ void ServerCommunication::serverComm(int port) {
       char* name;
       char* timeChar;
       name = strtok(receiveTimes, " ");
+      std::cout << name << '\n';
       timeChar = strtok(NULL, " ");
+      std::cout << timeChar << '\n';
 
       time_t timeType1 = (time_t) atoll(timeChar);
+      userInfoId = userInfo.userId;
+      filePathDB = database + userInfoId + slash + name;
+      filePathDBChar = filePathDB.c_str();
 
-      if (stat(name, &stats) == ERROR) {
+      if (stat(filePathDBChar, &stats) == ERROR) {
         throwError("[serverCommunication::getSyncDir]: Error on getting to the file");
       }
 
       time_t timeType2 = time_t(stats.st_mtim.tv_sec);
 
       int diff = difftime(timeType1, timeType2);
+
+      // If time is bigger on the client
+      if (diff > 0) {
+        // The client has to upload the file
+        sprintf(ackGetSync, "%d", ACK_UPLOAD);
+        status = sendto(
+          socketDesc,
+          ackGetSync,
+          sizeof(int),
+          0,
+          (const struct sockaddr *) &clientAddress,
+          sizeof(struct sockaddr_in)
+        );
+        if (status < 0) {
+          throwError("[ServerCommunication::serverComm]: Error on sending ack");
+        }
+      }
+      // If time is bigger on the server
+      else if (diff < 0) {
+        // The client has to download the file
+        sprintf(ackGetSync, "%d", ACK_DOWNLOAD);
+        status = sendto(
+          socketDesc,
+          ackGetSync,
+          sizeof(int),
+          0,
+          (const struct sockaddr *) &clientAddress,
+          sizeof(struct sockaddr_in)
+        );
+        if (status < 0) {
+          throwError("[ServerCommunication::serverComm]: Error on sending ack");
+        }
+      }
+      // If time is the same on the client and the server
+      else {
+        // The client and the server have the same files
+        sprintf(ackGetSync, "%d", ACK_SAME);
+        status = sendto(
+          socketDesc,
+          ackGetSync,
+          sizeof(int),
+          0,
+          (const struct sockaddr *) &clientAddress,
+          sizeof(struct sockaddr_in)
+        );
+        if (status < 0) {
+          throwError("[ServerCommunication::serverComm]: Error on sending ack");
+        }
+      }
     }
 
 
