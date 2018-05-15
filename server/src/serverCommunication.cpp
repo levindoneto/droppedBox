@@ -190,8 +190,6 @@ void ServerCommunication::serverComm(int port) {
     fclose(fp);
     fflush(stdin);
 
-    cout << fname << " has been received" << endl;
-
     sprintf(buffer, "%s", fname);
     }
     else if (strcmp(userInfo.message, DOWNLOAD) == 0) {
@@ -322,9 +320,7 @@ void ServerCommunication::serverComm(int port) {
       char* name;
       char* timeChar;
       name = strtok(receiveTimes, " ");
-      std::cout << name << '\n';
       timeChar = strtok(NULL, " ");
-      std::cout << timeChar << '\n';
 
       time_t timeType1 = (time_t) atoll(timeChar);
       userInfoId = userInfo.userId;

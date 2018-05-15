@@ -335,8 +335,6 @@ int Process::download(string fileName, ClientUser* user, string host, int port, 
   memset(receiveChunck.chunck, 0, CHUNCK_SIZE);
   fclose(file);
   fflush(stdin);
-
-  cout << fileName << " has been received" << endl;
 }
 
 int Process::listServer(ClientUser* user, int port, string host, int socketDesc) {
@@ -412,6 +410,7 @@ int Process::getSyncDir(ClientUser* user, int port, string host, int socketDesc)
   unsigned int lenSckAddr;
   UserInfo userInfo;
   char ack[ACK_SIZE];
+  char response[ACK_SIZE];
   int status;
 
   serverAddress.sin_family = AF_INET; // IPv4
@@ -445,7 +444,7 @@ int Process::getSyncDir(ClientUser* user, int port, string host, int socketDesc)
         string filePath = userFolderPath + slash + filenameClient;
         string requestNameTime;
         requestNameTime = procFolder->getFileWithModificationTime(filenameClient, filePath);
-        char requestNameTimeChar[CHUNCK_SIZE] = {};
+        char requestNameTimeChar[CHUNCK_SIZE];
         requestNameTime.copy(requestNameTimeChar, requestNameTime.length(), 0);
 
         // Send the the name and modification time for comparison on the server side
@@ -460,11 +459,31 @@ int Process::getSyncDir(ClientUser* user, int port, string host, int socketDesc)
         if (status < 0) {
           throwError("[Process::getSyncDir]: Error on sending the filename with modification time");
         }
-        //cout << requestNameTime << endl;
-        // up files test
-        //upload(filenameClient, user, port, host, socketDesc);
+
+        // Get the ack from the server to see if the client has to upload or download a file
+        while (TRUE) {
+          status = recvfrom(
+            socketDesc,
+            &response,
+            ACK_SIZE,
+            0,
+            (struct sockaddr *) &serverAddress,
+            &lenSckAddr
+          );
+          if (status < 0) {
+            throwError("[Process::getsyncdir]: Error on receive response from server");
+          }
+
+          if (atoi(response) == ACK_UPLOAD) {
+            upload(filenameClient, user, port, host, socketDesc);
+          } else if (atoi(response) == ACK_DOWNLOAD) {
+            download(filenameClient, user, host, port, socketDesc);
+          }
+          break;
+        }
       }
     }
+    return !EXIT;
   }
 
   /* GET FILE BY FILE
