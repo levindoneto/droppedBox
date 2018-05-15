@@ -2,12 +2,8 @@
 #include <string>
 #include <unistd.h>
 #include "string.h"
+
 #include "../headers/dropboxClient.hpp"
-#include "../headers/clientCommunication.hpp"
-#include "../../settings/config.hpp"
-#include "../../utils/headers/dropboxUtils.hpp"
-#include "../../utils/headers/process.hpp"
-#include "../../utils/headers/ui.hpp"
 
 using namespace std;
 
@@ -17,7 +13,7 @@ int main (int argc, char **argv) {
   string command;
   string parameter;
   vector<string> commandToRun;
-  int resp = !EXIT;;
+  int resp = !EXIT;
   int port = PORT; // Default port
   int socket;
 
@@ -47,6 +43,8 @@ int main (int argc, char **argv) {
 
   socket = c->loginServer(hostConn, port, user);
   //proc->setLoggedUser(user);
+
+  user->startThreads();
 
   showMenu();
   while(resp != EXIT) {

@@ -85,6 +85,4 @@ using namespace std;
 
 // Function which takes a string, and shows it, followed by exiting the app
 void throwError (char* errorMessage);
-void getClientFolderPath(string folderPath);
 unsigned int fileSize(string filePath);
-void *inotifyEvent(void*);

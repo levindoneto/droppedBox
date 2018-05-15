@@ -1,3 +1,4 @@
+#pragma once
 #include <string>
 #include "../../client/headers/clientUser.hpp"
 #include "../headers/dropboxUtils.hpp"

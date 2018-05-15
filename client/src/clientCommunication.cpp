@@ -97,7 +97,6 @@ int ClientCommunication::loginServer(char* ip, int port, ClientUser* user) {
   string userId = user->getUserId();
   userId.copy(userInfo.userId, userId.length(), 0);
   writeToSocket(userInfo, socketDesc, ip, port);
-  //getClientFolderPath(clientFolderPath); // TODO: change this in dropboxUtils
 
   // Create thread for monitoring synchronized user folder
   //pthread_create(&syn_th, NULL, inotifyEvent, NULL); // TODO: Fix inotify

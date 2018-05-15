@@ -1,11 +1,13 @@
 #pragma once
-
 #include <string>
 #include <vector>
 #include <mutex>
+#include <sys/inotify.h>
+
 #include "../../utils/headers/device.hpp"
 #include "../../utils/fileSystem/headers/folder.hpp"
 #include "../../utils/headers/dropboxUtils.hpp"
+#include "../../utils/headers/ui.hpp"
 
 using namespace std;
 
@@ -18,8 +20,9 @@ class ClientUser {
   public:
     Folder *userFolder;
     Device* device;
+    ClientCommunication* communication;
 
-    ClientUser(string userId, Folder* userFolder);
+    ClientUser (string userId, Folder* userFolder);
     ClientUser (string userId, Device* device, Folder *userFolder);
     ClientUser (string userId, Device *device, Folder *userFolder, int numberOfFiles);
 
@@ -32,4 +35,9 @@ class ClientUser {
     void sync();
     bool isSynchronized();
     vector<string> getUserCommand();
+
+    void inotifyEvent();
+    void syncDirLoop();
+    void commandLoop();
+    void startThreads();
 };

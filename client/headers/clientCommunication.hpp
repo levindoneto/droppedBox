@@ -1,3 +1,4 @@
+#pragma once
 #include <string>
 #include "../../utils/headers/communication.hpp"
 #include "clientUser.hpp"
