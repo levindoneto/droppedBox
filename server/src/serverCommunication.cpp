@@ -319,7 +319,7 @@ void ServerCommunication::serverComm(int port) {
         &clilen
       );
       if (status < 0) {
-        throwError("Error on recvfrom");
+        throwError("[serverCommunication::getSyncDir]: Error on recvfrom");
       }
 
       char* name;
@@ -391,17 +391,28 @@ void ServerCommunication::serverComm(int port) {
     }
     else if (strcmp(userInfo.message, DELETE_FILE) == EQUAL) {
       char filename[30], ack[10];
+      string database = DATABASE;
+      string slash = SLASH;
 
       status = recvfrom(
         socketDesc,
         filename,
         sizeof(filename),
-        MSG_OOB,
+        0,
         (struct sockaddr *) &clientAddress,
         &clilen
       );
       if (status < 0) {
-        throwError("Error on recvfrom");
+        throwError("[serverCommunication::deleteFile]: Error on receive filename");
+      }
+
+      string filePathDB = database + userInfo.userId + slash + filename;
+      const char *filePathDBChar = filePathDB.c_str();
+
+      cout << "a: " << filePathDBChar << endl;
+      status = remove(filePathDBChar);
+      if (status < 0) {
+        throwError("[serverCommunication::deleteFile]: Error on deleting file");
       }
 
       // Send ack of deleted
