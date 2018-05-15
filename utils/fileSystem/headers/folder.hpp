@@ -25,4 +25,5 @@ class Folder {
     string listFolderToString(string folderPath);
     string listFiles(int mode, string userId);
     string getHome();
+    string getFileWithModificationTime(string filename, string filePath);
 };

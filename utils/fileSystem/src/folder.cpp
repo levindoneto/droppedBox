@@ -186,3 +186,16 @@ string Folder::getHome() {
   homePath = getpwuid(getuid())->pw_dir; // Get user's home folder
   return homePath;
 }
+
+/*filename Access_Time Modificatin_Time Creation_Time */
+string Folder::getFileWithModificationTime(string filename, string filePath) {
+  string filenameWithModTime;
+  struct stat buffer;
+  const char *filePathChar = filePath.c_str();
+  filenameWithModTime += filename + SEP_SYNC_DIR;
+  if (stat(filePathChar, &buffer) == ERROR) {
+    throwError("[Folder::getTimes]: Error on getting to the file");
+  }
+  filenameWithModTime += to_string(time_t(buffer.st_mtim.tv_sec));
+  return filenameWithModTime;
+}
