@@ -556,12 +556,12 @@ int Process::deleteFile(string fileName, ClientUser* user, int port, string host
   if (status < 0) {
     throwError("[Process::getSyncDir]: Delete: Error on sending the request");
   }
-
+printf("%s\n", fileNameChar);
   // Send the name of the file
   status = sendto(
     socketDesc,
     fileNameChar,
-    sizeof(fileNameChar),
+    CHUNCK_SIZE,
     0,
     (const struct sockaddr *) &serverAddress,
     sizeof(struct sockaddr_in)
@@ -574,7 +574,7 @@ int Process::deleteFile(string fileName, ClientUser* user, int port, string host
   while (TRUE) {
     status = recvfrom(
       socketDesc,
-      &ack,
+      ack,
       ACK_SIZE,
       0,
       (struct sockaddr *) &serverAddress,
