@@ -40,7 +40,7 @@ int Process::managerCommands(
   } else if (command.compare(LIST_CLIENT) == EQUAL) {
       resp = listClient(user, port, host, socketDesc);
   } else if (command.compare(GET_SYNC_DIR) == EQUAL) {
-      resp = getSyncDir(user);
+      resp = getSyncDir(user, port, host, socketDesc);
   } else if (command.compare(EXIT_APP) == EQUAL) {
       resp = exitApp(user);
       if (resp == EXIT_OPT_YES) {
@@ -398,22 +398,71 @@ int Process::listClient(ClientUser* user, int port, string host, int socketDesc)
   return !EXIT;
 }
 
-int Process::getSyncDir(ClientUser* user) {
+int Process::getSyncDir(ClientUser* user, int port, string host, int socketDesc) {
   Folder* procFolder = new Folder();
   string folderListStr;
   string userFolderPath;
   userFolderPath = procFolder->getHome() + "/sync_dir_" + user->getUserId();
+  const char *hostChar = host.c_str();
+  struct hostent *server;
+  server = gethostbyname(hostChar);
+  struct sockaddr_in serverAddress;
+  struct sockaddr_in from;
+  char listFromServer[CHUNCK_SIZE];
+  unsigned int lenSckAddr;
+  UserInfo userInfo;
+  char ack[ACK_SIZE];
+  int status;
+
+  serverAddress.sin_family = AF_INET; // IPv4
+  serverAddress.sin_port = htons(port);
+  serverAddress.sin_addr = *((struct in_addr *)server->h_addr);
+  bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
+
+  // Send the request for start the sync between client and server
+  strcpy(userInfo.message, GET_SYNC_DIR);
+  user->getUserId().copy(userInfo.userId, user->getUserId().length(), 0);
+  status = sendto(
+    socketDesc,
+    &userInfo,
+    sizeof(userInfo),
+    0,
+    (const struct sockaddr *) &serverAddress,
+    sizeof(struct sockaddr_in)
+  );
+  if (status < 0) {
+    throwError("[Process::getSyncDir]: Error on sending the request");
+  }
+
   const char *folder = userFolderPath.c_str();
   DIR * dir = opendir(folder);
   if (dir) {
     struct dirent *entry;
     while ((entry = readdir(dir)) != EQUAL) {
       if (entry->d_type != DT_DIR) { // If entry is a file
-        string filename = entry->d_name;
+        string filenameClient = entry->d_name;
         string slash = SLASH;
-        string filePath = userFolderPath + slash + filename;
-        folderListStr += procFolder->timesToString(procFolder->getTimes(filePath), SERVER_LIST);
-        folderListStr += entry->d_name;
+        string filePath = userFolderPath + slash + filenameClient;
+        string requestNameTime;
+        requestNameTime = procFolder->getFileWithModificationTime(filenameClient, filePath);
+        char requestNameTimeChar[CHUNCK_SIZE];
+        requestNameTime.copy(requestNameTimeChar, requestNameTime.length(), 0);
+
+        // Send the the name and modification time for comparison on the server side
+        status = sendto(
+          socketDesc,
+          requestNameTimeChar,
+          sizeof(requestNameTimeChar),
+          0,
+          (const struct sockaddr *) &serverAddress,
+          sizeof(struct sockaddr_in)
+        );
+        if (status < 0) {
+          throwError("[Process::getSyncDir]: Error on sending the filename with modification time");
+        }
+        //cout << requestNameTime << endl;
+        // up files test
+        //upload(filenameClient, user, port, host, socketDesc);
       }
     }
   }

@@ -25,5 +25,5 @@ class Folder {
     string listFolderToString(string folderPath);
     string listFiles(int mode, string userId);
     string getHome();
-    string filenameWithTimesToParse(string filename, vector<string> times);
+    string getFileWithModificationTime(string filename, string filePath);
 };
