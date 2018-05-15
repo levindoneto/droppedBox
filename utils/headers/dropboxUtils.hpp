@@ -51,6 +51,9 @@
 #define ACK_SIZE 10
 #define SLASH "/"
 #define SEP_SYNC_DIR " "
+#define ACK_SAME 0
+#define ACK_UPLOAD 1
+#define ACK_DOWNLOAD 2
 
 typedef struct datagram {
    int  chunckId;
