@@ -20,7 +20,6 @@ class ClientUser {
   public:
     Folder *userFolder;
     Device* device;
-    ClientCommunication* communication;
 
     ClientUser (string userId, Folder* userFolder);
     ClientUser (string userId, Device* device, Folder *userFolder);
@@ -40,4 +39,5 @@ class ClientUser {
     void syncDirLoop();
     void commandLoop();
     void startThreads();
+    void userLoop();
 };

@@ -1,9 +1,8 @@
 #include <string>
-#include "../../utils/headers/communication.hpp"
 
 using namespace std;
 
-class ServerCommunication: public Communication {
+class ServerCommunication{
   private:
     string loggedUserId;
   public:

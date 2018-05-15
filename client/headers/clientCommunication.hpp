@@ -1,11 +1,10 @@
 #pragma once
 #include <string>
-#include "../../utils/headers/communication.hpp"
 #include "clientUser.hpp"
 
 using namespace std;
-// ClientCommunication extends Communication
-class ClientCommunication : public Communication {
+
+class ClientCommunication{
   private:
     int port;
     int socketDescriptor;

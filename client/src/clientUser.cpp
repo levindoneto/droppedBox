@@ -11,7 +11,7 @@ using namespace std;
 void ClientUser::startThreads(){
   thread inotifyThread = thread(&ClientUser::inotifyEvent, this);
   thread syncDirThread = thread(&ClientUser::syncDirLoop, this);
-  thread commandLoopThread = thread(&ClientUser::commandLoop, this, c);
+  thread commandLoopThread = thread(&ClientUser::commandLoop, this);
   thread userLoop = thread(&ClientUser::userLoop, this);
 }
 
@@ -23,6 +23,11 @@ void ClientUser::syncDirLoop() {
 
 void ClientUser::commandLoop() {
   cout << "ITS ALIVE! command" << endl;
+  while(TRUE);
+}
+
+void ClientUser::userLoop() {
+  cout << "ITS ALIVE! user" << endl;
   while(TRUE);
 }
 
