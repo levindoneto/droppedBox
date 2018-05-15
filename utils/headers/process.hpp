@@ -29,5 +29,5 @@ class Process {
     int listClient(ClientUser* user, int port, string host, int socketDesc);
     int getSyncDir(ClientUser* user, int port, string host, int socketDesc);
     int exitApp(ClientUser* user);
-    //void setLoggedUser(ClientUser* user);
+    int deleteFile(string fileName, ClientUser* user, int port, string host, int socketDesc);
 };
