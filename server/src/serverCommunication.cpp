@@ -83,7 +83,8 @@ void ServerCommunication::serverComm(int port) {
       if (strcmp(userInfo.message, UPLOAD) != 0 &&
       strcmp(userInfo.message, DOWNLOAD) != 0 &&
       strcmp(userInfo.message, LIST_SERVER) != 0
-      && strcmp(userInfo.message, GET_SYNC_DIR) != 0) {
+      && strcmp(userInfo.message, GET_SYNC_DIR) != 0
+      && strcmp(userInfo.message, DELETE_FILE) != 0) {
         cout << userInfo.message << endl;
       }
 
@@ -402,11 +403,10 @@ void ServerCommunication::serverComm(int port) {
       if (status < 0) {
         throwError("Error on recvfrom");
       }
-      cout << "file: " << filename;
 
       // Send ack of deleted
 
-      cout << "ack: " << filename;
+      //cout << "ack: " << filename;
 
     }
   }
