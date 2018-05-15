@@ -41,6 +41,8 @@ int Process::managerCommands(
       resp = listClient(user, port, host, socketDesc);
   } else if (command.compare(GET_SYNC_DIR) == EQUAL) {
       resp = getSyncDir(user, port, host, socketDesc);
+  } else if (command.compare(DELETE_FILE) == EQUAL) {
+      resp = deleteFile(parameter, user, port, host, socketDesc);
   } else if (command.compare(EXIT_APP) == EQUAL) {
       resp = exitApp(user);
       if (resp == EXIT_OPT_YES) {
@@ -55,7 +57,7 @@ int Process::managerCommands(
       }
   } else if (command.compare(HELP_C) == 0 || command.compare(HELP_L) == 0) {
     showHelp();
-  }else {
+  } else {
     throwError("[managerCommands]: Invalid command");
   }
 }
@@ -406,7 +408,6 @@ int Process::getSyncDir(ClientUser* user, int port, string host, int socketDesc)
   server = gethostbyname(hostChar);
   struct sockaddr_in serverAddress;
   struct sockaddr_in from;
-  char listFromServer[CHUNCK_SIZE];
   unsigned int lenSckAddr;
   UserInfo userInfo;
   char ack[ACK_SIZE];
@@ -515,5 +516,75 @@ int Process::exitApp(ClientUser* user) {
   } else {
       cout << INVALID_OPTION << endl;
       return EXIT_OPT_WRONG;
+  }
+}
+
+int Process::deleteFile(string fileName, ClientUser* user, int port, string host, int socketDesc) {
+  Folder* procFolder = new Folder();
+  string folderListStr;
+  string userFolderPath;
+  userFolderPath = procFolder->getHome() + "/sync_dir_" + user->getUserId();
+  const char *hostChar = host.c_str();
+  struct hostent *server;
+  server = gethostbyname(hostChar);
+  struct sockaddr_in serverAddress;
+  struct sockaddr_in from;
+  unsigned int lenSckAddr;
+  UserInfo userInfo;
+  char ack[ACK_SIZE];
+  char response[ACK_SIZE];
+  int status;
+  char fileNameChar[] = {};
+  fileName.copy(fileNameChar, fileName.length(), 0);
+
+  serverAddress.sin_family = AF_INET; // IPv4
+  serverAddress.sin_port = htons(port);
+  serverAddress.sin_addr = *((struct in_addr *)server->h_addr);
+  bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
+
+  // Send the request for start the sync between client and server
+  strcpy(userInfo.message, DELETE_FILE);
+  user->getUserId().copy(userInfo.userId, user->getUserId().length(), 0);
+  status = sendto(
+    socketDesc,
+    &userInfo,
+    sizeof(userInfo),
+    0,
+    (const struct sockaddr *) &serverAddress,
+    sizeof(struct sockaddr_in)
+  );
+  if (status < 0) {
+    throwError("[Process::getSyncDir]: Delete: Error on sending the request");
+  }
+printf("%s\n", fileNameChar);
+  // Send the name of the file
+  status = sendto(
+    socketDesc,
+    fileNameChar,
+    CHUNCK_SIZE,
+    0,
+    (const struct sockaddr *) &serverAddress,
+    sizeof(struct sockaddr_in)
+  );
+  if (status < 0) {
+    throwError("[Process::deleteFile]: Error on sending the name of the file");
+  }
+
+  // Get an ack (int confirmed_del) for file deleted
+  while (TRUE) {
+    status = recvfrom(
+      socketDesc,
+      ack,
+      ACK_SIZE,
+      0,
+      (struct sockaddr *) &serverAddress,
+      &lenSckAddr
+    );
+    if (status < 0) {
+      throwError("[Process::deleteFile]: Error on receive ack from server");
+    }
+    if (atoi(ack) == CONFIRMED_DEL) {
+      return !EXIT;
+    }
   }
 }

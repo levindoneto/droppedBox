@@ -54,6 +54,8 @@
 #define ACK_SAME 0
 #define ACK_UPLOAD 1
 #define ACK_DOWNLOAD 2
+#define DELETE_FILE "deletefile"
+#define CONFIRMED_DEL 1
 
 typedef struct datagram {
    int  chunckId;
