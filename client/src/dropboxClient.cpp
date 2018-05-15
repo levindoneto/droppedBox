@@ -44,7 +44,7 @@ int main (int argc, char **argv) {
   socket = c->loginServer(hostConn, port, user);
   //proc->setLoggedUser(user);
 
-  //user->startThreads();
+  user->startThreads();
 
   showMenu();
   while(resp != EXIT) {
