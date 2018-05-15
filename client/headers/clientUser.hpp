@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <mutex>
+#include <queue>
 #include <sys/inotify.h>
 
 #include "../../utils/headers/device.hpp"
@@ -14,16 +15,14 @@ using namespace std;
 class ClientUser {
   private:
     string userId;
-    bool isSync;
-    mutex accessSync; // For more than one device
-    int numberOfFiles;
+    mutex commandMutex;
+    queue<vector<string> > commandQueue;
+    bool queueEmpty;
   public:
     Folder *userFolder;
     Device* device;
 
     ClientUser (string userId, Folder* userFolder);
-    ClientUser (string userId, Device* device, Folder *userFolder);
-    ClientUser (string userId, Device *device, Folder *userFolder, int numberOfFiles);
 
     string getUserId();
     Folder* getUserFolder();
@@ -34,6 +33,9 @@ class ClientUser {
     void sync();
     bool isSynchronized();
     vector<string> getUserCommand();
+
+    vector<string> getCommandFromQueue();
+    void addCommandToQueue(vector<string> command);
 
     void inotifyEvent();
     void syncDirLoop();

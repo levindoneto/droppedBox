@@ -8,11 +8,17 @@
 
 using namespace std;
 
+ClientUser::ClientUser(string userId, Folder *userFolder) {
+  this->userId = userId;
+  this->userFolder = userFolder;
+}
+
 void ClientUser::startThreads(){
   thread inotifyThread = thread(&ClientUser::inotifyEvent, this);
   thread syncDirThread = thread(&ClientUser::syncDirLoop, this);
-  thread commandLoopThread = thread(&ClientUser::commandLoop, this);
   thread userLoop = thread(&ClientUser::userLoop, this);
+  thread commandLoopThread = thread(&ClientUser::commandLoop, this);
+  userLoop.join();
 }
 
 void ClientUser::syncDirLoop() {
@@ -89,28 +95,18 @@ void ClientUser::inotifyEvent() {
 }
 
 
-ClientUser::ClientUser(string userId, Folder *userFolder) {
-  this->userId = userId;
-  this->isSync = false;
-  this->userFolder = userFolder;
-  this->device = NULL;
-  this->numberOfFiles = 0;
+vector<string> ClientUser::getCommandFromQueue(){
+  this->commandMutex.lock();
+  vector<string> c = this->commandQueue.front();
+  this->commandQueue.pop();
+  this->commandMutex.unlock();
+  return c;
 }
 
-ClientUser::ClientUser(string userId, Device *device, Folder *userFolder) {
-  this->userId = userId;
-  this->isSync = false;
-  this->userFolder = userFolder;
-  this->device = device;
-  this->numberOfFiles = 0;
-}
-
-ClientUser::ClientUser(string userId, Device *device, Folder *userFolder, int numberOfFiles) {
-  this->userId = userId;
-  this->isSync = false;
-  this->userFolder = userFolder;
-  this->device = device;
-  this->numberOfFiles = numberOfFiles;
+void ClientUser::addCommandToQueue(vector<string> command){
+  this->commandMutex.lock();
+  this->commandQueue.push(command);
+  this->commandMutex.unlock();
 }
 
 string ClientUser::getUserId() {
@@ -120,26 +116,6 @@ string ClientUser::getUserId() {
 Folder* ClientUser::getUserFolder() {
   return this->userFolder;
 }
-
-string ClientUser::getUserConnectedDevicesToString() {
-  return "TODO: parse device list";
-}
-
-int ClientUser::getNumberOfFiles() {
-  return this->numberOfFiles;
-}
-
 void ClientUser::setUserFolder(Folder* userFolder) {
   this->userFolder = userFolder;
-}
-
-void ClientUser::sync() {
-  cout << "Sync client " << this->userId << " for accessing";
-  unique_lock<mutex> lck(this->accessSync);
-  this->isSync = true;
-}
-
-bool ClientUser::isSynchronized() {
-  unique_lock<mutex> lck(this->accessSync);
-  return this->isSync;
 }
