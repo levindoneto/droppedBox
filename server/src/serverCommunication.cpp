@@ -390,14 +390,14 @@ void ServerCommunication::serverComm(int port) {
       }
     }
     else if (strcmp(userInfo.message, DELETE_FILE) == EQUAL) {
-      char filename[30], ack[10];
-      string database = DATABASE;
-      string slash = SLASH;
-
+      char filename[30] = {}, ack[10];
+      //string database = DATABASE;
+      //string slash = SLASH;
+fflush(stdin);
       status = recvfrom(
         socketDesc,
         filename,
-        sizeof(filename),
+        CHUNCK_SIZE,
         0,
         (struct sockaddr *) &clientAddress,
         &clilen
@@ -405,17 +405,27 @@ void ServerCommunication::serverComm(int port) {
       if (status < 0) {
         throwError("[serverCommunication::deleteFile]: Error on receive filename");
       }
-
       string filePathDB = database + userInfo.userId + slash + filename;
       const char *filePathDBChar = filePathDB.c_str();
 
-      cout << "a: " << filePathDBChar << endl;
       status = remove(filePathDBChar);
       if (status < 0) {
         throwError("[serverCommunication::deleteFile]: Error on deleting file");
       }
 
       // Send ack of deleted
+      sprintf(ack, "%d", CONFIRMED_DEL);
+      status = sendto(
+        socketDesc,
+        ack,
+        sizeof(ack),
+        0,
+        (const struct sockaddr *) &clientAddress,
+        sizeof(struct sockaddr_in)
+      );
+      if (status < 0) {
+        throwError("[ServerCommunication::serverComm]: Error on sending ack");
+      }
 
       //cout << "ack: " << filename;
 
