@@ -8,11 +8,20 @@
 
 using namespace std;
 
+ClientUser::ClientUser(string userId, Folder *userFolder, char* ip, int port) {
+  this->userId = userId;
+  this->userFolder = userFolder;
+  this->ip = ip;
+  this->port = port;
+  this->socketDescriptor = this->loginServer();
+}
+
 void ClientUser::startThreads(){
   thread inotifyThread = thread(&ClientUser::inotifyEvent, this);
   thread syncDirThread = thread(&ClientUser::syncDirLoop, this);
-  thread commandLoopThread = thread(&ClientUser::commandLoop, this);
   thread userLoop = thread(&ClientUser::userLoop, this);
+  thread commandLoopThread = thread(&ClientUser::commandLoop, this);
+  userLoop.join();
 }
 
 void ClientUser::syncDirLoop() {
@@ -88,29 +97,18 @@ void ClientUser::inotifyEvent() {
   }
 }
 
-
-ClientUser::ClientUser(string userId, Folder *userFolder) {
-  this->userId = userId;
-  this->isSync = false;
-  this->userFolder = userFolder;
-  this->device = NULL;
-  this->numberOfFiles = 0;
+vector<string> ClientUser::getCommandFromQueue(){
+  this->commandMutex.lock();
+  vector<string> c = this->commandQueue.front();
+  this->commandQueue.pop();
+  this->commandMutex.unlock();
+  return c;
 }
 
-ClientUser::ClientUser(string userId, Device *device, Folder *userFolder) {
-  this->userId = userId;
-  this->isSync = false;
-  this->userFolder = userFolder;
-  this->device = device;
-  this->numberOfFiles = 0;
-}
-
-ClientUser::ClientUser(string userId, Device *device, Folder *userFolder, int numberOfFiles) {
-  this->userId = userId;
-  this->isSync = false;
-  this->userFolder = userFolder;
-  this->device = device;
-  this->numberOfFiles = numberOfFiles;
+void ClientUser::addCommandToQueue(vector<string> command){
+  this->commandMutex.lock();
+  this->commandQueue.push(command);
+  this->commandMutex.unlock();
 }
 
 string ClientUser::getUserId() {
@@ -120,26 +118,54 @@ string ClientUser::getUserId() {
 Folder* ClientUser::getUserFolder() {
   return this->userFolder;
 }
-
-string ClientUser::getUserConnectedDevicesToString() {
-  return "TODO: parse device list";
-}
-
-int ClientUser::getNumberOfFiles() {
-  return this->numberOfFiles;
-}
-
 void ClientUser::setUserFolder(Folder* userFolder) {
   this->userFolder = userFolder;
 }
 
-void ClientUser::sync() {
-  cout << "Sync client " << this->userId << " for accessing";
-  unique_lock<mutex> lck(this->accessSync);
-  this->isSync = true;
-}
+int ClientUser::loginServer() {
+  char* ip = this->ip;
+  int port = this->port;
+  ClientUser* user = this;
+  int socketDesc;
+  int status;
+  unsigned int lenSckAddr;
+  struct sockaddr_in serverAddress;
+  struct sockaddr_in from;
+  struct hostent *host;
+  string clientFolderPath;
+  string serverFolderPath;
+  UserInfo userInfo = {};
 
-bool ClientUser::isSynchronized() {
-  unique_lock<mutex> lck(this->accessSync);
-  return this->isSync;
+  char buffer[BUFFER_SIZE];
+  fflush(stdin);
+  // Get host
+  host = gethostbyname(ip);
+  if (host == NULL) {
+    throwError("The host does not exist");
+  }
+
+  socketDesc = openSocket();
+
+  // Address' configurations
+  serverAddress.sin_family = AF_INET; // IPv4
+  serverAddress.sin_port = htons(port);
+  serverAddress.sin_addr = *((struct in_addr *)host->h_addr);
+  bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
+
+  // Folder management after the user gets logged in
+  clientFolderPath = getpwuid(getuid())->pw_dir; // Get user's home folder
+  clientFolderPath = clientFolderPath + "/sync_dir_" + user->getUserId();
+  serverFolderPath = "db/clients/sync_dir_" + user->getUserId();
+  Folder* folder = new Folder("");
+  folder->createFolder(clientFolderPath);
+  folder->createFolder(serverFolderPath);
+
+  string message = "[Client Login]: User " + user->getUserId()
+      + " has logged in via the socket " + to_string(socketDesc);
+  message.copy(userInfo.message, message.length(), 0);
+  string userId = user->getUserId();
+  userId.copy(userInfo.userId, userId.length(), 0);
+  writeToSocket(userInfo, socketDesc, ip, port);
+
+  return socketDesc;
 }
