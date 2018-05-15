@@ -40,10 +40,10 @@ int main (int argc, char **argv) {
   Folder *userFolder = new Folder("../../db/" + username);
   ClientUser* user = new ClientUser(username, userFolder, hostConn, port);
 
-  user->startThreads();
+  //user->startThreads();
 
   Process* proc = new Process();
-  
+
   showMenu();
   while(resp != EXIT) {
     fflush(stdin);

@@ -28,6 +28,6 @@ class Process {
     int listServer(ClientUser* user, int port, string host, int socketDesc);
     int listClient(ClientUser* user, int port, string host, int socketDesc);
     int getSyncDir(ClientUser* user, int port, string host, int socketDesc);
-    int exitApp(ClientUser* user);
+    int exitApp(ClientUser* user, int port, string host, int socketDesc);
     int deleteFile(string fileName, ClientUser* user, int port, string host, int socketDesc);
 };
