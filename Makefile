@@ -19,7 +19,6 @@ UTILS_S = utils/src/device.o \
 					utils/fileSystem/src/file.o \
 
 CLIENT_O = client/src/dropboxClient.o \
-					 client/src/clientCommunication.o \
 					 client/src/clientUser.o
 
 SERVER_O = server/src/dropboxServer.o \
