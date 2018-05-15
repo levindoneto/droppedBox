@@ -26,7 +26,7 @@ class Process {
     int download(string fileName, ClientUser* user, string host, int port, int socketDesc);
     int listServer(ClientUser* user, int port, string host, int socketDesc);
     int listClient(ClientUser* user, int port, string host, int socketDesc);
-    int getSyncDir(ClientUser* user);
+    int getSyncDir(ClientUser* user, int port, string host, int socketDesc);
     int exitApp(ClientUser* user);
     //void setLoggedUser(ClientUser* user);
 };

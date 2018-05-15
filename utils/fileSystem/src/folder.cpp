@@ -187,13 +187,15 @@ string Folder::getHome() {
   return homePath;
 }
 
-string Folder::filenameWithTimesToParse(string filename, vector<string> times) {
-  string filenameWithTimes;
-  filenameWithTimes += filename + SEP_SYNC_DIR;
-  for(int i = 0; i < times.size(); i++) {
-    times.at(i).erase(times.at(i).length()-1); // Remove \n
-    filenameWithTimes += times.at(i) + SEP_SYNC_DIR;
+/*filename Access_Time Modificatin_Time Creation_Time */
+string Folder::getFileWithModificationTime(string filename, string filePath) {
+  string filenameWithModTime;
+  struct stat buffer;
+  const char *filePathChar = filePath.c_str();
+  filenameWithModTime += filename + SEP_SYNC_DIR;
+  if (stat(filePathChar, &buffer) == ERROR) {
+    throwError("[Folder::getTimes]: Error on getting to the file");
   }
-
-  return filenameWithTimes;
+  filenameWithModTime += to_string(time_t(buffer.st_mtim.tv_sec));
+  return filenameWithModTime;
 }

@@ -35,7 +35,7 @@
 #define SIZE_CTIMES_LIST 26
 #define FILENAME_LABEL "     Name of the File      | "
 #define ACCESS_TIME_LABEL "        Access Time      |"
-#define MODIFICATION_TIME_LABEL "    Modificatin Time      |"
+#define MODIFICATION_TIME_LABEL "    Modification Time     |"
 #define CREATION_TIME_LABEL "      Creation Time      "
 #define DATABASE "db/clients/sync_dir_"
 #define CHUNCK_SIZE 1024
@@ -43,7 +43,7 @@
 #define NO_USER ""
 #define FILENAME_LABEL_S "     Name of the File        "
 #define ACCESS_TIME_LABEL_S "        Access Time      |"
-#define MODIFICATION_TIME_LABEL_S "    Modificatin Time      |"
+#define MODIFICATION_TIME_LABEL_S "    Modification Time     |"
 #define CREATION_TIME_LABEL_S "      Creation Time       |"
 #define BREAK_LINE "\n"
 #define FORMAT_NAME_FILE_S " "
