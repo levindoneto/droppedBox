@@ -534,7 +534,8 @@ int Process::deleteFile(string fileName, ClientUser* user, int port, string host
   char ack[ACK_SIZE];
   char response[ACK_SIZE];
   int status;
-  const char *fileNameChar = fileName.c_str();
+  char fileNameChar[] = {};
+  fileName.copy(fileNameChar, fileName.length(), 0);
 
   serverAddress.sin_family = AF_INET; // IPv4
   serverAddress.sin_port = htons(port);
