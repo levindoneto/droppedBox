@@ -8,9 +8,12 @@
 
 using namespace std;
 
-ClientUser::ClientUser(string userId, Folder *userFolder) {
+ClientUser::ClientUser(string userId, Folder *userFolder, char* ip, int port) {
   this->userId = userId;
   this->userFolder = userFolder;
+  this->ip = ip;
+  this->port = port;
+  this->socketDescriptor = this->loginServer();
 }
 
 void ClientUser::startThreads(){
@@ -94,7 +97,6 @@ void ClientUser::inotifyEvent() {
   }
 }
 
-
 vector<string> ClientUser::getCommandFromQueue(){
   this->commandMutex.lock();
   vector<string> c = this->commandQueue.front();
@@ -118,4 +120,52 @@ Folder* ClientUser::getUserFolder() {
 }
 void ClientUser::setUserFolder(Folder* userFolder) {
   this->userFolder = userFolder;
+}
+
+int ClientUser::loginServer() {
+  char* ip = this->ip;
+  int port = this->port;
+  ClientUser* user = this;
+  int socketDesc;
+  int status;
+  unsigned int lenSckAddr;
+  struct sockaddr_in serverAddress;
+  struct sockaddr_in from;
+  struct hostent *host;
+  string clientFolderPath;
+  string serverFolderPath;
+  UserInfo userInfo = {};
+
+  char buffer[BUFFER_SIZE];
+  fflush(stdin);
+  // Get host
+  host = gethostbyname(ip);
+  if (host == NULL) {
+    throwError("The host does not exist");
+  }
+
+  socketDesc = openSocket();
+
+  // Address' configurations
+  serverAddress.sin_family = AF_INET; // IPv4
+  serverAddress.sin_port = htons(port);
+  serverAddress.sin_addr = *((struct in_addr *)host->h_addr);
+  bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
+
+  // Folder management after the user gets logged in
+  clientFolderPath = getpwuid(getuid())->pw_dir; // Get user's home folder
+  clientFolderPath = clientFolderPath + "/sync_dir_" + user->getUserId();
+  serverFolderPath = "db/clients/sync_dir_" + user->getUserId();
+  Folder* folder = new Folder("");
+  folder->createFolder(clientFolderPath);
+  folder->createFolder(serverFolderPath);
+
+  string message = "[Client Login]: User " + user->getUserId()
+      + " has logged in via the socket " + to_string(socketDesc);
+  message.copy(userInfo.message, message.length(), 0);
+  string userId = user->getUserId();
+  userId.copy(userInfo.userId, userId.length(), 0);
+  writeToSocket(userInfo, socketDesc, ip, port);
+
+  return socketDesc;
 }

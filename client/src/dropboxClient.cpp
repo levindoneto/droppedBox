@@ -32,20 +32,18 @@ int main (int argc, char **argv) {
   }
 
   cout << endl << "**** The user " << username << " has successfully logged in ****" << endl;
+
   // string -> char*
   char *hostConn = new char[host.size()+1];
   strcpy(hostConn, host.c_str());
 
   Folder *userFolder = new Folder("../../db/" + username);
-  ClientUser* user = new ClientUser(username, userFolder);
-  ClientCommunication* c = new ClientCommunication();
-  Process* proc = new Process();
-
-  socket = c->loginServer(hostConn, port, user);
-  //proc->setLoggedUser(user);
+  ClientUser* user = new ClientUser(username, userFolder, hostConn, port);
 
   user->startThreads();
 
+  Process* proc = new Process();
+  
   showMenu();
   while(resp != EXIT) {
     fflush(stdin);
