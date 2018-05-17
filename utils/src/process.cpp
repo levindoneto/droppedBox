@@ -44,14 +44,9 @@ int Process::managerCommands(
   } else if (command.compare(DELETE_FILE) == EQUAL) {
       resp = deleteFile(parameter, user, port, host, socketDesc);
   } else if (command.compare(EXIT_APP) == EQUAL) {
-      resp = exitApp(user);
+      resp = exitApp(user, port, host, socketDesc);
       if (resp == EXIT_OPT_YES) {
-        //string clientRequest = "[Client Request]: Log off user";
-        //writeToSocket(clientRequest, socketDesc, host, port);
-        closeSocket(socketDesc);
         return EXIT;
-      } else if (resp == EXIT_OPT_WRONG) {
-          resp = exitApp(user);
       } else {
         return !EXIT;
       }
@@ -501,7 +496,7 @@ int Process::getSyncDir(ClientUser* user, int port, string host, int socketDesc)
   return !EXIT;
 }
 
-int Process::exitApp(ClientUser* user) {
+int Process::exitApp(ClientUser* user, int port, string host, int socketDesc) {
   string userAnswer;
   cout << "$ Do you really want to log off, " << user->getUserId()
     << "? [yes or no]" << endl;
@@ -509,10 +504,54 @@ int Process::exitApp(ClientUser* user) {
   cin >> userAnswer;
 
   if (userAnswer.compare("yes") == 0 || userAnswer.compare("YES") == 0) {
-    cout << "$ Have a good one and take care, " << user->getUserId() << " !" << endl;
-    return EXIT_OPT_YES;
-  } else if (userAnswer.compare("no") == 0 || userAnswer.compare("NO") == 0) {
-      cout << "$ You can stay logged in then!" << endl;
+    const char *hostChar = host.c_str();
+    struct hostent *server;
+    server = gethostbyname(hostChar);
+    struct sockaddr_in serverAddress;
+    struct sockaddr_in from;
+    unsigned int lenSckAddr;
+    UserInfo userInfo;
+    char ack[ACK_SIZE];
+    char response[ACK_SIZE];
+    int status;
+    serverAddress.sin_family = AF_INET; // IPv4
+    serverAddress.sin_port = htons(port);
+    serverAddress.sin_addr = *((struct in_addr *)server->h_addr);
+    bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
+
+    // Send the request for start the sync between client and server
+    strcpy(userInfo.message, EXIT_SERVER);
+    user->getUserId().copy(userInfo.userId, user->getUserId().length(), 0);
+    status = sendto(
+      socketDesc,
+      &userInfo,
+      sizeof(userInfo),
+      0,
+      (const struct sockaddr *) &serverAddress,
+      sizeof(struct sockaddr_in)
+    );
+    if (status < 0) {
+      throwError("[Process::exitApp]: Error on sending the request");
+    }
+
+    // Get an ack (int confirmed_del) for file deleted
+    while (TRUE) {
+      status = recvfrom(
+        socketDesc,
+        &ack,
+        ACK_SIZE,
+        0,
+        (struct sockaddr *) &serverAddress,
+        &lenSckAddr
+      );
+      if (status < 0) {
+        throwError("[Process::exitApp]: Error on receive ack from server");
+      }
+      if (atoi(ack) == CONFIRMED_EXIT) {
+        cout << "$ Have a good one and take care, " << user->getUserId() << " !" << endl;
+        return EXIT_OPT_YES;
+      }
+    }
   } else {
       cout << INVALID_OPTION << endl;
       return EXIT_OPT_WRONG;
@@ -520,10 +559,6 @@ int Process::exitApp(ClientUser* user) {
 }
 
 int Process::deleteFile(string fileName, ClientUser* user, int port, string host, int socketDesc) {
-  Folder* procFolder = new Folder();
-  string folderListStr;
-  string userFolderPath;
-  userFolderPath = procFolder->getHome() + "/sync_dir_" + user->getUserId();
   const char *hostChar = host.c_str();
   struct hostent *server;
   server = gethostbyname(hostChar);
@@ -534,7 +569,7 @@ int Process::deleteFile(string fileName, ClientUser* user, int port, string host
   char ack[ACK_SIZE];
   char response[ACK_SIZE];
   int status;
-  char fileNameChar[] = {};
+  char* fileNameChar;
   fileName.copy(fileNameChar, fileName.length(), 0);
 
   serverAddress.sin_family = AF_INET; // IPv4
@@ -556,12 +591,12 @@ int Process::deleteFile(string fileName, ClientUser* user, int port, string host
   if (status < 0) {
     throwError("[Process::getSyncDir]: Delete: Error on sending the request");
   }
-printf("%s\n", fileNameChar);
+
   // Send the name of the file
   status = sendto(
     socketDesc,
     fileNameChar,
-    CHUNCK_SIZE,
+    sizeof(fileNameChar),
     0,
     (const struct sockaddr *) &serverAddress,
     sizeof(struct sockaddr_in)
@@ -574,7 +609,7 @@ printf("%s\n", fileNameChar);
   while (TRUE) {
     status = recvfrom(
       socketDesc,
-      ack,
+      &ack,
       ACK_SIZE,
       0,
       (struct sockaddr *) &serverAddress,

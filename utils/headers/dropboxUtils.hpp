@@ -56,6 +56,8 @@
 #define ACK_DOWNLOAD 2
 #define DELETE_FILE "deletefile"
 #define CONFIRMED_DEL 1
+#define EXIT_SERVER "exitserver"
+#define CONFIRMED_EXIT 1
 
 typedef struct datagram {
    int  chunckId;

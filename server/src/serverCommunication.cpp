@@ -97,7 +97,8 @@ void ServerCommunication::serverComm(int port) {
         strcmp(userInfo.message, DOWNLOAD) != 0 &&
         strcmp(userInfo.message, LIST_SERVER) != 0 &&
         strcmp(userInfo.message, GET_SYNC_DIR) != 0 &&
-        strcmp(userInfo.message, DELETE_FILE) != 0
+        strcmp(userInfo.message, DELETE_FILE) != 0 &&
+        strcmp(userInfo.message, EXIT_SERVER) != 0
       );
 
     if (strcmp(userInfo.message, UPLOAD) == EQUAL) {
@@ -389,7 +390,7 @@ void ServerCommunication::serverComm(int port) {
       char filename[30] = {}, ack[10];
       //string database = DATABASE;
       //string slash = SLASH;
-fflush(stdin);
+      fflush(stdin);
       status = recvfrom(
         socketDesc,
         filename,
@@ -426,10 +427,26 @@ fflush(stdin);
       //cout << "ack: " << filename;
 
     }
+    else if (strcmp(userInfo.message, EXIT_SERVER) == EQUAL) {
+      char ack[10];
+      fflush(stdin);
+
+      // Send ack of deleted
+      sprintf(ack, "%d", CONFIRMED_EXIT);
+      status = sendto(
+        socketDesc,
+        ack,
+        sizeof(ack),
+        0,
+        (const struct sockaddr *) &clientAddress,
+        sizeof(struct sockaddr_in)
+      );
+      if (status < 0) {
+        throwError("[ServerCommunication::serverComm]: Error on sending ack");
+      }
+    }
+
   }
-
-  close(socketDesc);
-
 }
 
 void ServerCommunication::setLoggedUser(string loggedUserId) {
