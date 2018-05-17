@@ -92,10 +92,6 @@ void ServerCommunication::serverComm(int port) {
       if (strcmp(loggedUserIdChar, "") == EQUAL) {
         setLoggedUser(userInfo.userId);
       }
-      string userIdLogged;
-      userIdLogged = userInfo.userId;
-      string userPath = "db/clients/sync_dir_" + userIdLogged;
-      folder->createFolder("db/clients/" + userIdLogged);
     } while (
         strcmp(userInfo.message, UPLOAD) != 0 &&
         strcmp(userInfo.message, DOWNLOAD) != 0 &&
