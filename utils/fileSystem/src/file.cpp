@@ -27,3 +27,8 @@ string File::getWhenAccessed() {
 string File::getWhenCreated() {
   return this->whenCreated;
 }
+
+bool File::fileExists (char *filename) {
+  struct stat buffer;
+  return (stat (filename, &buffer) == EQUAL);
+}
