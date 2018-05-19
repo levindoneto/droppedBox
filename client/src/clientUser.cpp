@@ -27,7 +27,7 @@ void ClientUser::startThreads(){
   //    thread userLoop = thread(&ClientUser::userLoop, this);
   //thread commandLoopThread = thread(&ClientUser::commandLoop, this);
   //inotifyThread.join();
-  //userLoop.join();
+  inotifyThread.join();
 }
 
 void ClientUser::syncDirLoop() {
