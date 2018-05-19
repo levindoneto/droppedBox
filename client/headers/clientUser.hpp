@@ -17,6 +17,7 @@
 
 #include "../../utils/headers/device.hpp"
 #include "../../utils/fileSystem/headers/folder.hpp"
+#include "../../utils/fileSystem/headers/file.hpp"
 #include "../../utils/headers/dropboxUtils.hpp"
 #include "../../utils/headers/ui.hpp"
 #include "../../utils/headers/udpUtils.hpp"

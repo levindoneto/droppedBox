@@ -9,6 +9,7 @@
 #include "../headers/clientUser.hpp"
 #include "../../utils/headers/ui.hpp"
 #include "../../utils/headers/dropboxUtils.hpp"
+
 using namespace std;
 
 ClientUser::ClientUser(string userId, Folder *userFolder, char* ip, int port) {
@@ -20,12 +21,13 @@ ClientUser::ClientUser(string userId, Folder *userFolder, char* ip, int port) {
 }
 
 void ClientUser::startThreads(){
+  //inotifyEvent();
   thread inotifyThread = thread(&ClientUser::inotifyEvent, this);
-  thread syncDirThread = thread(&ClientUser::syncDirLoop, this);
-  thread userLoop = thread(&ClientUser::userLoop, this);
-  thread commandLoopThread = thread(&ClientUser::commandLoop, this);
-  inotifyThread.join();
-  userLoop.join();
+  //thread syncDirThread = thread(&ClientUser::syncDirLoop, this);
+  //    thread userLoop = thread(&ClientUser::userLoop, this);
+  //thread commandLoopThread = thread(&ClientUser::commandLoop, this);
+  //inotifyThread.join();
+  //userLoop.join();
 }
 
 void ClientUser::syncDirLoop() {
@@ -54,66 +56,46 @@ void ClientUser::userLoop() {
 }
 
 void ClientUser::inotifyEvent() {
-  cout << "inotify" << endl;
-  int init;
-  int i;
-  int watchedFolder;
-  int length;
-  char buffer[EVENT_BUF_LEN];
-
+  int fd, wd, wd1, i = 0, len = 0;
+  char pathname[100],buf[1024];
+  struct inotify_event *event;
   string folderStr = this->userFolder->getHome();
   folderStr += "/sync_dir_" + this->userId;
-  cout << folderStr << endl;
+  //cout << folderStr << endl;
+  char watchedPath[100];
+  folderStr.copy(watchedPath, folderStr.length(), 0);
+  fd = inotify_init1(IN_NONBLOCK);
+  bool notTempFile;
+  bool threIsThisFile;
+  wd = inotify_add_watch(fd, watchedPath, IN_ALL_EVENTS);
 
-  char folder[CHUNCK_SIZE];
-  folderStr.copy(folder, folderStr.length(), 0);
-
-  init = inotify_init();
-  if (init == ERROR) {
-    throwError("Could not initialize inotify");
-  }
-
-  watchedFolder = inotify_add_watch(init, folder, INOTIFY_EVENTS);
-
-  if (watchedFolder == ERROR) {
-    throwError("It could not watch that folder");
-  }
-
-  while(TRUE) {
-    cout << "inotifyTRUE" << endl;
+  while(true) {
     i = 0;
-    length = read(init, buffer, EVENT_BUF_LEN);
+    len = read(fd,buf,1024);
 
-    while (i < length) {
-      struct inotify_event *event = (struct inotify_event *) &buffer[i];
-      if (event->len) {
-        if (event->mask & IN_CREATE) {
-            cout << "Arquivo criado" << '\n';
-        }
-        else if (event->mask & IN_MODIFY) {
-          cout << "modifcs" << endl;
-        }
-        else if (event->mask & IN_DELETE) {
-          cout << "Delete" << endl;
-        }
-        else if (event->mask & IN_MOVED_FROM) {
-          cout << "mvd from" << endl;
-        }
-        else if (event->mask & IN_MOVED_TO) {
-          std::cout << "movd t" << '\n';
-        }
-        else if (event->mask & IN_OPEN || event->mask & IN_ACCESS) {
-          cout << "open" << endl;
-        }
-
-        i += EVENT_SIZE + event->len;
-
+    while(i < len) {
+      event = (struct inotify_event *) &buf[i];
+      sprintf(pathname, "%s/%s", watchedPath, event->name);
+      notTempFile = (event->name[0] != '.') && (event->name[strlen(event->name) - 1] != '~');
+      threIsThisFile = fileExists(pathname);
+      if(!fileExists(pathname) && notTempFile) {
+        printf("%s : deleted\n",event->name);
       }
+      if(event->mask & (IN_MODIFY | IN_CLOSE_WRITE)) {
+        notTempFile = (event->name[0] != '.') && (event->name[strlen(event->name) - 1] != '~');
+        threIsThisFile = fileExists(pathname);
+        if (notTempFile && threIsThisFile)
+          printf("%s : modified\n",event->name);
+        else if (!threIsThisFile)
+          printf("%s : deleted\n",event->name);
+      }
+      // update index to start of next event
+      i += sizeof(struct inotify_event) + event->len;
     }
   }
 }
 
-vector<string> ClientUser::getCommandFromQueue(){
+vector<string> ClientUser::getCommandFromQueue() {
   this->commandMutex.lock();
   vector<string> c = this->commandQueue.front();
   this->commandQueue.pop();
@@ -121,7 +103,7 @@ vector<string> ClientUser::getCommandFromQueue(){
   return c;
 }
 
-void ClientUser::addCommandToQueue(vector<string> command){
+void ClientUser::addCommandToQueue(vector<string> command) {
   this->commandMutex.lock();
   this->commandQueue.push(command);
   this->commandMutex.unlock();

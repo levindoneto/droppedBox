@@ -75,7 +75,7 @@ typedef struct userInfo {
     IN_OPEN – File was opened
     IN_ACCESS – File was readed */
 #define INOTIFY_EVENTS IN_MODIFY | IN_CREATE | IN_DELETE\
- | IN_MOVED_FROM | IN_MOVED_TO | IN_OPEN | IN_ACCESS
+ | IN_MOVED_FROM | IN_MOVED_TO | IN_OPEN | IN_ACCESS | IN_CLOSE_WRITE
 
 #define EVENT_SIZE sizeof (struct inotify_event)
 #define LEN_NAME 16
