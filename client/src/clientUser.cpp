@@ -93,6 +93,12 @@ void ClientUser::inotifyEvent() {
         notTempFile = (event->name[0] != '.') && (event->name[strlen(event->name) - 1] != '~');
         threIsThisFile = fileExists(pathname);
         if (notTempFile && threIsThisFile) {
+          string command = GET_SYNC_DIR;
+          string parameter = "";
+          vector<string> commandToRun;
+          commandToRun.push_back(command);
+          commandToRun.push_back(parameter);
+          addCommandToQueue(commandToRun);
           FILE *fp;
           fp=fopen("testinotify.txt","w");
           fclose(fp);
