@@ -3,9 +3,12 @@
 #include <unistd.h>
 #include <string.h>
 #include <thread>
+#include <vector>
+#include <string>
 
 #include "../headers/clientUser.hpp"
-
+#include "../../utils/headers/ui.hpp"
+#include "../../utils/headers/dropboxUtils.hpp"
 using namespace std;
 
 ClientUser::ClientUser(string userId, Folder *userFolder, char* ip, int port) {
@@ -21,6 +24,7 @@ void ClientUser::startThreads(){
   thread syncDirThread = thread(&ClientUser::syncDirLoop, this);
   thread userLoop = thread(&ClientUser::userLoop, this);
   thread commandLoopThread = thread(&ClientUser::commandLoop, this);
+  inotifyThread.join();
   userLoop.join();
 }
 
@@ -37,10 +41,20 @@ void ClientUser::commandLoop() {
 
 void ClientUser::userLoop() {
   cout << "ITS ALIVE! user" << endl;
-  while(TRUE);
+  int resp;
+  string command;
+  vector<string> commandToRun;
+  showMenu();
+  while(resp != EXIT) {
+    //commandToRun = getUserCommand();
+    command = commandToRun.front();
+    //parameter = commandToRun.back();
+    cout << command << endl;
+  };
 }
 
 void ClientUser::inotifyEvent() {
+  cout << "inotify" << endl;
   int init;
   int i;
   int watchedFolder;
@@ -66,6 +80,7 @@ void ClientUser::inotifyEvent() {
   }
 
   while(TRUE) {
+    cout << "inotifyTRUE" << endl;
     i = 0;
     length = read(init, buffer, EVENT_BUF_LEN);
 
@@ -75,23 +90,24 @@ void ClientUser::inotifyEvent() {
         if (event->mask & IN_CREATE) {
             cout << "Arquivo criado" << '\n';
         }
-        if (IN_MODIFY) {
-
+        else if (event->mask & IN_MODIFY) {
+          cout << "modifcs" << endl;
         }
-        if (event->mask & IN_DELETE) {
-
+        else if (event->mask & IN_DELETE) {
+          cout << "Delete" << endl;
         }
-        if (IN_MOVED_FROM) {
-
+        else if (event->mask & IN_MOVED_FROM) {
+          cout << "mvd from" << endl;
         }
-        if (IN_MOVED_TO) {
-
+        else if (event->mask & IN_MOVED_TO) {
+          std::cout << "movd t" << '\n';
         }
-        if (IN_OPEN || IN_ACCESS) {
-
+        else if (event->mask & IN_OPEN || event->mask & IN_ACCESS) {
+          cout << "open" << endl;
         }
 
         i += EVENT_SIZE + event->len;
+
       }
     }
   }
