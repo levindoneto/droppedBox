@@ -43,7 +43,8 @@ int main (int argc, char **argv) {
   user->startThreads();
 
   Process* proc = new Process();
-  
+
+  /*
   showMenu();
   while(resp != EXIT) {
     fflush(stdin);
@@ -53,7 +54,7 @@ int main (int argc, char **argv) {
     resp = proc->managerCommands(command, parameter, user, port, hostConn, socket);
   }
   delete[] hostConn;
-
+  */
   exit(TRUE);
 
   return 0;

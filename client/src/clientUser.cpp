@@ -5,10 +5,12 @@
 #include <thread>
 #include <vector>
 #include <string>
+#include<stdio.h>
 
 #include "../headers/clientUser.hpp"
 #include "../../utils/headers/ui.hpp"
 #include "../../utils/headers/dropboxUtils.hpp"
+#include "../../utils/headers/process.hpp"
 
 using namespace std;
 
@@ -23,35 +25,40 @@ ClientUser::ClientUser(string userId, Folder *userFolder, char* ip, int port) {
 void ClientUser::startThreads(){
   //inotifyEvent();
   thread inotifyThread = thread(&ClientUser::inotifyEvent, this);
-  //thread syncDirThread = thread(&ClientUser::syncDirLoop, this);
-  //    thread userLoop = thread(&ClientUser::userLoop, this);
-  //thread commandLoopThread = thread(&ClientUser::commandLoop, this);
+  thread syncDirThread = thread(&ClientUser::syncDirLoop, this);
+  thread userLoop = thread(&ClientUser::userLoop, this);
+  thread commandLoopThread = thread(&ClientUser::commandLoop, this);
+  userLoop.join();
   //inotifyThread.join();
-  inotifyThread.join();
 }
 
 void ClientUser::syncDirLoop() {
   usleep(10000000); //10 seconds
-  cout << "ITS ALIVE! sync" << endl;
+  //cout << "ITS ALIVE! sync" << endl;
   while(TRUE);
 }
 
 void ClientUser::commandLoop() {
-  cout << "ITS ALIVE! command" << endl;
+  //cout << "ITS ALIVE! command" << endl;
   while(TRUE);
 }
 
 void ClientUser::userLoop() {
-  cout << "ITS ALIVE! user" << endl;
-  int resp;
-  string command;
-  vector<string> commandToRun;
+  int resp = !EXIT;
+  string command, parameter, ip = this->ip;
+  vector<string> commandToRun, wholeCommand;
+  Process* proc = new Process();
   showMenu();
   while(resp != EXIT) {
-    //commandToRun = getUserCommand();
-    command = commandToRun.front();
-    //parameter = commandToRun.back();
-    cout << command << endl;
+    commandToRun = getUserCommand();
+    addCommandToQueue(commandToRun);
+    wholeCommand = getCommandFromQueue();
+    command = wholeCommand.front();
+    parameter = wholeCommand.back();
+    //cout << command << endl;
+    //cout << parameter << endl;
+
+    resp = proc->managerCommands(command, parameter, this, this->port, ip, this->socketDescriptor);
   };
 }
 
@@ -79,15 +86,21 @@ void ClientUser::inotifyEvent() {
       notTempFile = (event->name[0] != '.') && (event->name[strlen(event->name) - 1] != '~');
       threIsThisFile = fileExists(pathname);
       if(!fileExists(pathname) && notTempFile) {
-        printf("%s : deleted\n",event->name);
+        int a = 0;
+        //printf("%s : deleted\n",event->name);
       }
       if(event->mask & (IN_MODIFY | IN_CLOSE_WRITE)) {
         notTempFile = (event->name[0] != '.') && (event->name[strlen(event->name) - 1] != '~');
         threIsThisFile = fileExists(pathname);
-        if (notTempFile && threIsThisFile)
-          printf("%s : modified\n",event->name);
+        if (notTempFile && threIsThisFile) {
+          FILE *fp;
+          fp=fopen("testinotify.txt","w");
+          fclose(fp);
+          //printf("%s : modified\n",event->name);
+        }
         else if (!threIsThisFile)
-          printf("%s : deleted\n",event->name);
+          int c = 0;
+          //printf("%s : deleted\n",event->name);
       }
       // update index to start of next event
       i += sizeof(struct inotify_event) + event->len;
@@ -166,4 +179,19 @@ int ClientUser::loginServer() {
   writeToSocket(userInfo, socketDesc, ip, port);
 
   return socketDesc;
+}
+
+vector<string> ClientUser::getUserCommand() {
+  vector<string> commandWithParameter;
+  string wholeCommand;
+  char string[256];
+  cout << endl << PREFIX << " ";
+  fflush(stdin);
+  //scanf("%s\n", string);
+  cin.clear();
+  cin.sync();
+  getline(cin, wholeCommand);
+  //wholeCommand = string;
+  commandWithParameter = parseUserCommand(wholeCommand, " ");
+  return commandWithParameter;
 }
