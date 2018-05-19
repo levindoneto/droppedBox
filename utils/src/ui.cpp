@@ -36,13 +36,3 @@ vector<string> parseUserCommand(const string& input, const string& separator) {
   } while (position < input.length() && previous < input.length());
   return commandWithParameter;
 }
-
-
-vector<string> getUserCommand() {
-  vector<string> commandWithParameter;
-  string wholeCommand;
-  cout << endl << PREFIX << " ";
-  getline(cin, wholeCommand);
-  commandWithParameter = parseUserCommand(wholeCommand, " ");
-  return commandWithParameter;
-}
