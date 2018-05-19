@@ -75,6 +75,9 @@ void ClientUser::inotifyEvent() {
   bool notTempFile;
   bool threIsThisFile;
   wd = inotify_add_watch(fd, watchedPath, IN_ALL_EVENTS);
+  string command;
+  string parameter;
+  vector<string> commandToRun;
 
   while(true) {
     i = 0;
@@ -86,23 +89,31 @@ void ClientUser::inotifyEvent() {
       notTempFile = (event->name[0] != '.') && (event->name[strlen(event->name) - 1] != '~');
       threIsThisFile = fileExists(pathname);
       if(!fileExists(pathname) && notTempFile) {
-        int a = 0;
+        command = DELETE_FILE;
+        parameter = event->name;
+        commandToRun.push_back(command);
+        commandToRun.push_back(parameter);
+        addCommandToQueue(commandToRun);
+        command.clear();
+        parameter.clear();
+        commandToRun.clear();
         //printf("%s : deleted\n",event->name);
       }
       if(event->mask & (IN_MODIFY | IN_CLOSE_WRITE)) {
         notTempFile = (event->name[0] != '.') && (event->name[strlen(event->name) - 1] != '~');
         threIsThisFile = fileExists(pathname);
         if (notTempFile && threIsThisFile) {
+          command = GET_SYNC_DIR;
+          parameter = "";
           string command = GET_SYNC_DIR;
           string parameter = "";
           vector<string> commandToRun;
           commandToRun.push_back(command);
           commandToRun.push_back(parameter);
           addCommandToQueue(commandToRun);
-          FILE *fp;
-          fp=fopen("testinotify.txt","w");
-          fclose(fp);
-          //printf("%s : modified\n",event->name);
+          command.clear();
+          parameter.clear();
+          commandToRun.clear();
         }
         else if (!threIsThisFile)
           int c = 0;
