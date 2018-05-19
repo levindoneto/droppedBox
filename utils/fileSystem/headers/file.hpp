@@ -20,4 +20,5 @@ class File {
     string getWhenChanged();
     string getWhenAccessed();
     string getWhenCreated();
+    bool fileExists (char *filename)
 };
