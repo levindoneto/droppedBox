@@ -23,19 +23,28 @@ ClientUser::ClientUser(string userId, Folder *userFolder, char* ip, int port) {
 }
 
 void ClientUser::startThreads(){
-  //inotifyEvent();
   thread inotifyThread = thread(&ClientUser::inotifyEvent, this);
   thread syncDirThread = thread(&ClientUser::syncDirLoop, this);
   thread userLoop = thread(&ClientUser::userLoop, this);
   thread commandLoopThread = thread(&ClientUser::commandLoop, this);
   userLoop.join();
-  //inotifyThread.join();
 }
 
 void ClientUser::syncDirLoop() {
-  usleep(10000000); //10 seconds
-  //cout << "ITS ALIVE! sync" << endl;
-  while(TRUE);
+  while(true) {
+    string command;
+    string parameter;
+    vector<string> commandToRun;
+    command = GET_SYNC_DIR;
+    parameter = EMPTY_PATH;
+    commandToRun.push_back(command);
+    commandToRun.push_back(parameter);
+    addCommandToQueue(commandToRun);
+    command.clear();
+    parameter.clear();
+    commandToRun.clear();
+    usleep(10000000); //10 seconds
+  }
 }
 
 void ClientUser::commandLoop() {
@@ -55,9 +64,6 @@ void ClientUser::userLoop() {
     wholeCommand = getCommandFromQueue();
     command = wholeCommand.front();
     parameter = wholeCommand.back();
-    //cout << command << endl;
-    //cout << parameter << endl;
-
     resp = proc->managerCommands(command, parameter, this, this->port, ip, this->socketDescriptor);
   };
 }
@@ -99,12 +105,12 @@ void ClientUser::inotifyEvent() {
         commandToRun.clear();
         //printf("%s : deleted\n",event->name);
       }
-      if(event->mask & (IN_MODIFY | IN_CLOSE_WRITE)) {
+      if(event->mask & IN_CLOSE_WRITE) {
         notTempFile = (event->name[0] != '.') && (event->name[strlen(event->name) - 1] != '~');
         threIsThisFile = fileExists(pathname);
         if (notTempFile && threIsThisFile) {
-          command = GET_SYNC_DIR;
-          parameter = "";
+          command = UPLOAD;
+          parameter = event->name;
           string command = GET_SYNC_DIR;
           string parameter = "";
           vector<string> commandToRun;
@@ -115,9 +121,6 @@ void ClientUser::inotifyEvent() {
           parameter.clear();
           commandToRun.clear();
         }
-        else if (!threIsThisFile)
-          int c = 0;
-          //printf("%s : deleted\n",event->name);
       }
       // update index to start of next event
       i += sizeof(struct inotify_event) + event->len;
