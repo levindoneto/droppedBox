@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <semaphore.h>
 
 #define UNDEF -1 // not specified informationC
 #define INIT 0 // for initialization of parameters
@@ -88,3 +89,16 @@ using namespace std;
 // Function which takes a string, and shows it, followed by exiting the app
 void throwError (char* errorMessage);
 unsigned int fileSize(string filePath);
+
+class Semaphore {
+public:
+  Semaphore(int initValue);
+  Semaphore(void);
+  ~Semaphore(void);
+  void init(int initValue);
+  int post();
+  int wait();
+  private:;
+  bool initialized;
+  sem_t internalSemaphore;
+};

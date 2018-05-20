@@ -26,3 +26,44 @@ unsigned int fileSize(string filePath) {
   fclose(f);
   return len;
 }
+
+Semaphore::Semaphore() {
+  if (initialized) {
+    sem_destroy(&this->internalSemaphore);
+  }
+  sem_init(&internalSemaphore, 0, 0);
+  initialized = true;
+}
+
+void Semaphore::init(int initValue) {
+  if (initialized) {
+    sem_destroy(&this->internalSemaphore);
+  }
+  sem_init(&internalSemaphore, 0, initValue);
+  initialized = true;
+}
+
+Semaphore::~Semaphore(void) {
+  int status = sem_destroy(&this->internalSemaphore);
+  if (status) {
+      std::cout << "[Error] Could not destroy semaphore." << std::endl;
+    } else {
+    this->initialized = false;
+  }
+}
+
+int Semaphore::wait() {
+  int status = sem_wait(&this->internalSemaphore);
+  if (status) {
+    std::cout << "[Error] Could not destroy semaphore." << std::endl;
+  }
+  return status;
+}
+
+int Semaphore::post() {
+  int status = sem_post(&this->internalSemaphore);
+  if (status) {
+    std::cout << "[Error] Could not post semaphore." << std::endl;
+  }
+  return status;
+}

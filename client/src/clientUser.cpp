@@ -5,7 +5,8 @@
 #include <thread>
 #include <vector>
 #include <string>
-#include<stdio.h>
+#include <stdio.h>
+#include <semaphore.h>
 
 #include "../headers/clientUser.hpp"
 #include "../../utils/headers/ui.hpp"
@@ -27,44 +28,41 @@ void ClientUser::startThreads(){
   thread syncDirThread = thread(&ClientUser::syncDirLoop, this);
   thread userLoop = thread(&ClientUser::userLoop, this);
   thread commandLoopThread = thread(&ClientUser::commandLoop, this);
-  userLoop.join();
+  commandLoopThread.join();
 }
 
 void ClientUser::syncDirLoop() {
   while(true) {
-    string command;
-    string parameter;
-    vector<string> commandToRun;
-    command = GET_SYNC_DIR;
-    parameter = EMPTY_PATH;
-    commandToRun.push_back(command);
-    commandToRun.push_back(parameter);
+    const char* command[] = {GET_SYNC_DIR, ""};
+    vector<string> commandToRun(command, command+2);
     addCommandToQueue(commandToRun);
-    command.clear();
-    parameter.clear();
-    commandToRun.clear();
     usleep(10000000); //10 seconds
   }
 }
 
 void ClientUser::commandLoop() {
-  //cout << "ITS ALIVE! command" << endl;
-  while(TRUE);
+  int resp = !EXIT;
+  vector<string> command;
+  Process* proc = new Process();
+  while(TRUE){
+    command = getCommandFromQueue();
+    resp = proc->managerCommands(command.front(),
+                                 command.back(),
+                                 this,
+                                 this->port,
+                                 ip,
+                                 this->socketDescriptor
+    );
+  }
 }
 
 void ClientUser::userLoop() {
-  int resp = !EXIT;
   string command, parameter, ip = this->ip;
-  vector<string> commandToRun, wholeCommand;
-  Process* proc = new Process();
+  vector<string> commandToRun;
   showMenu();
-  while(resp != EXIT) {
+  while(TRUE) {
     commandToRun = getUserCommand();
     addCommandToQueue(commandToRun);
-    wholeCommand = getCommandFromQueue();
-    command = wholeCommand.front();
-    parameter = wholeCommand.back();
-    resp = proc->managerCommands(command, parameter, this, this->port, ip, this->socketDescriptor);
   };
 }
 
@@ -129,6 +127,7 @@ void ClientUser::inotifyEvent() {
 }
 
 vector<string> ClientUser::getCommandFromQueue() {
+  this->commandAllocation.wait();
   this->commandMutex.lock();
   vector<string> c = this->commandQueue.front();
   this->commandQueue.pop();
@@ -138,6 +137,7 @@ vector<string> ClientUser::getCommandFromQueue() {
 
 void ClientUser::addCommandToQueue(vector<string> command) {
   this->commandMutex.lock();
+  this->commandAllocation.post();
   this->commandQueue.push(command);
   this->commandMutex.unlock();
 }

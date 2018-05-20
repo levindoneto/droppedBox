@@ -27,7 +27,7 @@ SERVER_O = server/src/dropboxServer.o \
 
 .PHONY: all clean
 
-all: dropboxServer dropboxClient
+all: dropboxServer dropboxClient removeObjects
 
 dropboxServer: $(UTILS_S) $(SERVER_O)
 	$(CC) $(CFLAGS) -o $@ $^

@@ -33,6 +33,7 @@ class ClientUser {
   private:
     string userId;
     mutex commandMutex;
+    Semaphore commandAllocation;
     queue<vector<string> > commandQueue;
     bool queueEmpty;
 
