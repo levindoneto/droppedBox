@@ -1,6 +1,24 @@
-#pragma once
+#ifndef DROPBOXUTILS_HPP
+#define DROPBOXUTILS_HPP
+
+#include <netinet/in.h>
+#include <netdb.h> // hostent
+#include <pthread.h>
+#include <string.h> // bzero
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <unistd.h> // close
+#include <fstream>
+#include <iostream>
+#include <list>
+#include <map>
 #include <string>
-#include <semaphore.h>
+#include <stdexcept>
+#include <string>
+#include <vector>
+#include <list>
+
+using namespace std;
 
 #define UNDEF -1 // not specified informationC
 #define INIT 0 // for initialization of parameters
@@ -41,6 +59,7 @@
 #define DATABASE "db/clients/sync_dir_"
 #define CHUNCK_SIZE 1024
 #define BUFFER_SIZE sizeof(datagram)
+#define TIMEO 1
 #define NO_USER ""
 #define FILENAME_LABEL_S "     Name of the File        "
 #define ACCESS_TIME_LABEL_S "        Access Time      |"
@@ -48,7 +67,7 @@
 #define CREATION_TIME_LABEL_S "      Creation Time       |"
 #define BREAK_LINE "\n"
 #define FORMAT_NAME_FILE_S " "
-#define FILENAME_SIZE 30
+#define FILENAME_SIZE 75
 #define ACK_SIZE 10
 #define SLASH "/"
 #define SEP_SYNC_DIR " "
@@ -57,6 +76,18 @@
 #define ACK_DOWNLOAD 2
 #define DELETE_FILE "deletefile"
 #define CONFIRMED_DEL 1
+#define ERROR_MSG_SIZE 150
+#define MAX_USER_ID_SIZE 36
+#define FILES_PER_USER_MAX 36
+#define ISO_TIME_LEN_MAX 150
+#define LEN_PATH_FOLDER 150
+#define LEN_ISO_TIME 150
+#define LEN_EXT_ARQ 50
+#define MAX_DEVS 2
+#define LEN_ISO_TIME 150
+#define LEN_ID_USER 150
+#define N_FILES 45
+
 
 typedef struct datagram {
    int  chunckId;
@@ -74,7 +105,7 @@ typedef struct userInfo {
     IN_MOVED_FROM – File moved out of watched directory
     IN_MOVED_TO – File moved into watched directory
     IN_OPEN – File was opened
-    IN_ACCESS – File was readed */
+    IN_ACCESS – File was read */
 #define INOTIFY_EVENTS IN_MODIFY | IN_CREATE | IN_DELETE\
  | IN_MOVED_FROM | IN_MOVED_TO | IN_OPEN | IN_ACCESS | IN_CLOSE_WRITE
 
@@ -84,21 +115,23 @@ typedef struct userInfo {
 #define MAX_EVENTS 1024
 #define EVENT_BUF_LEN MAX_EVENTS * (EVENT_SIZE + LEN_NAME)
 
-using namespace std;
-
 // Function which takes a string, and shows it, followed by exiting the app
-void throwError (char* errorMessage);
+void throwError (char* errorData);
 unsigned int fileSize(string filePath);
 
-class Semaphore {
+static const string HOME = string(getenv("HOME"));
+
+bool allowSending(string nameOfTheFile);
+void unlock_file(string fil);
+
+string obatingNameOfTheFile(string filepath);
+unsigned int obtainTSofFile(string nameOfTheFile);
+string ObtaingJustNameOfTheFile(string nameOfTheFile);
+
+class timeout_exception : public runtime_error
+{
 public:
-  Semaphore(int initValue);
-  Semaphore(void);
-  ~Semaphore(void);
-  void init(int initValue);
-  int post();
-  int wait();
-  private:;
-  bool initialized;
-  sem_t internalSemaphore;
+  timeout_exception() : runtime_error("ERROR: Timeout") {}
 };
+
+#endif

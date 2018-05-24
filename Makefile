@@ -1,25 +1,29 @@
+# ANA, MATHEUS, LEVINDO E FELIPE - UFRGS - 2018.1
+
 CC = g++
 INCLUDE = -I./util
 FLAGS = -g -Wall -pthread -std=gnu++11
 CFLAGS = $(FLAGS) $(INCLUDE)
-UTILS_C = utils/src/device.o \
-					utils/src/ui.o \
+UTILS_C = utils/src/ui.o \
+					utils/src/data.o \
 					utils/src/udpUtils.o \
 					utils/src/dropboxUtils.o \
-					utils/fileSystem/src/folder.o \
+					utils/src/parUtils.o \
 					utils/fileSystem/src/file.o \
-					utils/src/ui.o \
+					utils/fileSystem/src/folder.o \
 					utils/src/process.o
 
-UTILS_S = utils/src/device.o \
-					utils/src/ui.o \
+UTILS_S = utils/src/ui.o \
+					utils/src/data.o \
 					utils/src/udpUtils.o \
 					utils/src/dropboxUtils.o \
-					utils/fileSystem/src/folder.o \
+					utils/src/parUtils.o \
 					utils/fileSystem/src/file.o \
+					utils/fileSystem/src/folder.o \
+					utils/src/process.o
 
 CLIENT_O = client/src/dropboxClient.o \
-					 client/src/clientUser.o
+					 client/src/clientCommunication.o
 
 SERVER_O = server/src/dropboxServer.o \
 					 server/src/serverCommunication.o \
