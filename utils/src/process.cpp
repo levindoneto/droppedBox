@@ -19,9 +19,9 @@ Process::Process(string idUser, string session, UDPUtils *sock) {
 
 void Process::login() {
   send(Data::T_SYN, idUser);
-  receive_ack();
+  rcvConfirmation();
   sock->set_dest_address(sock->get_sender_address());
-  send_ack();
+  sendConfirmation();
   folderOfTheUser = HOME + "/sync_dir_" + idUser;
   File *file = new File();
   file->createFolderForFiles(folderOfTheUser);
@@ -29,8 +29,8 @@ void Process::login() {
 
 void Process::initProcessComm() {
   theLastPartRCV = 0;
-  send_ack();
-  receive_ack();
+  sendConfirmation();
+  rcvConfirmation();
   folderOfTheUser = idUser;
   File *file = new File();
   file->createFolderForFiles(folderOfTheUser);
@@ -43,7 +43,7 @@ void Process::send(string type, string content) {
   messages_sent[theLastPartS] = msg.to_string();
 }
 
-void Process::send_ack(bool workedProperly) {
+void Process::sendConfirmation(bool workedProperly) {
   if (workedProperly) {
     send(Data::T_ACK, to_string(theLastPartRCV));
   }
@@ -54,28 +54,28 @@ void Process::send_ack(bool workedProperly) {
 
 int Process::sendArq(string filepath) {
   ifstream file(filepath, std::ifstream::binary);
-  char buffer[DATAGRAM_LEN];
+  char chunk[DATAGRAM_LEN];
   do {
-    file.read(buffer, DATAGRAM_LEN);
-    send(Data::T_FILE, string(buffer, file.gcount()));
-    receive_ack();
+    file.read(chunk, DATAGRAM_LEN);
+    send(Data::T_FILE, string(chunk, file.gcount()));
+    rcvConfirmation();
   } while (!file.eof());
   send(Data::T_EOF);
-  receive_ack();
+  rcvConfirmation();
   return 0;
 }
 
-void Process::send_string(string data) {
-  string buffer;
+void Process::sendText(string data) {
+  string chunk;
   int pos = DATAGRAM_LEN;
   do {
-    buffer = data.substr(0, pos);
-    send(Data::T_LS, buffer);
-    receive_ack();
+    chunk = data.substr(0, pos);
+    send(Data::T_LS, chunk);
+    rcvConfirmation();
     data.erase(0, pos);
   } while (data.length() > 0);
   send(Data::T_EOF);
-  receive_ack();
+  rcvConfirmation();
 }
 
 void Process::resend() {
@@ -88,7 +88,7 @@ void Process::resend() {
   }
 }
 
-bool Process::receive_ack() {
+bool Process::rcvConfirmation() {
   //printf("awaiting ack da ultima sequencia\n");
   while (true) {
     Data msg = receive();
@@ -189,12 +189,12 @@ string Process::receive_string() {
     {
       if (msg.type == Data::T_EOF) {
         theLastPartRCV = msg.sequence;
-        send_ack();
+        sendConfirmation();
         return received_data;
       } else if (msg.type == Data::T_LS) {
         theLastPartRCV = msg.sequence;
         received_data += msg.content;
-        send_ack();
+        sendConfirmation();
       }
     }
   }
@@ -210,16 +210,16 @@ int Process::getArq(string filepath) {
       {
         theLastPartRCV = msg.sequence;
         file.write(msg.content.data(), msg.content.length());
-        send_ack();
+        sendConfirmation();
       } else if (msg.type == Data::T_SOF) {
         theLastPartRCV = msg.sequence;
         longTime = stoi(msg.content);
         file.open(filepath, ofstream::binary | ofstream::trunc);
 
-        send_ack();
+        sendConfirmation();
       } else if (msg.type == Data::T_EOF) {
         theLastPartRCV = msg.sequence;
-        send_ack();
+        sendConfirmation();
         file.close();
 
         // Sets modification time
@@ -236,7 +236,7 @@ int Process::getArq(string filepath) {
       }
       else if (msg.type == Data::T_ERROR) {
         theLastPartRCV = msg.sequence;
-        send_ack();
+        sendConfirmation();
         return ERROR;
       }
     }

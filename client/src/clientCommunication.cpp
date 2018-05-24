@@ -20,7 +20,7 @@ ClientCommunication::ClientCommunication(Process *_processComm) {
 void *ClientCommunication::run() {
   while (true) {
     processComm->send(Data::T_SYNC);
-    processComm->receive_ack();
+    processComm->rcvConfirmation();
 
     list<string> listFiles = File::listNamesOfFiles(processComm->folderOfTheUser);
 
@@ -32,7 +32,7 @@ void *ClientCommunication::run() {
         if (timeStamp != -1) {
           string content = to_string(timeStamp) + '*' + idArq;
           processComm->send(Data::T_STAT, content);
-          processComm->receive_ack();
+          processComm->rcvConfirmation();
           list<string> expectedTypes;
           expectedTypes.push_back(Data::T_DOWNLOAD);
           expectedTypes.push_back(Data::T_UPLOAD);
@@ -42,7 +42,7 @@ void *ClientCommunication::run() {
           Data message = processComm->receive(expectedTypes);
 
           if (message.type == Data::T_DOWNLOAD) {
-            processComm->send_ack();
+            processComm->sendConfirmation();
             if (processComm->getArq(filePath) == 0)
               cout << "File received" << '\n';
             else {
@@ -51,13 +51,13 @@ void *ClientCommunication::run() {
             }
           }
           else if (message.type == Data::T_UPLOAD) {
-            processComm->send_ack();
+            processComm->sendConfirmation();
             try {
               if (!ifstream(filePath)) {
                 char error[ERROR_MSG_SIZE] = "Error on opening file";
                 throwError(error);
-                processComm->send_ack(false);
-                processComm->receive_ack();
+                processComm->sendConfirmation(false);
+                processComm->rcvConfirmation();
                 unlock_file(idArq);
                 continue;
               }
@@ -65,7 +65,7 @@ void *ClientCommunication::run() {
               int timeStamp = obtainTSofFile(filePath);
 
               processComm->send(Data::T_SOF, to_string(timeStamp));
-              processComm->receive_ack();
+              processComm->rcvConfirmation();
 
               if (processComm->sendArq(filePath) != 0) {
                 char error[ERROR_MSG_SIZE] = "Error sending file";
@@ -75,18 +75,18 @@ void *ClientCommunication::run() {
             catch (exception &e) {
               cout << e.what() << endl;
 
-              processComm->send_ack(false);
-              processComm->receive_ack();
+              processComm->sendConfirmation(false);
+              processComm->rcvConfirmation();
               unlock_file(idArq);
               continue;
             }
           }
           else if (message.type == Data::T_EQUAL) {
-            processComm->send_ack();
+            processComm->sendConfirmation();
             unlock_file(idArq);
             continue;
           } else {
-            processComm->send_ack();
+            processComm->sendConfirmation();
             unlock_file(idArq);
             continue;
           }
@@ -100,7 +100,7 @@ void *ClientCommunication::run() {
       }
     }
     processComm->send(Data::T_DONE);
-    processComm->receive_ack();
+    processComm->rcvConfirmation();
 
     list<string> expectedTypes;
     expectedTypes.push_back(Data::T_DONE);
@@ -111,14 +111,14 @@ void *ClientCommunication::run() {
     while (true) {
       Data message = processComm->receive(expectedTypes);
       if (message.type == Data::T_DONE) {
-        processComm->send_ack();
+        processComm->sendConfirmation();
         break;
       }
       else if (message.type == Data::T_DOWNLOAD) {
         string idArq = message.content;
         string filePath = processComm->folderOfTheUser + '/' + idArq;
         if (allowSending(idArq)) {
-          processComm->send_ack();
+          processComm->sendConfirmation();
           if (processComm->getArq(filePath) != 0) {
             char error[ERROR_MSG_SIZE] = "Error downloading files";
             throwError(error);
@@ -126,15 +126,15 @@ void *ClientCommunication::run() {
           unlock_file(idArq);
         }
         else {
-          processComm->send_ack(false);
-          processComm->receive_ack();
+          processComm->sendConfirmation(false);
+          processComm->rcvConfirmation();
           continue;
         }
       }
       else {
         char error[ERROR_MSG_SIZE] = "Error file not founded";
         throwError(error);
-        processComm->send_ack();
+        processComm->sendConfirmation();
         continue;
       }
     }

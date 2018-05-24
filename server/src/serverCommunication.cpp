@@ -26,7 +26,7 @@ void *ServerCommunication::run() {
     Data msg = processComm->receive(Data::T_SYNC);
     list<string> expected_types;
     bool receiving_stats = true;
-    processComm->send_ack();
+    processComm->sendConfirmation();
     expected_types.push_back(Data::T_STAT);
     expected_types.push_back(Data::T_DONE);
 
@@ -35,7 +35,7 @@ void *ServerCommunication::run() {
 
       // Check file timestamp
       if (msg.type == Data::T_STAT) {
-        processComm->send_ack();
+        processComm->sendConfirmation();
         int timestamp_sep = msg.content.find('|');
 
         int content_len = msg.content.size();
@@ -48,8 +48,8 @@ void *ServerCommunication::run() {
 
         if (!allowSending(nameOfTheFile)) {
           // ta mandando arq
-          processComm->send_ack(false);
-          processComm->receive_ack();
+          processComm->sendConfirmation(false);
+          processComm->rcvConfirmation();
           continue;
         }
 
@@ -61,10 +61,10 @@ void *ServerCommunication::run() {
           // server manda arq then
           try   {
             processComm->send(Data::T_DOWNLOAD);
-            processComm->receive_ack();
+            processComm->rcvConfirmation();
             int timestamp = obtainTSofFile(filepath);
             processComm->send(Data::T_SOF, to_string(timestamp));
-            processComm->receive_ack();
+            processComm->rcvConfirmation();
 
             if (processComm->sendArq(filepath) == 0)
               printf("download ok.");
@@ -79,7 +79,7 @@ void *ServerCommunication::run() {
         else if (timestamp_remote > timestamp_local || timestamp_local == ERROR) {
           // server gets
           processComm->send(Data::T_UPLOAD);
-          processComm->receive_ack();
+          processComm->rcvConfirmation();
 
           if (processComm->getArq(filepath) == 0)
             printf("up ok.");
@@ -88,17 +88,17 @@ void *ServerCommunication::run() {
         }
         else {
           processComm->send(Data::T_EQUAL);
-          processComm->receive_ack();
+          processComm->rcvConfirmation();
         }
 
         files_to_update.remove(nameOfTheFile);
         unlock_file(nameOfTheFile);
       }
       else if (msg.type == Data::T_DONE) {
-        processComm->send_ack();
+        processComm->sendConfirmation();
         if (files_to_update.size() == EQUAL) {
           processComm->send(Data::T_DONE);
-          processComm->receive_ack();
+          processComm->rcvConfirmation();
           break;
         }
         else {
@@ -114,11 +114,11 @@ void *ServerCommunication::run() {
                 continue;
               }
               processComm->send(Data::T_DOWNLOAD, nameOfTheFile);
-              bool ok = processComm->receive_ack();
+              bool ok = processComm->rcvConfirmation();
               if (ok) {
                 int timestamp = obtainTSofFile(filepath);
                 processComm->send(Data::T_SOF, to_string(timestamp));
-                processComm->receive_ack();
+                processComm->rcvConfirmation();
 
                 if (processComm->sendArq(filepath) == EQUAL)
                   printf("download ok.");
@@ -127,7 +127,7 @@ void *ServerCommunication::run() {
               }
               else {
                 // PROB NO USER
-                processComm->send_ack();
+                processComm->sendConfirmation();
               }
             }
             catch (exception &e) {
@@ -137,7 +137,7 @@ void *ServerCommunication::run() {
           }
 
           processComm->send(Data::T_DONE);
-          processComm->receive_ack();
+          processComm->rcvConfirmation();
           break;
         }
       }

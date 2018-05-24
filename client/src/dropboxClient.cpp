@@ -75,26 +75,26 @@ int main(int argc, char *argv[]) {
         }
 
         processComm->send(Data::T_UPLOAD, nameOfTheFile);
-        int workedProperly = processComm->receive_ack();
+        int workedProperly = processComm->rcvConfirmation();
         if (!workedProperly) {
-          processComm->send_ack();
+          processComm->sendConfirmation();
           continue;
         }
         int timestamp = obtainTSofFile(nameOfTheFile);
         processComm->send(Data::T_SOF, to_string(timestamp));
-        processComm->receive_ack();
+        processComm->rcvConfirmation();
       }
       catch (exception &e) {
-        processComm->send_ack(false);
-        processComm->receive_ack();
+        processComm->sendConfirmation(false);
+        processComm->rcvConfirmation();
         continue;
       }
     }
     else if (commandToRun == DOWNLOAD) {
       processComm->send(Data::T_DOWNLOAD, nameOfTheFile);
-      bool workedProperly = processComm->receive_ack();
+      bool workedProperly = processComm->rcvConfirmation();
       if (!workedProperly) {
-        processComm->send_ack();
+        processComm->sendConfirmation();
         continue;
       }
       string filepath = processComm->folderOfTheUser + '/' + nameOfTheFile;
@@ -107,15 +107,15 @@ int main(int argc, char *argv[]) {
       processComm->send(Data::T_LS);
       string server_list = processComm->receive_string();
       formatListOfArqs(server_list);
-      processComm->send_ack();
+      processComm->sendConfirmation();
     }
     else if (commandToRun == LIST_CLIENT) {
       listClient(userName);
     }
     else if (commandToRun == EXIT_APP) {
       processComm->send(Data::T_BYE);
-      processComm->receive_ack();
-      processComm->send_ack();
+      processComm->rcvConfirmation();
+      processComm->sendConfirmation();
       break;
     }
     else if (commandToRun == HELP_L) {
