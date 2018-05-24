@@ -93,7 +93,6 @@ bool Process::rcvConfirmation() {
   while (true) {
     Data msg = receive();
     {
-      // TODO: consider that error or bye can be received too
       if (stoi(msg.content) == theLastPartS) {
         if (msg.type == Data::T_ACK) {
           theLastPartRCV = msg.sequence;

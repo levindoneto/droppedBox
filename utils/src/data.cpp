@@ -21,7 +21,6 @@ bool Data::pedindo() {
     return (type == Data::T_LS || type == Data::T_DOWNLOAD || type == Data::T_UPLOAD || type == Data::T_BYE);
 }
 
-
 Data::Data(string session, int sequence, string type, string content = "") {
     this->session = session;
     this->sequence = sequence;
@@ -54,7 +53,6 @@ Data Data::parse(string msg) {
     int type_len = type_sep - sequence_sep - 1;
     int content_len = content_sep - type_sep - 1;
 
-    // Assign
     string session = msg.substr(INIT, session_len);
     string sequence = msg.substr(session_sep + 1, sequence_len);
     string type = msg.substr(sequence_sep + 1, type_len);
