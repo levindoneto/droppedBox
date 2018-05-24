@@ -1,6 +1,6 @@
 # DroppedBox
 
-Dropbox-like platform for sharing and automatic synchronization of files among different devices.
+Dropbox-like platform for sharing and automatic synchronization of files among different users with 2 or less devices.
 
 ## Used Technologies
 
@@ -8,9 +8,9 @@ Dropbox-like platform for sharing and automatic synchronization of files among d
 * C++
 
 ### Main libraries
-* I-Notify
 * pthread.h
-* socket.h
+* arpa/inet.h
+* sys/socket.h
 
 ## Organization of the Project
 
@@ -22,8 +22,7 @@ Dropbox-like platform for sharing and automatic synchronization of files among d
 ## How to deploy it
 
 ```terminal
-$ make
-$ .dropboxDP
+$ make dropboxDP
 ```
 
 Being DP Client or Server.
