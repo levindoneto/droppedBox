@@ -1,7 +1,7 @@
 #include <string>
 #include <vector>
 
-#define PREFIX "$"
+#define PREFIX_BASH "\n$ "
 
 using namespace std;
 

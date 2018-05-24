@@ -1,14 +1,24 @@
-#include <string>
+#ifndef SERVERCOMMUNICATION_H
+#define SERVERCOMMUNICATION_H
 
-using namespace std;
+#include "../../utils/headers/dropboxUtils.h"
 
-class ServerCommunication{
-  private:
-    string loggedUserId;
+#include "../../utils/headers/parUtils.hpp"
+#include "../../utils/headers/udpUtils.hpp"
+#include "../../utils/headers/process.hpp"
+
+class ServerCommunication : public Thread
+{
   public:
-    ServerCommunication(int port);
-    ServerCommunication();
-    void serverComm(int port);
-    void setLoggedUser(string loggedUserId);
-    string getLoggedUser();
+    ServerCommunication(Process *processComm);
+    ~ServerCommunication();
+    void *run();
+
+    bool usingActive;
+    list<string> arqsSending;
+
+  private:
+    Process *processComm;
 };
+
+#endif

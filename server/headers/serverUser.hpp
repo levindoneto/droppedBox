@@ -1,28 +1,19 @@
-#include <string>
-#include <vector>
-#include <mutex>
-#include "../../utils/headers/device.hpp"
-#include "../../utils/fileSystem/headers/folder.hpp"
+#ifndef SERVERUSER_H
+#define SERVERUSER_H
 
-using namespace std;
+#include "../../utils/headers/dropboxUtils.h"
+#include "../../utils/headers/parUtils.hpp"
+#include "../../utils/headers/udpUtils.hpp"
+#include "../../utils/headers/process.hpp"
 
-class ServerUser {
+class ServerUser : public Thread {
   private:
-    string userid;
-    int userReaders; // Users who are reading from the server
-    mutex aReader;
-    mutex aWriterReader;
-    vector<Device*> devices; // Vector of devices
+    Process *processComm;
   public:
-    Folder *folderPath;
-    ServerUser () {}; // Default constructor
-    ServerUser (string userid, Folder *folderPath);
-    ServerUser (string userid, Folder *folderPath, Device* device);
-
-    string getUserId();
-    Folder* getUserFolder();
-
-    bool thereAreNoDevices();
-    void delDevice(Device* device);
-    void addDevice(Device* device);
+    bool usingActive;
+    ServerUser(Process *processComm);
+    ~ServerUser(); // DESTROY USER COMM OBJ
+    void *run();
 };
+
+#endif

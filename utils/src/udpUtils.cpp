@@ -1,65 +1,93 @@
-#include <string>
-#include <iostream>
-#include <cstring>
-#include <unistd.h>
-#include <stdio.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include "../headers/dropboxUtils.hpp"
+#include "../headers/udpUtils.hpp"
+#include "../headers/dropboxUtils.h"
 
-using namespace std;
-
-int writeToSocket(UserInfo user, int socketDesc, string host, int port) {
-  int status;
-  unsigned int lenSckAddr;
-  const char *hostChar = host.c_str();
-  int nBytes;
-  struct sockaddr_in serverAddress;
-  struct hostent *server;
-
-  server = gethostbyname(hostChar);
-  // Address' configurations
-  serverAddress.sin_family = AF_INET; // IPv4
-  serverAddress.sin_port = htons(port);
-  serverAddress.sin_addr = *((struct in_addr *)server->h_addr);
-  bzero(&(serverAddress.sin_zero), BYTE_IN_BITS);
-
-  status = sendto(
-    socketDesc,
-    &user,
-    sizeof(user),
-    0,
-    (const struct sockaddr *) &serverAddress,
-    sizeof(struct sockaddr_in)
-  );
-
-  if (status < 0 || nBytes < 0) {
-    throwError("[writeToSocket]: Error on sending message");
+UDPUtils::UDPUtils(int portComm) {
+  port = portComm;
+  id = socket(AF_INET, SOCK_DGRAM, INIT);
+  if (id < EQUAL) {
+    char error[ERROR_MSG_SIZE] = "Error on opening socket";
+    throwError(error);
   }
-  return SUCCESS;
+  server_address.sin_family = AF_INET;
+  server_address.sin_port = htons(port);
+  bzero(&(server_address.sin_zero), 8); // put all zeros in the end
+  host = NULL;
+
+  // Used by sendto and rcvfrom
+  socklen = sizeof(struct sockaddr_in);
+
+  // Set timeout
+  timeout.tv_sec = TIMEO;
+  timeout.tv_usec = INIT;
+  setsockopt(id, SOL_SOCKET, SO_RCVTIMEO, (const char *)&timeout, sizeof timeout);
 }
 
-
-int readFromSocket(int socketDesc, char* buffer) {
-  int status;
-  status = read(socketDesc, &buffer, sizeof(buffer));
-  if (status < 0) {
-    throwError("[readFromSocket]: Error on receiving message");
-  }
-  return SUCCESS;
+UDPUtils::~UDPUtils() {
+  close(id);
 }
 
-int openSocket() {
-  int socketDesc;
-  // Open udp socket using the defaul protocol
-  if ((socketDesc= socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-    throwError("[openSocket]: Error on opening socket");
+void UDPUtils::bindServer() { // Every connection
+  set_timeout(0); // Never timeout
+  server_address.sin_addr.s_addr = INADDR_ANY;
+  if (bind(id, (struct sockaddr *)&server_address, socklen)) {
+    throw runtime_error(strerror(errno));
   }
-  return socketDesc;
 }
 
-void closeSocket(int socketDesc) {
-  close(socketDesc);
+void UDPUtils::set_host(string hostname) {
+  host = gethostbyname(hostname.c_str());
+  if (host == NULL)
+  {
+    throw invalid_argument(strerror(errno));
+  }
+  server_address.sin_addr = *((struct in_addr *)host->h_addr);
+}
+
+void UDPUtils::send(string bytes) {
+  struct sockaddr_in *target_address;
+  if (dest_address.sin_port) {
+    target_address = &dest_address;
+  }
+  else if (host) {
+    target_address = &server_address;
+  }
+  else {
+    return;
+  }
+  send_buffer = bytes.data();
+  int n = sendto(id, send_buffer, bytes.length(), 0, (const struct sockaddr *)target_address, socklen);
+  if (n < EQUAL) {
+    throwError("ERROR in socket pra mandar");
+  }
+}
+
+string UDPUtils::receive() {
+  memset(receive_buffer, 0, sizeof(receive_buffer));
+  int n = recvfrom(id, receive_buffer, SOCKET_BUFFER_SIZE, 0, (struct sockaddr *)&sender_address, &socklen);
+  if (n < 0) {
+    if (errno == EWOULDBLOCK) {
+      throw timeout_exception();
+    }
+    throw runtime_error(strerror(errno));
+  }
+  return string(receive_buffer, n);
+}
+
+sockaddr_in UDPUtils::get_sender_address() {
+  return sender_address;
+}
+
+void UDPUtils::set_timeout(int seconds) {
+  timeout.tv_sec = seconds;
+  setsockopt(id, SOL_SOCKET, SO_RCVTIMEO, (const char *)&timeout, sizeof timeout);
+}
+
+void UDPUtils::set_dest_address(sockaddr_in new_dest_address) {
+  dest_address = new_dest_address;
+}
+
+UDPUtils* UDPUtils::get_answerer() {
+  UDPUtils* answerer = new UDPUtils(port);
+  answerer->dest_address = sender_address;
+  return answerer;
 }

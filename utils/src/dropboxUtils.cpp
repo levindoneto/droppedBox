@@ -2,24 +2,21 @@
 #include <string>
 #include <unistd.h>
 #include <string.h>
-#include "../headers/dropboxUtils.hpp"
+#include "../headers/dropboxUtils.h"
 
 using namespace std;
-string clientFolderPath;
 
-void throwError (char* errorMessage) {
-  perror(errorMessage);
+list<string> filesMerging;
+string clientFolderPath;
+pthread_mutex_t sync_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+void throwError (char* errorData) {
+  perror(errorData);
   exit(TRUE);
 }
 
-// TODO: Remake this function to make it OO
-
-void getClientFolderPath(string folderPath) {
-  clientFolderPath = folderPath;
-}
-
-unsigned int fileSize(string filePath) {
-  const char *filePathChar = filePath.c_str();
+unsigned int fileSize(string pathOfTheFile) {
+  const char *filePathChar = pathOfTheFile.c_str();
   FILE * f = fopen(filePathChar, "r");
   fseek(f, 0, SEEK_END);
   unsigned long len = (unsigned long)ftell(f);
@@ -27,43 +24,42 @@ unsigned int fileSize(string filePath) {
   return len;
 }
 
-Semaphore::Semaphore() {
-  if (initialized) {
-    sem_destroy(&this->internalSemaphore);
+bool allowSending (string idOfTheFile) {
+  pthread_mutex_lock(&sync_mutex);
+  bool can_transfer = true;
+  for (string &it : filesMerging) {
+    if (idOfTheFile == it) {
+      can_transfer = false;
+      break;
+    }
   }
-  sem_init(&internalSemaphore, 0, 0);
-  initialized = true;
+  if (can_transfer) {
+    filesMerging.push_back(idOfTheFile);
+  }
+  pthread_mutex_unlock(&sync_mutex);
+  return can_transfer;
 }
 
-void Semaphore::init(int initValue) {
-  if (initialized) {
-    sem_destroy(&this->internalSemaphore);
-  }
-  sem_init(&internalSemaphore, 0, initValue);
-  initialized = true;
+void unlock_file (string idOfTheFile) {
+  pthread_mutex_lock(&sync_mutex);
+  filesMerging.remove(idOfTheFile);
+  pthread_mutex_unlock(&sync_mutex);
 }
 
-Semaphore::~Semaphore(void) {
-  int status = sem_destroy(&this->internalSemaphore);
-  if (status) {
-      std::cout << "[Error] Could not destroy semaphore." << std::endl;
-    } else {
-    this->initialized = false;
+
+unsigned int obtainTSofFile(string pathOfFileForTS) {
+  struct stat result;
+  if (stat(pathOfFileForTS.c_str(), &result) == EQUAL) {
+    return result.st_mtime;
+  } else {
+  return ERROR;
   }
 }
 
-int Semaphore::wait() {
-  int status = sem_wait(&this->internalSemaphore);
-  if (status) {
-    std::cout << "[Error] Could not destroy semaphore." << std::endl;
-  }
-  return status;
+string obatingNameOfTheFile(string pathOfTheFile) {
+  return pathOfTheFile.substr(pathOfTheFile.find_last_of(SLASH) + 1);
 }
 
-int Semaphore::post() {
-  int status = sem_post(&this->internalSemaphore);
-  if (status) {
-    std::cout << "[Error] Could not post semaphore." << std::endl;
-  }
-  return status;
+string ObtaingJustNameOfTheFile(string nameOfTheFile) {
+  return nameOfTheFile.substr(INIT, nameOfTheFile.find_last_of('.'));
 }

@@ -14,8 +14,8 @@ void showMenu () {
 
 void showHelp() {
   cout << "  Available options:" << endl
-    << "  upload <path/filename.ext>" << endl
-    << "  download <filename.ext>" << endl
+    << "  upload <path/nameOfTheFile.ext>" << endl
+    << "  download <nameOfTheFile.ext>" << endl
     << "  listserver" << endl
     << "  listclient" << endl
     << "  getsyncdirectory" << endl
@@ -30,8 +30,8 @@ vector<string> parseUserCommand(const string& input, const string& separator) {
     if (position == string::npos) {
       position = input.length();
     }
-    string token = input.substr(previous, position-previous);
-    if (!token.empty()) commandWithParameter.push_back(token);
+    string tworkedProperlyen = input.substr(previous, position-previous);
+    if (!tworkedProperlyen.empty()) commandWithParameter.push_back(tworkedProperlyen);
       previous = position + separator.length();
   } while (position < input.length() && previous < input.length());
   return commandWithParameter;

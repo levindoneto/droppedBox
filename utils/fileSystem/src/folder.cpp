@@ -13,44 +13,19 @@
 #include <iomanip> // List layout
 
 #include "../headers/folder.hpp"
-#include "../../headers/dropboxUtils.hpp"
+#include "../../headers/dropboxUtils.h"
 #include "../../headers/udpUtils.hpp"
 
 using namespace std;
 
-Folder::~Folder() {
-  cout << "Remove watch of sync...";
-  // TODO: Remove watch when an obj folder is destroyed
+string getHome() {
+  string homePath;
+  string userFolderPath;
+  homePath = getpwuid(getuid())->pw_dir; // Get user's home folder
+  return homePath;
 }
 
-Folder::Folder(string folderPath) {
-  int lenName = folderPath.size();
-    this->folderPath = folderPath;
-}
-
-int Folder::createFolder(string userId) {
-  folderPath = this->folderPath;
-  string userFolder = folderPath + userId;
-  int folderCreationStatus;
-  const char *userFolderChar = userFolder.c_str();
-
-  folderCreationStatus = mkdir(
-    userFolderChar,
-    S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH
-  );
-
-  if((folderCreationStatus < 0) && (errno != EEXIST)) {
-    throwError("[Folder::createFolder]: Error creating folder");
-  }
-
-  return folderCreationStatus;
-}
-
-string Folder::getFolderPath() {
-  return this->folderPath + END_PATH;
-}
-
-vector<string> Folder::getTimes(string filePath) {
+vector<string> getTimes(string filePath) {
   struct stat buffer;
   const char *filePathChar = filePath.c_str();
   vector<string> fileTimes;
@@ -66,7 +41,7 @@ vector<string> Folder::getTimes(string filePath) {
   return fileTimes;
 }
 
-string Folder::timesToString(vector<string> times, int mode) {
+string timesToString(vector<string> times, int mode) {
   string timesRaw = "";
   for(int i = 0; i < times.size(); i++) {
     times.at(i).erase(times.at(i).length()-1); // Remove \n
@@ -79,22 +54,7 @@ string Folder::timesToString(vector<string> times, int mode) {
   return timesRaw;
 }
 
-void Folder::changeDirectory(string folderPath) {
-  const char *folder = folderPath.c_str();
-  DIR* dir = opendir(folder);
-  if (dir) {
-    /* If the user does not pass a folder as parameter, folder="", and
-     * chdir("") is the same as chdir("./")
-     */
-    chdir(folder);
-  } else if (ENOENT == errno) {
-      throwError("[Folder::changeDirectory]: The system cannot find the specified directory");
-  } else {
-      throwError("[Folder::changeDirectory]: The system has found an error");
-  }
-}
-
-void Folder::listFolder(string folderPath) {
+void listFolder(string folderPath) {
   const char *folder = folderPath.c_str();
   const char separator = SEPARATOR_LIST;
   const int nameWidth = SIZE_FILENAME_LIST;
@@ -109,9 +69,9 @@ void Folder::listFolder(string folderPath) {
     struct dirent *entry;
     while ((entry = readdir(dir)) != EQUAL) {
       if (entry->d_type != DT_DIR) { // If entry is a file
-        string filename = entry->d_name;
+        string nameOfTheFile = entry->d_name;
         string slash = SLASH;
-        string filePath = folderPath + slash + filename;
+        string filePath = folderPath + slash + nameOfTheFile;
         cout << left << setw(nameWidth) << setfill(separator) << entry->d_name;
         cout << left << setw(numWidth) << setfill(separator) << timesToString(getTimes(filePath), CLIENT_LIST) << endl;
       }
@@ -122,80 +82,18 @@ void Folder::listFolder(string folderPath) {
     }
 }
 
-string Folder::listFolderToString(string folderPath) {
-  const char *folder = folderPath.c_str();
-  const char separator = SEPARATOR_LIST;
-  const int nameWidth = SIZE_FILENAME_LIST;
-  const int numWidth = SIZE_CTIMES_LIST;
-  stringstream folderList;
-  string folderListStr;
-  if (strcmp(EMPTY_PATH, folder) == EQUAL) {
-    folder = CURRENT_FOLDER;
-  }
-  DIR * dir = opendir(folder);
-  if (dir) {
-    string fn = FILENAME_LABEL_S;
-    string at = ACCESS_TIME_LABEL_S;
-    string mt = MODIFICATION_TIME_LABEL_S;
-    string ct = CREATION_TIME_LABEL_S;
-    string br = BREAK_LINE;
-    string formatLabelName = FORMAT_NAME_FILE_S;
-    folderListStr += at + mt + ct + fn + br;
-    struct dirent *entry;
-    while ((entry = readdir(dir)) != EQUAL) {
-      if (entry->d_type != DT_DIR) { // If entry is a file
-        string filename = entry->d_name;
-        string slash = SLASH;
-        string filePath = folderPath + slash + filename;
-        folderListStr += timesToString(getTimes(filePath), SERVER_LIST);
-        folderListStr += formatLabelName + entry->d_name + br;
-      }
-    }
-    closedir(dir);
-  } else {
-      throwError(strerror(errno));
-  }
-  return folderListStr;
-}
-
 
 /* Method for listing files in the client or in the server side, relying on
  * the mode passed as one of the parameters.
  */
-string Folder::listFiles(int mode, string userId) {
+string listFiles(int mode, string userId) {
   int i;
   if (mode == CLIENT_LIST) {
     string userFolderPath;
     userFolderPath = getHome() + "/sync_dir_" + userId;
     listFolder(userFolderPath);
     return userId;
-  } else if (mode == SERVER_LIST) {
-      string userFolderDB;
-      string db = DATABASE;
-      userFolderDB = db  + userId;
-      //cout << userFolderDB;
-      return listFolderToString(userFolderDB);
   } else {
       throwError("[Folder::listFiles]: Invalid mode");
   }
-}
-
-string Folder::getHome() {
-  string homePath;
-  string userFolderPath;
-  homePath = getpwuid(getuid())->pw_dir; // Get user's home folder
-  return homePath;
-}
-
-/*filename Access_Time Modificatin_Time Creation_Time */
-string Folder::getFileWithModificationTime(string filename, string filePath) {
-  string filenameWithModTime;
-  struct stat buffer;
-  const char *filePathChar = filePath.c_str();
-  filenameWithModTime += filename + SEP_SYNC_DIR;
-  if (stat(filePathChar, &buffer) == ERROR) {
-    throwError("[Folder::getTimes]: Error on getting to the file");
-  }
-  filenameWithModTime += to_string(time_t(buffer.st_mtim.tv_sec));
-  return filenameWithModTime;
 }
