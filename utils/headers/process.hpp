@@ -24,8 +24,8 @@ class Process {
     Process(string idUser, string session = "", UDPUtils *new_socket = NULL);
     ~Process();
 
-    void connect();
-    void accept_processComm();
+    void login();
+    void initProcessComm();
 
     void send(string type, string content = "");
     void sendb(string stype, char *content = NULL);

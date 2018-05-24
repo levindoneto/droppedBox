@@ -23,7 +23,7 @@ class UDPUtils {
     UDPUtils(int port);
     ~UDPUtils();
     void bindServer();
-    void set_host(string hostname);
+    void setIp(string hostname);
     void send(string msg);
     void sendb(char *content);
     string receive();

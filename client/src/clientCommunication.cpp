@@ -13,7 +13,7 @@ ClientCommunication::~ClientCommunication() {
 ClientCommunication::ClientCommunication(Process *_processComm) {
   this->processComm = new Process(_processComm->idUser);
   this->processComm->sock = _processComm->sock->get_answerer();
-  this->processComm->connect();
+  this->processComm->login();
   this->start();
 }
 

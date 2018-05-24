@@ -31,9 +31,9 @@ int main(int argc, char *argv[]) {
   string userName;
   string host;
   int port;
-  userName = string(argv[1]);
-  host = string(argv[2]);
-  port = atoi(argv[3]);
+  userName = string(argv[USER_CLIENT]);
+  host = string(argv[HOST_CLIENT]);
+  port = atoi(argv[PORT_CLIENT]);
 
   if (
     argv[USER_CLIENT] != NULL &&
@@ -50,11 +50,10 @@ int main(int argc, char *argv[]) {
     throwError(error);
   }
 
-
   Process *processComm = new Process(userName);
   processComm->sock = new UDPUtils(port);
-  processComm->sock->set_host(host);
-  processComm->connect();
+  processComm->sock->setIp(host);
+  processComm->login();
   ClientCommunication clientComm(processComm);
   showMenu();
   cout << endl << "**** The user " << userName << " has successfully logged in ****" << endl;
@@ -88,8 +87,6 @@ int main(int argc, char *argv[]) {
       catch (exception &e) {
         processComm->send_ack(false);
         processComm->receive_ack();
-
-        cout << e.what() << endl;
         continue;
       }
     }

@@ -26,7 +26,7 @@ UDPUtils::~UDPUtils() {
   close(id);
 }
 
-void UDPUtils::bindServer() { // Every connection
+void UDPUtils::bindServer() { // Every loginion
   set_timeout(0); // Never timeout
   server_address.sin_addr.s_addr = INADDR_ANY;
   if (bind(id, (struct sockaddr *)&server_address, socklen)) {
@@ -34,7 +34,7 @@ void UDPUtils::bindServer() { // Every connection
   }
 }
 
-void UDPUtils::set_host(string hostname) {
+void UDPUtils::setIp(string hostname) {
   host = gethostbyname(hostname.c_str());
   if (host == NULL)
   {

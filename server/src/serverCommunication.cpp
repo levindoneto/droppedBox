@@ -20,7 +20,7 @@ ServerCommunication::ServerCommunication(Process *processComm) {
 }
 
 void *ServerCommunication::run() {
-  processComm->accept_processComm();
+  processComm->initProcessComm();
   while (true) {
     list<string> files_to_update = File::listNamesOfFiles(processComm->folderOfTheUser);
     Data msg = processComm->receive(Data::T_SYNC);

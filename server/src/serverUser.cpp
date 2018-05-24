@@ -11,7 +11,7 @@ ServerUser::~ServerUser() {
 }
 
 void *ServerUser::run() {
-  processComm->accept_processComm();
+  processComm->initProcessComm();
   ServerCommunication server_sync(processComm);
   server_sync.start();
   cout << processComm->idUser << " logged in" << endl;

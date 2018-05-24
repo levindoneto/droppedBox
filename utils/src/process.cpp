@@ -17,7 +17,7 @@ Process::Process(string idUser, string session, UDPUtils *sock) {
   init_sequences();
 }
 
-void Process::connect() {
+void Process::login() {
   send(Data::T_SYN, idUser);
   receive_ack();
   sock->set_dest_address(sock->get_sender_address());
@@ -27,7 +27,7 @@ void Process::connect() {
   file->createFolderForFiles(folderOfTheUser);
 }
 
-void Process::accept_processComm() {
+void Process::initProcessComm() {
   theLastPartRCV = 0;
   send_ack();
   receive_ack();
