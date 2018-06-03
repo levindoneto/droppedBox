@@ -36,6 +36,7 @@ class Data {
     static const string T_DONE;
     static const string T_EQUAL;
     static const string T_UPLOAD;
+    static const string T_DELETE;
 };
 
 #endif
