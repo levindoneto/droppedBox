@@ -47,7 +47,7 @@ string File::ll(string dirpath) {
 
   directoryPointer = opendir(dirpath.c_str());
   if (directoryPointer != NULL) {
-    printedFilesRawWithTimes += "Name * Creation Time * Modification Time * Access Time\n";
+    printedFilesRawWithTimes += "Name | Creation Time | Modification Time | Access Time\n";
     while ((ep = readdir(directoryPointer))) {
       if(strcmp(ep->d_name, "..") != EQUAL && strcmp(ep->d_name, CURRENT_FOLDER) != EQUAL) {
         char fullpath[LEN_PATH_FOLDER];
