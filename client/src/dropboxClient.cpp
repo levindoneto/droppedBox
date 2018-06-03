@@ -59,30 +59,33 @@ int main(int argc, char *argv[]) {
   cout << endl << "**** The user " << userName << " has successfully logged in ****" << endl;
 
   // Main loop
-  string commandToRun, nameOfTheFile;
+  string commandToRun, pathOfTheFile;
   while (true) {
     cout << PREFIX_BASH;
     //getline(cin, command);
     cin >> commandToRun;
     if (commandToRun == UPLOAD || commandToRun == DOWNLOAD) {
-      cin >> nameOfTheFile;
+      cin >> pathOfTheFile;
     }
     if (commandToRun == UPLOAD) {
       try {
-        string homePath = getHome() + "/sync_dir_" + userName;
-        if (!ifstream(homePath + "/" + nameOfTheFile)) {
+        if (!ifstream(pathOfTheFile)) {
           continue;
         }
 
-        processComm->send(Data::T_UPLOAD, nameOfTheFile);
+        processComm->send(Data::T_UPLOAD, pathOfTheFile);
         int workedProperly = processComm->rcvConfirmation();
         if (!workedProperly) {
           processComm->sendConfirmation();
           continue;
         }
-        int timestamp = obtainTSofFile(nameOfTheFile);
+        int timestamp = obtainTSofFile(pathOfTheFile);
         processComm->send(Data::T_SOF, to_string(timestamp));
-        processComm->rcvConfirmation();
+        if (processComm->rcvConfirmation()) {
+          processComm->send(Data::T_FILE, "banana");
+          processComm->rcvConfirmation();
+          processComm->send(Data::T_EOF, pathOfTheFile);
+        }
       }
       catch (exception &e) {
         processComm->sendConfirmation(false);
@@ -91,17 +94,17 @@ int main(int argc, char *argv[]) {
       }
     }
     else if (commandToRun == DOWNLOAD) {
-      processComm->send(Data::T_DOWNLOAD, nameOfTheFile);
+      processComm->send(Data::T_DOWNLOAD, pathOfTheFile);
       bool workedProperly = processComm->rcvConfirmation();
       if (!workedProperly) {
         processComm->sendConfirmation();
         continue;
       }
-      string filepath = processComm->folderOfTheUser + '/' + nameOfTheFile;
+      string filepath = processComm->folderOfTheUser + '/' + pathOfTheFile;
       if (processComm->getArq(filepath) == 0)
-        cout << nameOfTheFile << " downloaded successfully!" << endl;
+        cout << pathOfTheFile << " downloaded successfully!" << endl;
       else
-        cout << nameOfTheFile << " download failed!" << endl;
+        cout << pathOfTheFile << " download failed!" << endl;
     }
     else if (commandToRun == LIST_SERVER) {
       processComm->send(Data::T_LS);
