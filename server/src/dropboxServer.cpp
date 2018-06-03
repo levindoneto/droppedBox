@@ -34,15 +34,12 @@ int main(int argc, char *argv[]) {
         Process* processComm = new Process(message.content, message.session, listener.get_answerer());
         ServerUser* new_thread = new ServerUser(processComm);
         new_thread->start();
-        threads[message.session] = new_thread;
+        threads[message.session] = new_thread; // Create logged user's sessiom
       }
       else {
         char error[ERROR_MSG_SIZE] = "Session already exists";
         throwError(error);
       }
-    }
-    else {
-      cout << "Message received: " << message.type << "\n";
     }
   }
 }

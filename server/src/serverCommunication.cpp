@@ -58,13 +58,15 @@ void *ServerCommunication::run() {
         // SYNC POR TEMPOS
         if (timestamp_remote < timestamp_local) {
           // server manda arq then
-          try   {
+          try {
+            printf("Funk");
+            /*
             processComm->send(Data::T_DOWNLOAD);
             processComm->rcvConfirmation();
             int timestamp = obtainTSofFile(filepath);
             processComm->send(Data::T_SOF, to_string(timestamp));
             processComm->rcvConfirmation();
-
+            */
             if (processComm->sendArq(filepath) == 0)
               printf("download ok.");
             else

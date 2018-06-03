@@ -23,6 +23,7 @@ class Process {
     UDPUtils *sock;
     Process(string idUser, string session = "", UDPUtils *new_socket = NULL);
     ~Process();
+    void closeProcess();
 
     void login();
     void initProcessComm();
