@@ -22,6 +22,7 @@ ServerCommunication::ServerCommunication(Process *processComm) {
 void *ServerCommunication::run() {
   processComm->initProcessComm();
   while (true) {
+    cout << "test" << endl;
     list<string> files_to_update = File::listNamesOfFiles(processComm->folderOfTheUser);
     Data msg = processComm->receive(Data::T_SYNC);
     list<string> expected_types;
@@ -47,6 +48,7 @@ void *ServerCommunication::run() {
         string filepath = processComm->folderOfTheUser + '/' + nameOfTheFile;
 
         if (!allowSending(nameOfTheFile)) {
+          printf("to nmabsdfs\n");
           // ta mandando arq
           processComm->sendConfirmation(false);
           processComm->rcvConfirmation();
@@ -61,13 +63,11 @@ void *ServerCommunication::run() {
           // server manda arq then
           try {
             printf("Funk");
-            /*
             processComm->send(Data::T_DOWNLOAD);
             processComm->rcvConfirmation();
             int timestamp = obtainTSofFile(filepath);
             processComm->send(Data::T_SOF, to_string(timestamp));
             processComm->rcvConfirmation();
-            */
             if (processComm->sendArq(filepath) == 0)
               printf("download ok.");
             else
@@ -80,9 +80,11 @@ void *ServerCommunication::run() {
         }
         else if (timestamp_remote > timestamp_local || timestamp_local == ERROR) {
           // server gets
+          printf("upasdasd\n");
+          cout << "test" << endl;
           processComm->send(Data::T_UPLOAD);
           processComm->rcvConfirmation();
-
+          // Upload on the client side
           if (processComm->getArq(filepath) == 0)
             printf("up ok.");
           else
@@ -115,13 +117,13 @@ void *ServerCommunication::run() {
               if (!ifstream(filepath)) {
                 continue;
               }
-              processComm->send(Data::T_DOWNLOAD, nameOfTheFile);
+              // Download on the client side
+              processComm->send(Data::T_DOWNLOAD, nameOfTheFile); // TODO: T_DELETE
               bool ok = processComm->rcvConfirmation();
               if (ok) {
                 int timestamp = obtainTSofFile(filepath);
                 processComm->send(Data::T_SOF, to_string(timestamp));
                 processComm->rcvConfirmation();
-
                 if (processComm->sendArq(filepath) == EQUAL)
                   printf("download ok.");
                 else

@@ -7,7 +7,7 @@ const string Data::T_ACK = "ACK";
 const string Data::T_LS = "LS";
 const string Data::T_DOWNLOAD = "DOWN";
 const string Data::T_UPLOAD = "UP";
-const string Data::T_BYE = "BYE";
+const string Data::T_BYE = "EXITAPP";
 const string Data::T_FILE = "FILE";
 const string Data::T_SOF = "SOF";
 const string Data::T_EOF = "EOF";
@@ -15,10 +15,17 @@ const string Data::T_ERROR = "ERRO";
 const string Data::T_SYNC = "SYNC";
 const string Data::T_STAT = "STAT";
 const string Data::T_DONE = "DONE";
-const string Data::T_EQUAL = "EQAL";
+const string Data::T_EQUAL = "EQUAL";
+const string Data::T_DELETE = "DELETE";
 
 bool Data::pedindo() {
-    return (type == Data::T_LS || type == Data::T_DOWNLOAD || type == Data::T_UPLOAD || type == Data::T_BYE);
+    return (
+      type == Data::T_LS
+      || type == Data::T_DOWNLOAD
+      || type == Data::T_UPLOAD
+      || type == Data::T_BYE
+      || type == Data::T_BYE
+    );
 }
 
 Data::Data(string session, int sequence, string type, string content = "") {
