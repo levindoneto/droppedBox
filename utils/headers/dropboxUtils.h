@@ -87,7 +87,7 @@ using namespace std;
 #define LEN_ISO_TIME 150
 #define LEN_ID_USER 150
 #define N_FILES 45
-
+#define SEPARATOR_FILENAME '|'
 
 typedef struct datagram {
    int  chunckId;
