@@ -1,5 +1,6 @@
 #include "../headers/serverUser.hpp"
 #include "../headers/serverCommunication.hpp"
+#include "../../utils/headers/ui.hpp"
 
 ServerUser::ServerUser(Process *processComm) {
   usingActive = true;
@@ -22,7 +23,8 @@ void *ServerUser::run() {
       processComm->rcvConfirmation();
     }
     else if (request.type == Data::T_UPLOAD) {
-      string nameOfTheFile = request.content;
+      string content = request.content;
+      string nameOfTheFile = parsePath(content, "/").back();
       string pathOfTheFile = processComm->folderOfTheUser + '/' + nameOfTheFile;
       if (!allowSending(request.content)) {
         processComm->sendConfirmation(false);
@@ -31,7 +33,7 @@ void *ServerUser::run() {
       }
       processComm->sendConfirmation();
       processComm->getArq(pathOfTheFile);
-      unlock_file(nameOfTheFile);
+      unlock_file(pathOfTheFile);
     }
     else if (request.type == Data::T_DOWNLOAD) {
       string nameOfTheFile = request.content;
