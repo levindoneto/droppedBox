@@ -30,7 +30,7 @@ void *ClientCommunication::run() {
       if (allowSending(idArq)) {
         int timeStamp = obtainTSofFile(filePath);
         if (timeStamp != -1) {
-          string content = to_string(timeStamp) + '*' + idArq;
+          string content = to_string(timeStamp) + SEPARATOR_FILENAME + idArq;
           processComm->send(Data::T_STAT, content);
           processComm->rcvConfirmation();
           list<string> expectedTypes;
