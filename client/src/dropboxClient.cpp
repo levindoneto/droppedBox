@@ -81,10 +81,11 @@ int main(int argc, char *argv[]) {
         }
         int timestamp = obtainTSofFile(pathOfTheFile);
         processComm->send(Data::T_SOF, to_string(timestamp));
-        if (processComm->rcvConfirmation()) {
-          processComm->send(Data::T_FILE, "banana");
-          processComm->rcvConfirmation();
-          processComm->send(Data::T_EOF, pathOfTheFile);
+        processComm->rcvConfirmation();
+
+        if (processComm->sendArq(pathOfTheFile) != 0) {
+          char error[ERROR_MSG_SIZE] = "Error sending file";
+          throwError(error);
         }
       }
       catch (exception &e) {
