@@ -22,7 +22,7 @@ void showHelp() {
     << "  exit" << endl << endl;
 }
 
-vector<string> parseUserCommand(const string& input, const string& separator) {
+vector<string> parsePath(const string& input, const string& separator) {
   vector<string> commandWithParameter;
   size_t previous = 0, position = 0;
   do {

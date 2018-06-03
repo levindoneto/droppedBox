@@ -33,7 +33,6 @@ void *ServerCommunication::run() {
 
     while (receiving_stats) {
       Data msg = processComm->receive(expected_types);
-
       // Check file timestamp
       if (msg.type == Data::T_STAT) {
         processComm->sendConfirmation();
