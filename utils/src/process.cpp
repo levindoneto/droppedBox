@@ -3,9 +3,7 @@
 
 #include <utime.h>
 
-Process::~Process() {
-  delete this->sock;
-}
+Process::~Process() {}
 
 Process::Process(string idUser, string session, UDPUtils *sock) {
   this->idUser = idUser;
@@ -15,6 +13,11 @@ Process::Process(string idUser, string session, UDPUtils *sock) {
   }
   this->sock = sock;
   init_sequences();
+}
+
+void Process::closeProcess() {
+  printf("Closing process of the user %s.\n", this->idUser);
+  delete this;
 }
 
 void Process::login() {
