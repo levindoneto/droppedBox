@@ -258,6 +258,6 @@ string Process::list_server_dir(string dirpath) {
 int Process::deleteFile(string filepath) {
   const char *cstr = filepath.c_str();
   remove(cstr);
-  printf("delete client");
+  sendConfirmation();
   return 0;
 }
