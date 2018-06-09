@@ -42,6 +42,7 @@ class Process {
     int getArq(string filepath);
     string receive_string();
     string list_server_dir(string dirpath);
+    int deleteFile(string filepath);
 
     static void *server_thread(void *void_this);
 };

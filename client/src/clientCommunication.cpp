@@ -38,6 +38,7 @@ void *ClientCommunication::run() {
           expectedTypes.push_back(Data::T_UPLOAD);
           expectedTypes.push_back(Data::T_EQUAL);
           expectedTypes.push_back(Data::T_ERROR);
+          expectedTypes.push_back(Data::T_DELETE);
 
           Data message = processComm->receive(expectedTypes);
 

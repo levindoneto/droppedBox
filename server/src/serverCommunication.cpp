@@ -117,7 +117,7 @@ void *ServerCommunication::run() {
                 continue;
               }
               // Download on the client side
-              processComm->send(Data::T_DOWNLOAD, nameOfTheFile); // TODO: T_DELETE
+              processComm->send(Data::T_DOWNLOAD, nameOfTheFile);
               bool ok = processComm->rcvConfirmation();
               if (ok) {
                 int timestamp = obtainTSofFile(filepath);

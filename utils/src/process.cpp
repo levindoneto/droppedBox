@@ -2,6 +2,7 @@
 #include "../headers/dropboxUtils.h"
 
 #include <utime.h>
+#include <stdio.h>
 
 Process::~Process() {}
 
@@ -252,4 +253,11 @@ void Process::init_sequences() {
 
 string Process::list_server_dir(string dirpath) {
   return File::ll(dirpath);
+}
+
+int Process::deleteFile(string filepath) {
+  const char *cstr = filepath.c_str();
+  remove(cstr);
+  sendConfirmation();
+  return 0;
 }
