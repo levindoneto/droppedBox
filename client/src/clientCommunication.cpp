@@ -38,10 +38,20 @@ void *ClientCommunication::run() {
           expectedTypes.push_back(Data::T_UPLOAD);
           expectedTypes.push_back(Data::T_EQUAL);
           expectedTypes.push_back(Data::T_ERROR);
+          expectedTypes.push_back(Data::T_DELETE);
 
           Data message = processComm->receive(expectedTypes);
 
           if (message.type == Data::T_DOWNLOAD) {
+            processComm->sendConfirmation();
+            if (processComm->deleteFile(filePath) == 0)
+              cout << "File deleted" << '\n';
+            else {
+              char error[ERROR_MSG_SIZE] = "Delete failed";
+              throwError(error);
+            }
+          }
+          else if (message.type == Data::T_DELETE) {
             processComm->sendConfirmation();
             if (processComm->getArq(filePath) == 0)
               cout << "File received" << '\n';
