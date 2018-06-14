@@ -7,8 +7,7 @@
 #include "../../utils/headers/udpUtils.hpp"
 #include "../../utils/headers/process.hpp"
 
-class ServerCommunication : public Thread
-{
+class ServerCommunication : public Thread {
   public:
     ServerCommunication(Process *processComm);
     ~ServerCommunication();
