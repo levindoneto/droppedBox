@@ -61,7 +61,6 @@ void *ServerCommunication::run() {
         if (timestamp_remote < timestamp_local) {
           // server manda arq then
           try {
-            printf("Funk");
             processComm->send(Data::T_DOWNLOAD);
             processComm->rcvConfirmation();
             int timestamp = obtainTSofFile(filepath);

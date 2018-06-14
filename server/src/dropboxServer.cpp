@@ -1,5 +1,6 @@
 #include "../headers/serverUser.hpp"
 #include "../../utils/headers/dropboxUtils.h"
+#include "../headers/multiserver.hpp"
 
 void closeThreadsOpen(map<string,ServerUser*> threads) {
   auto it = threads.cbegin();
@@ -27,6 +28,9 @@ int main(int argc, char *argv[]) {
   cout << "******* Server is running *******" << endl << endl;
 
   while (true) {
+    MultiServer *ms = new MultiServer();
+    ms->startElectionProcesses();
+
     Data message = Data::parse(listener.receive());
     closeThreadsOpen(threads);
     if (message.type == Data::T_SYN) {
