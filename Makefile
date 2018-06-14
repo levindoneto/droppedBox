@@ -27,6 +27,7 @@ CLIENT_O = client/src/dropboxClient.o \
 
 SERVER_O = server/src/dropboxServer.o \
 					 server/src/serverCommunication.o \
+					 server/src/multiserver.o \
 					 server/src/serverUser.o
 
 .PHONY: all clean
