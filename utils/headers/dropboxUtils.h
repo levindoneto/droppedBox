@@ -88,6 +88,9 @@ using namespace std;
 #define LEN_ID_USER 150
 #define N_FILES 45
 #define SEPARATOR_FILENAME '|'
+#define SIZE_TYPESERVER_FLAG 3
+#define PRIMARY_SERVER_TYPE "--p"
+#define BACKUP_SERVER_TYPE "--b"
 
 typedef struct datagram {
    int  chunckId;
