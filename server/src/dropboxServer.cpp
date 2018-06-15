@@ -1,6 +1,10 @@
+#include <string>
 #include "../headers/serverUser.hpp"
 #include "../../utils/headers/dropboxUtils.h"
 #include "../headers/multiserver.hpp"
+#include "../../settings/config.hpp"
+
+using namespace std;
 
 void closeThreadsOpen(map<string,ServerUser*> threads) {
   auto it = threads.cbegin();
@@ -16,11 +20,13 @@ void closeThreadsOpen(map<string,ServerUser*> threads) {
 
 int main(int argc, char *argv[]) {
   int port;
-  if (argc > 1) {
-    port = atoi(argv[1]);
+  string typeServer;
+  if (argc > 2) {
+    port = atoi(argv[PORT_SERVER]);
+    typeServer = string(argv[TYPE_SERVER]);
   } else {
-    char error[ERROR_MSG_SIZE] = "[DropboxServer]: Invalid parameter";
-    throwError(error);
+      char error[ERROR_MSG_SIZE] = "[DropboxServer]: Invalid parameter";
+      throwError(error);
   }
   map<string,ServerUser*> threads;
   UDPUtils listener(port);
@@ -35,7 +41,11 @@ int main(int argc, char *argv[]) {
     closeThreadsOpen(threads);
     if (message.type == Data::T_SYN) {
       if (!threads.count(message.session)) {
-        Process* processComm = new Process(message.content, message.session, listener.get_answerer());
+        Process* processComm = new Process(
+          message.content,
+          message.session,
+          listener.get_answerer()
+        );
         ServerUser* new_thread = new ServerUser(processComm);
         new_thread->start();
         threads[message.session] = new_thread; // Create logged user's sessiom

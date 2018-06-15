@@ -11,3 +11,4 @@
 
 // Args - Server
 #define PORT_SERVER 1
+#define TYPE_SERVER 2 // Primary and backup
