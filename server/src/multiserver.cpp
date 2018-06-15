@@ -1,8 +1,15 @@
 #include "../headers/multiserver.hpp"
 #include "../../utils/headers/dropboxUtils.h"
+#include "../../utils/headers/udpUtils.hpp"
+#include <thread>
 
 // Dynamic initialization for mutex with specified attributes
 pthread_mutex_t startElection_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+void MultiServer::startThreads() {
+  thread threadSendAlive = thread(&MultiServer::sendAliveMessage, this);
+  threadSendAlive.join();
+}
 
 // Initialize the structure with the process' information (ip, port, pid of the
 // process running it). It's called in the constructor of this class.
@@ -40,4 +47,13 @@ void MultiServer::setProcessElected (int procElected) {
 // Send down the elected info to all the other server (processes)
 void MultiServer::broadcastElected () {
   printf("TODO\n");
+}
+
+// Send ALIVE(0) message to all backup servers every 3 seconds in order to keep
+// them aware about the execution of the primary server
+void MultiServer::sendAliveMessage() {
+  while(true) {
+    printf("alive\n");
+    usleep(3000000); // 3 seconds
+  }
 }

@@ -38,11 +38,13 @@ class MultiServer {
   public:
     MultiServer() {};
     ~MultiServer();
+    void startThreads();
     void serverInfoInit();
     SERVER_INFO getServerInfo();
     void startElectionProcesses();
     void setProcessElected(int procElected);
     void broadcastElected();
+    void sendAliveMessage();
     list<int> servers;
 
   private:

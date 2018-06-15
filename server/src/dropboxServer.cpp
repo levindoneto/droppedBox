@@ -35,6 +35,7 @@ int main(int argc, char *argv[]) {
 
   while (true) {
     MultiServer *ms = new MultiServer();
+    ms->startThreads();
     ms->startElectionProcesses();
 
     Data message = Data::parse(listener.receive());
