@@ -11,6 +11,7 @@ class DropboxServer {
     DropboxServer() {}; // Server constryctor
     ~DropboxServer() {}; // Destroy server
 
+    map<string, ServerUser *> syncUserThreads;
     map<string, ServerUser *> threads;
 
     void closeThreadsOpen() {
@@ -62,7 +63,11 @@ int main(int argc, char *argv[]) {
           message.session,
           listener.get_answerer()
         );
-        ServerUser* newUserThread = new ServerUser(processComm);
+        ServerUser* newUserThread = new ServerUser(
+          processComm,
+          dropboxServer->threads,
+          dropboxServer->syncUserThreads
+        );
         newUserThread->start();
         // Create logged user's session
         dropboxServer->threads[message.session] = newUserThread;
