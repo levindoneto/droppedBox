@@ -1,4 +1,5 @@
 #include "../headers/clientCommunication.hpp"
+#include "../../utils/headers/dropboxUtils.h"
 
 #define stat _stat
 #define TIME_DO_NOTHING 6
@@ -29,7 +30,7 @@ void *ClientCommunication::run() {
       string filePath = processComm->folderOfTheUser + '/' + idArq;
       if (allowSending(idArq)) {
         int timeStamp = obtainTSofFile(filePath);
-        if (timeStamp != -1) {
+        if (timeStamp != ERROR) {
           string content = to_string(timeStamp) + SEPARATOR_FILENAME + idArq;
           processComm->send(Data::T_STAT, content);
           processComm->rcvConfirmation();
