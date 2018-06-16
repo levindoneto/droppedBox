@@ -101,11 +101,11 @@ int main(int argc, char *argv[]) {
         processComm->sendConfirmation();
         continue;
       }
-      string filepath = processComm->folderOfTheUser + '/' + pathOfTheFile;
+      string filepath = getHome() + '/' + pathOfTheFile;
       if (processComm->getArq(filepath) == 0)
-        cout << pathOfTheFile << " downloaded successfully!" << endl;
+        cout << pathOfTheFile << " was successfully downloaded into your home :)" << endl;
       else
-        cout << pathOfTheFile << " download failed!" << endl;
+        cout << pathOfTheFile << " was not downloaded into your home :(" << endl;
     }
     else if (commandToRun == LIST_SERVER) {
       processComm->send(Data::T_LS);
