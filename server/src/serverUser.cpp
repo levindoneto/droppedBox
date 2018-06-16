@@ -2,8 +2,13 @@
 #include "../headers/serverCommunication.hpp"
 #include "../../utils/headers/ui.hpp"
 
-ServerUser::ServerUser(Process *processComm) {
+ServerUser::ServerUser(
+  Process *processComm,
+  map<string, ServerUser *> threads,
+  map<string, ServerUser *> syncUserThreads
+) {
   usingActive = true;
+  threads = threads;
   this->processComm = processComm;
 }
 
@@ -13,7 +18,7 @@ ServerUser::~ServerUser() {
 
 void *ServerUser::run() {
   processComm->initProcessComm();
-  ServerCommunication server_sync(processComm);
+  ServerCommunication server_sync(processComm, syncUserThreads);
   server_sync.start();
   cout << processComm->idUser << " logged in" << endl;
   while (true) {

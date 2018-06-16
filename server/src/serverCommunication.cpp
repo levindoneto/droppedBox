@@ -1,21 +1,25 @@
 #include "../headers/serverCommunication.hpp"
+#include "../headers/serverUser.hpp"
 
 ServerCommunication::~ServerCommunication() {
   delete processComm;
 }
 
-ServerCommunication::ServerCommunication(Process *processComm) {
-  string new_session;
+ServerCommunication::ServerCommunication(
+  Process *processComm,
+  map<string, ServerUser*> syncUserThreads
+) {
+  string newUserDeviceSession; // Each device gets one in the beggining regardless
   while (true) {
-    string msg_s = processComm->sock->receive();
-    Data msg = Data::parse(msg_s);
+    string dataMessage = processComm->sock->receive();
+    Data msg = Data::parse(dataMessage);
     if (msg.type == Data::T_SYN && msg.session != processComm->session) {
-      new_session = msg.session;
+      newUserDeviceSession = msg.session;
       break;
     }
   }
   this->processComm = new Process(processComm->idUser,
-                    new_session,
+                    newUserDeviceSession,
                     processComm->sock->get_answerer());
 }
 

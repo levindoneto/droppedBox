@@ -10,10 +10,16 @@ class ServerUser : public Thread {
   private:
     Process *processComm;
   public:
-    bool usingActive;
-    ServerUser(Process *processComm);
-    ~ServerUser(); // DESTROY USER COMM OBJ
+    ServerUser(
+      Process *processComm,
+      map<string, ServerUser *> threads,
+      map<string, ServerUser *> syncUserThreads
+    );
+    ~ServerUser();
     void *run();
+    bool usingActive;
+    map<string, ServerUser *> threads;
+    map<string, ServerUser *> syncUserThreads;
 };
 
 #endif
