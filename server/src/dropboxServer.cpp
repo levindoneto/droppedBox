@@ -6,19 +6,30 @@
 
 using namespace std;
 
-void closeThreadsOpen(map<string,ServerUser*> threads) {
-  auto it = threads.cbegin();
-  while (it != threads.cend()) {
-    if (!it->second->usingActive) {
-      delete it->second;
-      it = threads.erase(it);
-    } else {
-      ++it;
+class DropboxServer {
+  public:
+    DropboxServer() {}; // Server constryctor
+    ~DropboxServer() {}; // Destroy server
+
+    map<string, ServerUser *> threads;
+
+    void closeThreadsOpen() {
+      auto it = threads.cbegin();
+      while (it != threads.cend()) {
+        if (it->second->usingActive) {
+          ++it;
+        } else {
+            delete it->second;
+            it = threads.erase(it);
+        }
+      }
     }
-  }
-}
+};
 
 int main(int argc, char *argv[]) {
+  // Create a object for the server (with the method for cleaning server threads)
+  DropboxServer *dropboxServer = new DropboxServer();
+
   int port;
   string typeServer;
   if (argc > 2) {
@@ -34,26 +45,27 @@ int main(int argc, char *argv[]) {
   cout << "******* Server is running *******" << endl << endl;
 
   while (true) {
-    MultiServer *ms = new MultiServer();
-    ms->startThreads();
-    ms->startElectionProcesses();
+    //MultiServer *ms = new MultiServer();
+    //ms->startThreads();
+    //ms->startElectionProcesses();
 
     Data message = Data::parse(listener.receive());
-    closeThreadsOpen(threads);
+    dropboxServer->closeThreadsOpen();
     if (message.type == Data::T_SYN) {
-      if (!threads.count(message.session)) {
+      if (dropboxServer->threads.count(message.session)) {
+        char error[ERROR_MSG_SIZE] = "Session already exists";
+        throwError(error);
+      }
+      else {
         Process* processComm = new Process(
           message.content,
           message.session,
           listener.get_answerer()
         );
-        ServerUser* new_thread = new ServerUser(processComm);
-        new_thread->start();
-        threads[message.session] = new_thread; // Create logged user's sessiom
-      }
-      else {
-        char error[ERROR_MSG_SIZE] = "Session already exists";
-        throwError(error);
+        ServerUser* newUserThread = new ServerUser(processComm);
+        newUserThread->start();
+        // Create logged user's session
+        dropboxServer->threads[message.session] = newUserThread;
       }
     }
   }
