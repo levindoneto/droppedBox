@@ -19,15 +19,25 @@ ClientCommunication::ClientCommunication(Process *_processComm) {
 }
 
 void *ClientCommunication::run() {
+  list<string> previousListOfFiles;
+  list<string> currentListOfFiles;
   while (true) {
     processComm->send(Data::T_SYNC);
     processComm->rcvConfirmation();
 
-    list<string> listFiles = File::listNamesOfFiles(processComm->folderOfTheUser);
+    list<string> currentListOfFiles = File::listNamesOfFiles(
+      processComm->folderOfTheUser
+    );
 
-    for (list<string>::iterator it = listFiles.begin(); it != listFiles.end(); ++it) {
-      string idArq = *it;
+    for (
+      list<string>::iterator fname = currentListOfFiles.begin();
+      fname != currentListOfFiles.end();
+      ++fname
+    ) {
+      string idArq = *fname;
       string filePath = processComm->folderOfTheUser + '/' + idArq;
+      previousListOfFiles.remove(idArq);
+
       if (allowSending(idArq)) {
         int timeStamp = obtainTSofFile(filePath);
         if (timeStamp != ERROR) {
@@ -101,15 +111,28 @@ void *ClientCommunication::run() {
         unlock_file(idArq);
       }
     }
-    processComm->send(Data::T_DONE);
-    processComm->rcvConfirmation();
+    //processComm->send(Data::T_DONE);
+    //processComm->rcvConfirmation();
 
     list<string> expectedTypes;
     expectedTypes.push_back(Data::T_DONE);
     expectedTypes.push_back(Data::T_DOWNLOAD);
     expectedTypes.push_back(Data::T_ERROR);
 
-    // Receives for files that client doesn't have yet
+    // Treat removed files from a client
+    if (previousListOfFiles.size() >= 1) {
+      for (
+        list<string>::iterator fname = previousListOfFiles.begin();
+        fname != previousListOfFiles.end();
+        ++fname
+      ) {
+        string nameOfTheFile = *fname;
+        processComm->send(Data::T_DELETE, nameOfTheFile);
+        processComm->rcvConfirmation();
+      }
+    }
+
+    // Receive files which the client does not have yet
     while (true) {
       Data message = processComm->receive(expectedTypes);
       if (message.type == Data::T_DONE) {
@@ -140,6 +163,8 @@ void *ClientCommunication::run() {
         continue;
       }
     }
+
+    previousListOfFiles = File::listNamesOfFiles(processComm->folderOfTheUser);
     sleep(TIME_DO_NOTHING);
   }
 }

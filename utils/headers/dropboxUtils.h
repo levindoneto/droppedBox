@@ -91,6 +91,8 @@ using namespace std;
 #define SIZE_TYPESERVER_FLAG 3
 #define PRIMARY_SERVER_TYPE "--p"
 #define BACKUP_SERVER_TYPE "--b"
+#define OK 0
+#define PATH_SEPARATOR '/'
 
 typedef struct datagram {
    int  chunckId;
