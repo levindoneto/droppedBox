@@ -8,20 +8,21 @@ using namespace std;
 
 class DropboxServer {
   public:
-    DropboxServer() {}; // Server constryctor
+    DropboxServer() {
+      syncThreads = new map<string, ServerCommunication *>();
+      threads = new map<string, ServerUser*>();
+    };
     ~DropboxServer() {}; // Destroy server
-
-    map<string, ServerUser *> syncUserThreads;
-    map<string, ServerUser *> threads;
-
+    map<string, ServerCommunication*> *syncThreads;
+    map<string, ServerUser*> *threads;
     void closeThreadsOpen() {
-      auto it = threads.cbegin();
-      while (it != threads.cend()) {
+      auto it = (*threads).cbegin();
+      while (it != (*threads).cend()) {
         if (it->second->usingActive) {
           ++it;
         } else {
             delete it->second;
-            it = threads.erase(it);
+            it = (*threads).erase(it);
         }
       }
     }
@@ -53,7 +54,7 @@ int main(int argc, char *argv[]) {
     Data message = Data::parse(listener.receive());
     dropboxServer->closeThreadsOpen();
     if (message.type == Data::T_SYN) {
-      if (dropboxServer->threads.count(message.session)) {
+      if ((*dropboxServer->threads).count(message.session)) {
         char error[ERROR_MSG_SIZE] = "Session already exists";
         throwError(error);
       }
@@ -66,11 +67,11 @@ int main(int argc, char *argv[]) {
         ServerUser* newUserThread = new ServerUser(
           processComm,
           dropboxServer->threads,
-          dropboxServer->syncUserThreads
+          dropboxServer->syncThreads
         );
         newUserThread->start();
         // Create logged user's session
-        dropboxServer->threads[message.session] = newUserThread;
+        (*dropboxServer->threads)[message.session] = newUserThread;
       }
     }
   }
