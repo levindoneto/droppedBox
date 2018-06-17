@@ -97,6 +97,7 @@ bool Process::rcvConfirmation() {
   while (true) {
     Data msg = receive();
     {
+      // ERRO DO DELETE TODO
       if (stoi(msg.content) == theLastPartS) {
         if (msg.type == Data::T_ACK) {
           theLastPartRCV = msg.sequence;
@@ -108,6 +109,7 @@ bool Process::rcvConfirmation() {
             return false;
         }
       }
+
     }
   }
 }
