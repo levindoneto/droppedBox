@@ -111,8 +111,6 @@ void *ClientCommunication::run() {
         unlock_file(idArq);
       }
     }
-    //processComm->send(Data::T_DONE);
-    //processComm->rcvConfirmation();
 
     list<string> expectedTypes;
     expectedTypes.push_back(Data::T_DONE);
@@ -131,6 +129,10 @@ void *ClientCommunication::run() {
         processComm->rcvConfirmation();
       }
     }
+
+    // Send confirmation
+    processComm->send(Data::T_DONE);
+    processComm->rcvConfirmation();
 
     // Receive files which the client does not have yet
     while (true) {

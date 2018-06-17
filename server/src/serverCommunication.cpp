@@ -30,6 +30,7 @@ void *ServerCommunication::run() {
     list<string> filesToBePosted = File::listNamesOfFiles(
       processComm->folderOfTheUser
     );
+    printf("caguei 33\n");
     Data msg = processComm->receive(Data::T_SYNC);
     list<string> expected_types;
     bool receiving_stats = true;
@@ -48,13 +49,11 @@ void *ServerCommunication::run() {
         int content_len = msg.content.size();
         int timestamp_len = timestamp_sep;
         int nameOfTheFile_len = content_len - timestamp_len - 1;
-
         int timestamp_remote = stoi(msg.content.substr(0, timestamp_len));
         string nameOfTheFile = msg.content.substr(timestamp_len + 1, content_len);
         string filepath = processComm->folderOfTheUser + '/' + nameOfTheFile;
 
         if (!allowSending(nameOfTheFile)) {
-          printf("to nmabsdfs\n");
           // ta mandando arq
           processComm->sendConfirmation(false);
           processComm->rcvConfirmation();
@@ -85,8 +84,6 @@ void *ServerCommunication::run() {
         }
         else if (timestamp_remote > timestamp_local || timestamp_local == ERROR) {
           // server gets
-          printf("upasdasd\n");
-          cout << "test" << endl;
           processComm->send(Data::T_UPLOAD);
           processComm->rcvConfirmation();
           // Upload on the client side
@@ -103,28 +100,6 @@ void *ServerCommunication::run() {
         filesToBePosted.remove(nameOfTheFile);
         unlock_file(nameOfTheFile);
       }
-
-
-
-      else if (msg.type == Data::T_DELETE) {
-        string nameOfTheFile = msg.content;
-        string filepath = processComm->folderOfTheUser
-          + PATH_SEPARATOR
-          + nameOfTheFile;
-        if (processComm->deleteFile(filepath) == OK) {
-          cout << "The file " << nameOfTheFile
-            << " has been successfully removed :)" << endl;
-        } else {
-            cout << "The file " << nameOfTheFile
-              << " has been successfully removed :)" << endl;
-        }
-        filesToBePosted.remove(nameOfTheFile);
-        processComm->sendConfirmation(); // About the attempt of deleting the file
-      }
-
-
-
-
       else if (msg.type == Data::T_DONE) {
         processComm->sendConfirmation();
         if (filesToBePosted.size() == EQUAL) {
@@ -172,6 +147,23 @@ void *ServerCommunication::run() {
           break;
         }
       }
+      else if (msg.type == Data::T_DELETE) {
+        printf("caguei\n");
+        string nameOfTheFile = msg.content;
+        string filepath = processComm->folderOfTheUser
+          + PATH_SEPARATOR
+          + nameOfTheFile;
+        if (processComm->deleteFile(filepath) == OK) {
+          cout << "The file " << nameOfTheFile
+            << " has been successfully removed :)" << endl;
+        } else {
+            cout << "The file " << nameOfTheFile
+              << " has been successfully removed :)" << endl;
+        }
+        filesToBePosted.remove(nameOfTheFile);
+        processComm->sendConfirmation(); // About the attempt of deleting the file
+      }
+
     }
   }
 }
