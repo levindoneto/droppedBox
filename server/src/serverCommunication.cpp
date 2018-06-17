@@ -1,5 +1,6 @@
 #include "../headers/serverCommunication.hpp"
 #include "../headers/serverUser.hpp"
+#include "../../utils/headers/dropboxUtils.h"
 
 ServerCommunication::~ServerCommunication() {
   delete processComm;
@@ -26,14 +27,16 @@ ServerCommunication::ServerCommunication(
 void *ServerCommunication::run() {
   processComm->initProcessComm();
   while (true) {
-    cout << "test" << endl;
-    list<string> files_to_update = File::listNamesOfFiles(processComm->folderOfTheUser);
+    list<string> filesToBePosted = File::listNamesOfFiles(
+      processComm->folderOfTheUser
+    );
     Data msg = processComm->receive(Data::T_SYNC);
     list<string> expected_types;
     bool receiving_stats = true;
     processComm->sendConfirmation();
     expected_types.push_back(Data::T_STAT);
     expected_types.push_back(Data::T_DONE);
+    expected_types.push_back(Data::T_DELETE);
 
     while (receiving_stats) {
       Data msg = processComm->receive(expected_types);
@@ -97,23 +100,45 @@ void *ServerCommunication::run() {
           processComm->rcvConfirmation();
         }
 
-        files_to_update.remove(nameOfTheFile);
+        filesToBePosted.remove(nameOfTheFile);
         unlock_file(nameOfTheFile);
       }
+
+
+
+      else if (msg.type == Data::T_DELETE) {
+        string nameOfTheFile = msg.content;
+        string filepath = processComm->folderOfTheUser
+          + PATH_SEPARATOR
+          + nameOfTheFile;
+        if (processComm->deleteFile(filepath) == OK) {
+          cout << "The file " << nameOfTheFile
+            << " has been successfully removed :)" << endl;
+        } else {
+            cout << "The file " << nameOfTheFile
+              << " has been successfully removed :)" << endl;
+        }
+        filesToBePosted.remove(nameOfTheFile);
+        processComm->sendConfirmation(); // About the attempt of deleting the file
+      }
+
+
+
+
       else if (msg.type == Data::T_DONE) {
         processComm->sendConfirmation();
-        if (files_to_update.size() == EQUAL) {
+        if (filesToBePosted.size() == EQUAL) {
           processComm->send(Data::T_DONE);
           processComm->rcvConfirmation();
           break;
         }
         else {
-          for (list<string>::iterator it = files_to_update.begin();
-            it != files_to_update.end();
-            ++it
+          for (list<string>::iterator fname = filesToBePosted.begin();
+            fname != filesToBePosted.end();
+            ++fname
           ) {
             try {
-              string nameOfTheFile = *it;
+              string nameOfTheFile = *fname;
               string filepath = processComm->folderOfTheUser + '/' + nameOfTheFile;
               // user baixa o arq
               if (!ifstream(filepath)) {

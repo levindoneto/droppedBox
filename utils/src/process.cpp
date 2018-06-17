@@ -257,7 +257,9 @@ string Process::list_server_dir(string dirpath) {
 
 int Process::deleteFile(string filepath) {
   const char *cstr = filepath.c_str();
-  remove(cstr);
-  sendConfirmation();
+  int status = remove(cstr);
+  if (status != OK) {
+    return ERROR;
+  }
   return 0;
 }
