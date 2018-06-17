@@ -8,9 +8,11 @@ ServerCommunication::~ServerCommunication() {
 
 ServerCommunication::ServerCommunication(
   Process *processComm,
-  map<string, ServerUser*> syncUserThreads
+  map<string, ServerCommunication*> *syncCommunicationThreads
 ) {
-  string newUserDeviceSession; // Each device gets one in the beggining regardless
+  syncThreads = syncCommunicationThreads;
+  // Each device gets one in the beggining regardless
+  string newUserDeviceSession;
   while (true) {
     string dataMessage = processComm->sock->receive();
     Data msg = Data::parse(dataMessage);
@@ -19,9 +21,11 @@ ServerCommunication::ServerCommunication(
       break;
     }
   }
-  this->processComm = new Process(processComm->idUser,
-                    newUserDeviceSession,
-                    processComm->sock->get_answerer());
+  this->processComm = new Process(
+    processComm->idUser,
+    newUserDeviceSession,
+    processComm->sock->get_answerer()
+  );
 }
 
 void *ServerCommunication::run() {
@@ -30,7 +34,6 @@ void *ServerCommunication::run() {
     list<string> filesToBePosted = File::listNamesOfFiles(
       processComm->folderOfTheUser
     );
-    printf("caguei 33\n");
     Data msg = processComm->receive(Data::T_SYNC);
     list<string> expected_types;
     bool receiving_stats = true;
@@ -44,38 +47,36 @@ void *ServerCommunication::run() {
       // Check file timestamp
       if (msg.type == Data::T_STAT) {
         processComm->sendConfirmation();
-        int timestamp_sep = msg.content.find('|');
-
+        int timestamp_sep = msg.content.find(SEPARATOR_FILENAME);
         int content_len = msg.content.size();
         int timestamp_len = timestamp_sep;
         int nameOfTheFile_len = content_len - timestamp_len - 1;
-        int timestamp_remote = stoi(msg.content.substr(0, timestamp_len));
+        int timestamp_remote = stoi(msg.content.substr(INIT, timestamp_len));
         string nameOfTheFile = msg.content.substr(timestamp_len + 1, content_len);
-        string filepath = processComm->folderOfTheUser + '/' + nameOfTheFile;
+        string filepath = processComm->folderOfTheUser + PATH_SEPARATOR + nameOfTheFile;
 
         if (!allowSending(nameOfTheFile)) {
-          // ta mandando arq
+          // The file is being sent
           processComm->sendConfirmation(false);
           processComm->rcvConfirmation();
           continue;
         }
-
-        // pega tempos do server
+        // Get timestamps from server
         int timestamp_local = obtainTSofFile(filepath);
-
-        // SYNC POR TEMPOS
+        // Sync via timestamps
         if (timestamp_remote < timestamp_local) {
-          // server manda arq then
+          // Server sends the file to the user
           try {
             processComm->send(Data::T_DOWNLOAD);
             processComm->rcvConfirmation();
             int timestamp = obtainTSofFile(filepath);
             processComm->send(Data::T_SOF, to_string(timestamp));
             processComm->rcvConfirmation();
-            if (processComm->sendArq(filepath) == 0)
-              printf("download ok.");
-            else
-              printf("download not ok.");
+            if (processComm->sendArq(filepath) == OK) {
+              printf("Down ok.\n");
+            } else {
+                printf("Down not ok.\n");
+            }
           }
           catch (exception &e) {
             unlock_file(nameOfTheFile);
@@ -87,10 +88,11 @@ void *ServerCommunication::run() {
           processComm->send(Data::T_UPLOAD);
           processComm->rcvConfirmation();
           // Upload on the client side
-          if (processComm->getArq(filepath) == 0)
-            printf("up ok.");
-          else
-            printf("up not ok.");
+          if (processComm->getArq(filepath) == OK) {
+            printf("Up ok.\n");
+          } else {
+              printf("Up not ok.\n");
+            }
         }
         else {
           processComm->send(Data::T_EQUAL);
@@ -114,8 +116,8 @@ void *ServerCommunication::run() {
           ) {
             try {
               string nameOfTheFile = *fname;
-              string filepath = processComm->folderOfTheUser + '/' + nameOfTheFile;
-              // user baixa o arq
+              string filepath = processComm->folderOfTheUser + PATH_SEPARATOR + nameOfTheFile;
+              // User gets the file via download from this server
               if (!ifstream(filepath)) {
                 continue;
               }
@@ -126,13 +128,13 @@ void *ServerCommunication::run() {
                 int timestamp = obtainTSofFile(filepath);
                 processComm->send(Data::T_SOF, to_string(timestamp));
                 processComm->rcvConfirmation();
-                if (processComm->sendArq(filepath) == EQUAL)
-                  printf("download ok.");
-                else
-                  printf("download not ok.");
+                if (processComm->sendArq(filepath) == OK) {
+                  printf("Down ok.\n");
+                } else {
+                    printf("Down not ok.\n");
+                }
               }
               else {
-                // PROB NO USER
                 processComm->sendConfirmation();
               }
             }
@@ -141,21 +143,35 @@ void *ServerCommunication::run() {
               continue;
             }
           }
-
+          // Send confirmation after finishing any operation
           processComm->send(Data::T_DONE);
           processComm->rcvConfirmation();
           break;
         }
       }
       else if (msg.type == Data::T_DELETE) {
-        printf("caguei\n");
         string nameOfTheFile = msg.content;
         string filepath = processComm->folderOfTheUser
           + PATH_SEPARATOR
           + nameOfTheFile;
         if (processComm->deleteFile(filepath) == OK) {
           cout << "The file " << nameOfTheFile
-            << " has been successfully removed :)" << endl;
+            << " has been successfully removed from one session. "
+            << "Now it will be removed from the other ones" << endl;
+          // Delete the file for the other sessions (other devices) of the user who deleted the file
+          for (
+            map<string, ServerCommunication *>::iterator fname = (*syncThreads).begin();
+            fname != (*syncThreads).end();
+            ++fname
+          ) {
+            ServerCommunication *thread = fname->second;
+            if (
+              thread->processComm->idUser != this->processComm->idUser &&
+              thread->processComm->session != this->processComm->session
+            ) {
+              thread->processComm->send(Data::T_DELETE, nameOfTheFile);
+            }
+          }
         } else {
             cout << "The file " << nameOfTheFile
               << " has been successfully removed :)" << endl;
@@ -163,7 +179,6 @@ void *ServerCommunication::run() {
         filesToBePosted.remove(nameOfTheFile);
         processComm->sendConfirmation(); // About the attempt of deleting the file
       }
-
     }
   }
 }

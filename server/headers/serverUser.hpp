@@ -5,6 +5,7 @@
 #include "../../utils/headers/parUtils.hpp"
 #include "../../utils/headers/udpUtils.hpp"
 #include "../../utils/headers/process.hpp"
+#include "../headers/serverCommunication.hpp"
 
 class ServerUser : public Thread {
   private:
@@ -12,14 +13,14 @@ class ServerUser : public Thread {
   public:
     ServerUser(
       Process *processComm,
-      map<string, ServerUser *> threads,
-      map<string, ServerUser *> syncUserThreads
+      map<string, ServerUser*> *syncUserThreads,
+      map<string, ServerCommunication*> *syncCommunicationThreads
     );
     ~ServerUser();
     void *run();
     bool usingActive;
-    map<string, ServerUser *> threads;
-    map<string, ServerUser *> syncUserThreads;
+    map<string, ServerUser*> *threads;
+    map<string, ServerCommunication*> *syncThreads;
 };
 
 #endif

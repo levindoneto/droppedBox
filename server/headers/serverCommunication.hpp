@@ -2,7 +2,6 @@
 #define SERVERCOMMUNICATION_H
 
 #include "../../utils/headers/dropboxUtils.h"
-#include "../headers/serverUser.hpp"
 #include "../../utils/headers/parUtils.hpp"
 #include "../../utils/headers/udpUtils.hpp"
 #include "../../utils/headers/process.hpp"
@@ -11,12 +10,12 @@ class ServerCommunication : public Thread {
   public:
     ServerCommunication(
       Process *processComm,
-      map<string, ServerUser*> syncUserThreads
+      map<string, ServerCommunication*> *syncCommunicationThreads
     );
     ~ServerCommunication();
     void *run();
     bool usingActive;
-    map<string, ServerUser*> syncUserThreads;
+    map<string, ServerCommunication*> *syncThreads;
     list<string> arqsSending;
   private:
     Process *processComm;

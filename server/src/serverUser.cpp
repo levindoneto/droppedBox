@@ -4,11 +4,12 @@
 
 ServerUser::ServerUser(
   Process *processComm,
-  map<string, ServerUser *> threads,
-  map<string, ServerUser *> syncUserThreads
+  map<string, ServerUser*> *syncUserThreads,
+  map<string, ServerCommunication*> *syncCommunicationThreads
 ) {
   usingActive = true;
-  threads = threads;
+  threads = syncUserThreads;
+  syncThreads = syncCommunicationThreads;
   this->processComm = processComm;
 }
 
@@ -18,7 +19,7 @@ ServerUser::~ServerUser() {
 
 void *ServerUser::run() {
   processComm->initProcessComm();
-  ServerCommunication server_sync(processComm, syncUserThreads);
+  ServerCommunication server_sync(processComm, syncThreads);
   server_sync.start();
   cout << processComm->idUser << " logged in" << endl;
   while (true) {
