@@ -20,6 +20,7 @@
 
 using namespace std;
 
+// All constants of the application
 #define UNDEF -1 // not specified information
 #define INIT 0 // for initialization of parameters
 #define DEF 1 // specified information without worked out values
@@ -43,13 +44,13 @@ using namespace std;
 #define INVALID_OPTION "$ An invalid option was given"
 #define CLIENT_LIST 0
 #define SERVER_LIST 1
-//#define BUFFER_SIZE 1024
 #define CURRENT_FOLDER "."
 #define CREATE_FILE 0
 #define EMPTY_PATH ""
 #define EQUAL 0
 #define TAB "\t"
 #define SEPARATOR_LIST ' | '
+#define SEP_LIST_NO_SPACES "|"
 #define SIZE_FILENAME_LIST 26
 #define SIZE_CTIMES_LIST 26
 #define FILENAME_LABEL "     Name of the File      | "
@@ -66,7 +67,7 @@ using namespace std;
 #define MODIFICATION_TIME_LABEL_S "    Modification Time     |"
 #define CREATION_TIME_LABEL_S "      Creation Time       |"
 #define BREAK_LINE "\n"
-#define FORMAT_NAME_FILE_S " "
+#define FORMAT_NAME_FILE_S ' '
 #define FILENAME_SIZE 75
 #define ACK_SIZE 10
 #define SLASH "/"
@@ -93,7 +94,24 @@ using namespace std;
 #define BACKUP_SERVER_TYPE "--b"
 #define OK 0
 #define PATH_SEPARATOR '/'
+#define SYNC_DIR_PREFIX "/sync_dir_"
+static const string HOME = string(getenv("HOME"));
+/*  IN_CREATE – File/directory created in watched directory
+    IN_DELETE – File/directory deleted from watched directory
+    IN_MODIFY – File was modified
+    IN_MOVED_FROM – File moved out of watched directory
+    IN_MOVED_TO – File moved into watched directory
+    IN_OPEN – File was opened
+    IN_ACCESS – File was read */
+#define INOTIFY_EVENTS IN_MODIFY | IN_CREATE | IN_DELETE\
+ | IN_MOVED_FROM | IN_MOVED_TO | IN_OPEN | IN_ACCESS | IN_CLOSE_WRITE
+#define EVENT_SIZE sizeof (struct inotify_event)
+#define LEN_NAME 16
+#define TRUE 1
+#define MAX_EVENTS 1024
+#define EVENT_BUF_LEN MAX_EVENTS * (EVENT_SIZE + LEN_NAME)
 
+// Data structures
 typedef struct datagram {
    int  chunckId;
    char  chunck[CHUNCK_SIZE];
@@ -104,39 +122,20 @@ typedef struct userInfo {
    char  message[CHUNCK_SIZE*7/8];
 } UserInfo;
 
-/*  IN_CREATE – File/directory created in watched directory
-    IN_DELETE – File/directory deleted from watched directory
-    IN_MODIFY – File was modified
-    IN_MOVED_FROM – File moved out of watched directory
-    IN_MOVED_TO – File moved into watched directory
-    IN_OPEN – File was opened
-    IN_ACCESS – File was read */
-#define INOTIFY_EVENTS IN_MODIFY | IN_CREATE | IN_DELETE\
- | IN_MOVED_FROM | IN_MOVED_TO | IN_OPEN | IN_ACCESS | IN_CLOSE_WRITE
-
-#define EVENT_SIZE sizeof (struct inotify_event)
-#define LEN_NAME 16
-#define TRUE 1
-#define MAX_EVENTS 1024
-#define EVENT_BUF_LEN MAX_EVENTS * (EVENT_SIZE + LEN_NAME)
-
-// Function which takes a string, and shows it, followed by exiting the app
+// Functions of utilitaries
 void throwError (char* errorData);
 unsigned int fileSize(string filePath);
-
-static const string HOME = string(getenv("HOME"));
-
 bool allowSending(string nameOfTheFile);
 void unlock_file(string fil);
-
 string obatingNameOfTheFile(string filepath);
 unsigned int obtainTSofFile(string nameOfTheFile);
-string ObtaingJustNameOfTheFile(string nameOfTheFile);
-
-class timeout_exception : public runtime_error
-{
-public:
-  timeout_exception() : runtime_error("ERROR: Timeout") {}
+string obtaingJustNameOfTheFile(string nameOfTheFile);
+void listClient(string userId);
+void printElement(string data, int width, char separator);
+void formatListOfArqs(string filelist);
+class timeout_exception : public runtime_error {
+  public:
+    timeout_exception() : runtime_error("Error: Timeout") {}
 };
 
 #endif

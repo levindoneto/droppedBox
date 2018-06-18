@@ -13,56 +13,41 @@
 #include <stdint.h>
 #include <iomanip>
 
-#include "../headers/dropboxClient.h"
+#include "../headers/dropboxClient.hpp"
 #include "../../utils/headers/ui.hpp"
 #include "../../utils/headers/dropboxUtils.h"
 #include "../../utils/fileSystem/headers/file.hpp"
 #include "../../settings/config.hpp"
 #include "../../utils/headers/udpUtils.hpp"
 #include "../../utils/headers/data.hpp"
-#include "../../utils/headers/process.hpp"
 #include "../headers/clientCommunication.hpp"
 #include "../../utils/fileSystem/headers/folder.hpp"
 
 using namespace std;
 
-int main(int argc, char *argv[]) {
-  srand(time(NULL));
-  string userName;
-  string host;
-  int port;
-  userName = string(argv[USER_CLIENT]);
-  host = string(argv[HOST_CLIENT]);
-  port = atoi(argv[PORT_CLIENT]);
-
-  if (
-    argv[USER_CLIENT] != NULL &&
-    argv[HOST_CLIENT] != NULL &&
-    argv[PORT_CLIENT] != NULL
-  ) {
-    userName = argv[USER_CLIENT];
-    host = argv[HOST_CLIENT];
-    port = atoi(argv[PORT_CLIENT]);
-  } else {
-    cout << PREFIX_BASH << "Usage:" << endl
-      << PREFIX_BASH << "./dropboxClient <idUser> <host> <port>" << endl;
-    char error[ERROR_MSG_SIZE] = "[Client]: Invalid use of the application";
-    throwError(error);
-  }
-
-  Process *processComm = new Process(userName);
+void DropboxClient::newProcessCommunication(
+  string userId,
+  string host,
+  int port
+) {
+  this->userId = userId;
+  this->folderOfTheUser = getHome() + SYNC_DIR_PREFIX + userId;
+  processComm = new Process(userId); // TODO: REMOVE THE PARAMETER
   processComm->sock = new UDPUtils(port);
   processComm->sock->setIp(host);
   processComm->login();
   ClientCommunication clientComm(processComm);
   showMenu();
-  cout << endl << "**** The user " << userName << " has successfully logged in ****" << endl;
+  cout << endl << "**** The user " << userId
+    << " has successfully logged in ****" << endl;
+  run(); // For getting the logged user's requests
+}
 
-  // Main loop
-  string commandToRun, pathOfTheFile;
+int DropboxClient::run() {
+  string commandToRun;
+  string pathOfTheFile;
   while (true) {
     cout << PREFIX_BASH;
-    //getline(cin, command);
     cin >> commandToRun;
     if (commandToRun == UPLOAD || commandToRun == DOWNLOAD) {
       cin >> pathOfTheFile;
@@ -108,13 +93,18 @@ int main(int argc, char *argv[]) {
         cout << pathOfTheFile << " was not downloaded into your home :(" << endl;
     }
     else if (commandToRun == LIST_SERVER) {
+      printf("1\n");
       processComm->send(Data::T_LS);
+      printf("2\n");
       string server_list = processComm->receive_string();
+      printf("3\n");
       formatListOfArqs(server_list);
+      printf("4\n");
       processComm->sendConfirmation();
+      printf("4\n");
     }
     else if (commandToRun == LIST_CLIENT) {
-      listClient(userName);
+      listClient(this->userId);
     }
     else if (commandToRun == EXIT_APP) {
       processComm->send(Data::T_BYE);
@@ -131,27 +121,32 @@ int main(int argc, char *argv[]) {
   }
   delete processComm;
   cout << "Successfully logged out!" << endl;
-  return 0;
+  return TRUE;
 }
 
-void listClient(string userId) {
-  listFiles(CLIENT_LIST, userId);
-}
+int main(int argc, char *argv[]) {
+  srand(time(NULL));
+  string userName;
+  string host;
+  int port;
+  userName = string(argv[USER_CLIENT]);
+  host = string(argv[HOST_CLIENT]);
+  port = atoi(argv[PORT_CLIENT]);
 
-void printElement(string data, int width, char separator) {
-  cout << left << setw(width) << setfill(separator) << data;
-}
-
-void formatListOfArqs(string filelist) {
-  char separator = ' ';
-  int fieldWidth = 26;
-  string delimiter = "|";
-  string tworkedProperlyen;
-  int pos = 0;
-  while ((pos = filelist.find(delimiter)) != std::string::npos) {
-    tworkedProperlyen = filelist.substr(0, pos);
-    printElement(tworkedProperlyen, fieldWidth, separator);
-    filelist.erase(0, pos + delimiter.length());
+  if (
+    argv[USER_CLIENT] != NULL &&
+    argv[HOST_CLIENT] != NULL &&
+    argv[PORT_CLIENT] != NULL
+  ) {
+    userName = argv[USER_CLIENT];
+    host = argv[HOST_CLIENT];
+    port = atoi(argv[PORT_CLIENT]);
+  } else {
+    cout << PREFIX_BASH << "Usage:" << endl
+      << PREFIX_BASH << "./dropboxClient <idUser> <host> <port>" << endl;
+    char error[ERROR_MSG_SIZE] = "[Client]: Invalid use of the application";
+    throwError(error);
   }
-  cout << endl;
+  DropboxClient dropboxClient;
+  dropboxClient.newProcessCommunication(userName, host, port);
 }

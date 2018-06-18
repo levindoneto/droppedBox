@@ -25,7 +25,7 @@ Dropbox-like platform for sharing and automatic synchronization of files among d
 $ make dropboxDP
 ```
 
-Being DP Client or Server.
+Being *DP* Client or Server.
 
 ## How to use it
 
@@ -38,7 +38,10 @@ $ ./dropboxClient <username> <host> <port>
 ### Server side
 
 ```terminal
-$ ./dropboxServer <port>
+$ ./dropboxServer <port> --x
 ```
+
+Being *x* **p** for primary servers or **b** for the backups.
+
 
 See also the full list of [contributors](https://github.com/levindoneto/droppedBox/graphs/contributors) who participated in this project.

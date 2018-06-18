@@ -90,7 +90,7 @@ string listFiles(int mode, string userId) {
   int i;
   if (mode == CLIENT_LIST) {
     string userFolderPath;
-    userFolderPath = getHome() + "/sync_dir_" + userId;
+    userFolderPath = getHome() + SYNC_DIR_PREFIX + userId;
     listFolder(userFolderPath);
     return userId;
   } else {
