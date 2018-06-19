@@ -11,3 +11,4 @@ vector<string> getTimes(string filePath);
 string timesToString(vector<string> times, int mode);
 void listFolder(string folderPath);
 string listFiles(int mode, string userId);
+bool fileInFolder(string filePath);

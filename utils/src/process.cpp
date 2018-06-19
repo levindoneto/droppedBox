@@ -6,13 +6,13 @@
 
 Process::~Process() {}
 
-Process::Process(string idUser, string session, UDPUtils *sock) {
+Process::Process(string idUser, string session, UDPUtils *socket) {
   this->idUser = idUser;
   this->session = session;
   if (session.empty()) {
-    this->session = to_string(rand() % 10000);
+    this->session = to_string(rand() % RANDOM_ID_SESSION_SIZE);
   }
-  this->sock = sock;
+  this->sock = socket;
   init_sequences();
 }
 
@@ -26,7 +26,7 @@ void Process::login() {
   rcvConfirmation();
   sock->set_dest_address(sock->get_sender_address());
   sendConfirmation();
-  folderOfTheUser = HOME + "/sync_dir_" + idUser;
+  folderOfTheUser = HOME + SYNC_DIR_PREFIX + idUser;
   File *file = new File();
   file->createFolderForFiles(folderOfTheUser);
 }

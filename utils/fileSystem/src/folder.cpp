@@ -82,7 +82,6 @@ void listFolder(string folderPath) {
     }
 }
 
-
 /* Method for listing files in the client or in the server side, relying on
  * the mode passed as one of the parameters.
  */
@@ -90,10 +89,16 @@ string listFiles(int mode, string userId) {
   int i;
   if (mode == CLIENT_LIST) {
     string userFolderPath;
-    userFolderPath = getHome() + "/sync_dir_" + userId;
+    userFolderPath = getHome() + SYNC_DIR_PREFIX + userId;
     listFolder(userFolderPath);
     return userId;
   } else {
       throwError("[Folder::listFiles]: Invalid mode");
   }
+}
+
+/* Method for verifyinf if a file exists with a path */
+bool fileInFolder(string filePath) {
+  if(!ifstream(filePath)) return false;
+  else return true;
 }
