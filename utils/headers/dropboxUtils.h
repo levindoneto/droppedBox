@@ -95,6 +95,7 @@ using namespace std;
 #define OK 0
 #define PATH_SEPARATOR '/'
 #define SYNC_DIR_PREFIX "/sync_dir_"
+#define RANDOM_ID_SESSION_SIZE 1000
 static const string HOME = string(getenv("HOME"));
 /*  IN_CREATE – File/directory created in watched directory
     IN_DELETE – File/directory deleted from watched directory
