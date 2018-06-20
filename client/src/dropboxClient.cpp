@@ -32,11 +32,13 @@ void DropboxClient::newProcessCommunication(
 ) {
   this->userId = userId;
   this->folderOfTheUser = getHome() + SYNC_DIR_PREFIX + userId;
-  processComm = new Process(userId); // TODO: REMOVE THE PARAMETER
+  processComm = new Process(userId); // TODO: REMOVE THE PARAMETER (Redundancy)
+
   processComm->sock = new UDPUtils(port);
   processComm->sock->setIp(host);
   processComm->login();
   ClientCommunication clientComm(processComm);
+
   showMenu();
   cout << endl << "**** The user " << userId
     << " has successfully logged in ****" << endl;
@@ -93,15 +95,10 @@ int DropboxClient::run() {
         cout << pathOfTheFile << " was not downloaded into your home :(" << endl;
     }
     else if (commandToRun == LIST_SERVER) {
-      printf("1\n");
       processComm->send(Data::T_LS);
-      printf("2\n");
       string server_list = processComm->receive_string();
-      printf("3\n");
       formatListOfArqs(server_list);
-      printf("4\n");
       processComm->sendConfirmation();
-      printf("4\n");
     }
     else if (commandToRun == LIST_CLIENT) {
       listClient(this->userId);
@@ -148,5 +145,5 @@ int main(int argc, char *argv[]) {
     throwError(error);
   }
   DropboxClient dropboxClient;
-  dropboxClient.newProcessCommunication(userName, host, port);
+  dropboxClient.newProcessCommunication(userName, host, port); // Used for the frontend
 }
