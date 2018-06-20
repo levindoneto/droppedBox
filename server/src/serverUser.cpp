@@ -1,6 +1,7 @@
 #include "../headers/serverUser.hpp"
 #include "../headers/serverCommunication.hpp"
 #include "../../utils/headers/ui.hpp"
+#include "../../utils/headers/dropboxUtils.h"
 #include "../../utils/fileSystem/headers/folder.hpp"
 
 ServerUser::ServerUser(
@@ -31,7 +32,7 @@ void *ServerUser::run() {
     }
     else if (request.type == Data::T_UPLOAD) {
       string content = request.content;
-      string nameOfTheFile = parsePath(content, "/").back();
+      string nameOfTheFile = parsePath(content, to_string(PATH_SEPARATOR)).back();
       string pathOfTheFile = processComm->folderOfTheUser + PATH_SEPARATOR+ nameOfTheFile;
       if (!allowSending(request.content)) {
         processComm->sendConfirmation(false);

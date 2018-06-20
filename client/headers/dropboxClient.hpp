@@ -8,6 +8,7 @@ class DropboxClient {
   private:
     // Where the commands are in (link with the server via UDP functions)
     int run();
+    int verifyServerAlive();
     string userId;
     string folderOfTheUser;
     Process *processComm;

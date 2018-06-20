@@ -32,6 +32,7 @@ ServerCommunication::ServerCommunication(
 void *ServerCommunication::run() {
   processComm->initProcessComm();
   while (true) {
+    cout << "SYNC - IM ALIVE\n";
     list<string> filesToBePosted = File::listNamesOfFiles(
       processComm->folderOfTheUser
     );

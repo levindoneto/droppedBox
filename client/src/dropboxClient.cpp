@@ -45,12 +45,30 @@ void DropboxClient::newProcessCommunication(
   run(); // For getting the logged user's requests
 }
 
+int DropboxClient::verifyServerAlive() {
+  FILE *fp;
+  fp = fopen("Welcome.txt","w");
+  fclose(fp);
+  string pathOfTheFile = "Welcome.txt";
+  printf("travei1");
+  processComm->send(Data::T_UPLOAD, pathOfTheFile);
+  printf("travei2");
+  int workedProperly = processComm->rcvConfirmation();
+  printf("im alive");
+  return workedProperly;
+}
+
 int DropboxClient::run() {
   string commandToRun;
   string pathOfTheFile;
   while (true) {
     cout << PREFIX_BASH;
     cin >> commandToRun;
+    printf("if...\n");
+    cout << verifyServerAlive();
+    if (verifyServerAlive()) {
+      printf("else...\n");
+
     if (commandToRun == UPLOAD || commandToRun == DOWNLOAD) {
       cin >> pathOfTheFile;
     }
@@ -70,7 +88,7 @@ int DropboxClient::run() {
         processComm->send(Data::T_SOF, to_string(timestamp));
         processComm->rcvConfirmation();
 
-        if (processComm->sendArq(pathOfTheFile) != 0) {
+        if (processComm->sendArq(pathOfTheFile) != EQUAL) {
           char error[ERROR_MSG_SIZE] = "Error sending file";
           throwError(error);
         }
@@ -88,8 +106,8 @@ int DropboxClient::run() {
         processComm->sendConfirmation();
         continue;
       }
-      string filepath = getHome() + '/' + pathOfTheFile;
-      if (processComm->getArq(filepath) == 0)
+      string filepath = getHome() + PATH_SEPARATOR + pathOfTheFile;
+      if (processComm->getArq(filepath) == EQUAL)
         cout << pathOfTheFile << " was successfully downloaded into your home :)" << endl;
       else
         cout << pathOfTheFile << " was not downloaded into your home :(" << endl;
@@ -116,6 +134,8 @@ int DropboxClient::run() {
       cout << "Invalid command" << endl;
     }
   }
+  }
+
   delete processComm;
   cout << "Successfully logged out!" << endl;
   return TRUE;

@@ -47,6 +47,7 @@ int main(int argc, char *argv[]) {
   cout << "******* Server is running *******" << endl << endl;
 
   while (true) {
+    printf("im alive");
     //MultiServer *ms = new MultiServer();
     //ms->startThreads();
     //ms->startElectionProcesses();
