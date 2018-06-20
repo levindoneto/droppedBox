@@ -1,6 +1,7 @@
 #include "../headers/serverCommunication.hpp"
 #include "../headers/serverUser.hpp"
 #include "../../utils/headers/dropboxUtils.h"
+#include "../../utils/fileSystem/headers/folder.hpp"
 
 ServerCommunication::~ServerCommunication() {
   delete processComm;
@@ -42,6 +43,7 @@ void *ServerCommunication::run() {
     expected_types.push_back(Data::T_DONE);
     expected_types.push_back(Data::T_DELETE);
 
+    // Merge files
     while (receiving_stats) {
       Data msg = processComm->receive(expected_types);
       // Check file timestamp
@@ -118,7 +120,7 @@ void *ServerCommunication::run() {
               string nameOfTheFile = *fname;
               string filepath = processComm->folderOfTheUser + PATH_SEPARATOR + nameOfTheFile;
               // User gets the file via download from this server
-              if (!ifstream(filepath)) {
+              if (!fileInFolder(filepath)) {
                 continue;
               }
               // Download on the client side

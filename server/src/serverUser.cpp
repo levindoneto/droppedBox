@@ -1,6 +1,7 @@
 #include "../headers/serverUser.hpp"
 #include "../headers/serverCommunication.hpp"
 #include "../../utils/headers/ui.hpp"
+#include "../../utils/fileSystem/headers/folder.hpp"
 
 ServerUser::ServerUser(
   Process *processComm,
@@ -31,7 +32,7 @@ void *ServerUser::run() {
     else if (request.type == Data::T_UPLOAD) {
       string content = request.content;
       string nameOfTheFile = parsePath(content, "/").back();
-      string pathOfTheFile = processComm->folderOfTheUser + '/' + nameOfTheFile;
+      string pathOfTheFile = processComm->folderOfTheUser + PATH_SEPARATOR+ nameOfTheFile;
       if (!allowSending(request.content)) {
         processComm->sendConfirmation(false);
         processComm->rcvConfirmation();
@@ -43,7 +44,7 @@ void *ServerUser::run() {
     }
     else if (request.type == Data::T_DOWNLOAD) {
       string nameOfTheFile = request.content;
-      string pathOfTheFile = processComm->folderOfTheUser + '/' + nameOfTheFile;
+      string pathOfTheFile = processComm->folderOfTheUser + PATH_SEPARATOR + nameOfTheFile;
       if (!allowSending(nameOfTheFile)) {
         processComm->sendConfirmation(false);
         processComm->rcvConfirmation();
@@ -51,10 +52,10 @@ void *ServerUser::run() {
       }
       processComm->sendConfirmation();
       try {
-        if (!ifstream(pathOfTheFile)) {
+        if (!fileInFolder(pathOfTheFile)) {
           char error[ERROR_MSG_SIZE] = "Error opening file";
-          throwError(error);
-
+          //throwError(error);
+          printf("The solicited file does not exist in this server");
           processComm->sendConfirmation(false);
           processComm->rcvConfirmation();
           unlock_file(nameOfTheFile);

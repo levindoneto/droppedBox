@@ -97,7 +97,7 @@ string listFiles(int mode, string userId) {
   }
 }
 
-/* Method for verifyinf if a file exists with a path */
+/* Method for verifying if a file exists with a path */
 bool fileInFolder(string filePath) {
   if(!ifstream(filePath)) return false;
   else return true;

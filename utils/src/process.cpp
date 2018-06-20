@@ -32,7 +32,7 @@ void Process::login() {
 }
 
 void Process::initProcessComm() {
-  theLastPartRCV = 0;
+  theLastPartRCV = INIT;
   sendConfirmation();
   rcvConfirmation();
   folderOfTheUser = idUser;
@@ -66,18 +66,18 @@ int Process::sendArq(string filepath) {
   } while (!file.eof());
   send(Data::T_EOF);
   rcvConfirmation();
-  return 0;
+  return INIT;
 }
 
 void Process::sendText(string data) {
   string chunk;
   int pos = DATAGRAM_LEN;
   do {
-    chunk = data.substr(0, pos);
+    chunk = data.substr(INIT, pos);
     send(Data::T_LS, chunk);
     rcvConfirmation();
-    data.erase(0, pos);
-  } while (data.length() > 0);
+    data.erase(INIT, pos);
+  } while (data.length() > INIT);
   send(Data::T_EOF);
   rcvConfirmation();
 }
@@ -87,7 +87,6 @@ void Process::resend() {
     it != messages_sent.end();
     it++
   ) {
-    //printf("manda msg again\n");
     sock->send(string(it->second));
   }
 }
@@ -97,7 +96,6 @@ bool Process::rcvConfirmation() {
   while (true) {
     Data msg = receive();
     {
-      // ERRO DO DELETE TODO
       if (stoi(msg.content) == theLastPartS) {
         if (msg.type == Data::T_ACK) {
           theLastPartRCV = msg.sequence;
@@ -123,7 +121,7 @@ Data Process::receive(string expected_type) {
       theLastPartRCV = msg.sequence;
       return msg;
     } else {
-      erro = 1;
+      erro = TRUE;
       //printf("error on type recebido\n");
     }
   }
@@ -141,7 +139,7 @@ Data Process::receive(list<string> expected_types) {
         theLastPartRCV = msg.sequence;
         return msg;
       } else {
-        erro = 1;
+        erro = TRUE;
         //printf("error on type recebido\n");
       }
     }
@@ -152,8 +150,7 @@ Data Process::receive_request() {
   this->sock->set_timeout(INIT); // Never timeout
   while (true) {
     Data msg = receive();
-    if (msg.pedindo())
-    {
+    if (msg.pedindo()) {
       theLastPartRCV = msg.sequence;
       this->sock->set_timeout(TIMEO);
       return msg;
@@ -211,32 +208,30 @@ int Process::getArq(string filepath) {
   while (true) {
     Data msg = receive();
     {
-      if (msg.type == Data::T_FILE)
-      {
+      if (msg.type == Data::T_FILE) {
         theLastPartRCV = msg.sequence;
         file.write(msg.content.data(), msg.content.length());
         sendConfirmation();
       } else if (msg.type == Data::T_SOF) {
-        theLastPartRCV = msg.sequence;
-        longTime = stoi(msg.content);
-        file.open(filepath, ofstream::binary | ofstream::trunc);
-
-        sendConfirmation();
+          theLastPartRCV = msg.sequence;
+          longTime = stoi(msg.content);
+          file.open(filepath, ofstream::binary | ofstream::trunc);
+          sendConfirmation();
       } else if (msg.type == Data::T_EOF) {
-        theLastPartRCV = msg.sequence;
-        sendConfirmation();
-        file.close();
+          theLastPartRCV = msg.sequence;
+          sendConfirmation();
+          file.close();
 
-        // Sets modification time
-        struct utimbuf ubuf;
-        ubuf.modtime = longTime;
-        struct stat info;
-        stat(filepath.c_str(), &info);
-        if (utime(filepath.c_str(), &ubuf) != EQUAL) {
-          throwError("error de tempo");
-        } else {
+          // Set modification time
+          struct utimbuf ubuf;
+          ubuf.modtime = longTime;
+          struct stat info;
           stat(filepath.c_str(), &info);
-        }
+          if (utime(filepath.c_str(), &ubuf) != EQUAL) {
+            throwError("Timing error");
+          } else {
+            stat(filepath.c_str(), &info);
+          }
         return EQUAL;
       }
       else if (msg.type == Data::T_ERROR) {
@@ -263,5 +258,5 @@ int Process::deleteFile(string filepath) {
   if (status != OK) {
     return ERROR;
   }
-  return 0;
+  return INIT;
 }

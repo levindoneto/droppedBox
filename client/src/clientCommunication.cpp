@@ -2,7 +2,7 @@
 #include "../../utils/headers/dropboxUtils.h"
 
 #define stat _stat
-#define TIME_DO_NOTHING 6
+#define TIME_DO_NOTHING 6 // Sync thread (merging files)
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -24,7 +24,6 @@ void *ClientCommunication::run() {
   while (true) {
     processComm->send(Data::T_SYNC);
     processComm->rcvConfirmation();
-
     list<string> currentListOfFiles = File::listNamesOfFiles(
       processComm->folderOfTheUser
     );
@@ -35,7 +34,7 @@ void *ClientCommunication::run() {
       ++fname
     ) {
       string idArq = *fname;
-      string filePath = processComm->folderOfTheUser + '/' + idArq;
+      string filePath = processComm->folderOfTheUser + PATH_SEPARATOR + idArq;
       previousListOfFiles.remove(idArq);
 
       if (allowSending(idArq)) {
@@ -55,7 +54,7 @@ void *ClientCommunication::run() {
 
           if (message.type == Data::T_DOWNLOAD) {
             processComm->sendConfirmation();
-            if (processComm->getArq(filePath) == 0)
+            if (processComm->getArq(filePath) == EQUAL)
               cout << "File received" << '\n';
             else {
               char error[ERROR_MSG_SIZE] = "Download failed";
@@ -86,7 +85,6 @@ void *ClientCommunication::run() {
             }
             catch (exception &e) {
               cout << e.what() << endl;
-
               processComm->sendConfirmation(false);
               processComm->rcvConfirmation();
               unlock_file(idArq);
@@ -143,11 +141,11 @@ void *ClientCommunication::run() {
       }
       else if (message.type == Data::T_DOWNLOAD) {
         string idArq = message.content;
-        string filePath = processComm->folderOfTheUser + '/' + idArq;
+        string filePath = processComm->folderOfTheUser + PATH_SEPARATOR + idArq;
         if (allowSending(idArq)) {
           processComm->sendConfirmation();
-          if (processComm->getArq(filePath) != 0) {
-            char error[ERROR_MSG_SIZE] = "Error downloading files";
+          if (processComm->getArq(filePath) != OK) {
+            char error[ERROR_MSG_SIZE] = "Error on downloading files";
             throwError(error);
           }
           unlock_file(idArq);
@@ -159,7 +157,7 @@ void *ClientCommunication::run() {
         }
       }
       else {
-        char error[ERROR_MSG_SIZE] = "Error file not founded";
+        char error[ERROR_MSG_SIZE] = "Error of not found file";
         throwError(error);
         processComm->sendConfirmation();
         continue;
