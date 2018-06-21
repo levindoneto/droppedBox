@@ -21,7 +21,6 @@
 #include <fcntl.h>
 
 #include "../../utils/headers/dropboxUtils.h"
-
 #include "../../utils/headers/parUtils.hpp"
 #include "../../utils/headers/udpUtils.hpp"
 #include "../../utils/headers/process.hpp"
@@ -46,12 +45,16 @@ class MultiServer {
     void broadcastElected();
     void sendAliveMessage();
     list<int> servers;
+    list<string> allServersButSelfservers;
+    string selfHost;
+    map<string, Process*> activeServers;
 
   private:
     int procElected;
     SERVER_INFO serverInfo;
     vector<SERVER_INFO> listActiveProcesses;
     vector<SERVER_INFO> inElectionProcesses;
+    list<string> dataTypesMS;
 };
 
 #endif

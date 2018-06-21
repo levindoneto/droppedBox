@@ -45,16 +45,17 @@ void DropboxClient::newProcessCommunication(
   run(); // For getting the logged user's requests
 }
 
-int DropboxClient::verifyServerAlive() {
+bool DropboxClient::verifyServerAlive() {
+  //cout << "travei0\n";
   FILE *fp;
   fp = fopen("Welcome.txt","w");
   fclose(fp);
   string pathOfTheFile = "Welcome.txt";
-  printf("travei1");
+  cout << "travei2\n";
   processComm->send(Data::T_UPLOAD, pathOfTheFile);
-  printf("travei2");
-  int workedProperly = processComm->rcvConfirmation();
-  printf("im alive");
+  cout << "travei3\n";
+  bool workedProperly = processComm->rcvConfirmation();
+  cout << workedProperly << " travei4\n";
   return workedProperly;
 }
 
@@ -64,10 +65,10 @@ int DropboxClient::run() {
   while (true) {
     cout << PREFIX_BASH;
     cin >> commandToRun;
-    printf("if...\n");
-    cout << verifyServerAlive();
-    if (verifyServerAlive()) {
-      printf("else...\n");
+    //if (verifyServerAlive()) cout << "to vivo\n";
+    //else cout << "cai e vai rolar eleicao no servers agr\n";
+
+    if (true) {
 
     if (commandToRun == UPLOAD || commandToRun == DOWNLOAD) {
       cin >> pathOfTheFile;
@@ -133,7 +134,9 @@ int DropboxClient::run() {
     else {
       cout << "Invalid command" << endl;
     }
-  }
+  } else {
+      newProcessCommunication(userId, "localhost", 4000);
+    }
   }
 
   delete processComm;
