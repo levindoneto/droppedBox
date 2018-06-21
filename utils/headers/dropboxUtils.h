@@ -131,6 +131,8 @@ void unlock_file(string fil);
 string obatingNameOfTheFile(string filepath);
 unsigned int obtainTSofFile(string nameOfTheFile);
 string obtaingJustNameOfTheFile(string nameOfTheFile);
+pid_t getIdOfProcess();
+string getipAddress();
 void listClient(string userId);
 void printElement(string data, int width, char separator);
 void formatListOfArqs(string filelist);

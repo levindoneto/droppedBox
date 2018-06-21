@@ -64,10 +64,10 @@ int DropboxClient::run() {
   while (true) {
     cout << PREFIX_BASH;
     cin >> commandToRun;
-    printf("if...\n");
-    cout << verifyServerAlive();
-    if (verifyServerAlive()) {
-      printf("else...\n");
+    // printf("if...\n");
+    // cout << verifyServerAlive();
+    // if (verifyServerAlive()) {
+    //   printf("else...\n");
 
     if (commandToRun == UPLOAD || commandToRun == DOWNLOAD) {
       cin >> pathOfTheFile;
@@ -133,7 +133,7 @@ int DropboxClient::run() {
     else {
       cout << "Invalid command" << endl;
     }
-  }
+  //}
   }
 
   delete processComm;
