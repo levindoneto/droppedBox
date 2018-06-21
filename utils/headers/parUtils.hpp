@@ -4,13 +4,13 @@
 #include "dropboxUtils.h"
 
 class Thread {
-private:
-    pthread_t id;
-public:
-    virtual ~Thread() = INIT;
-    virtual void* run() = INIT;
-    void start();
-    static void* static_run(void *void_this);
-};
+  private:
+      pthread_t id;
+  public:
+      virtual ~Thread() = INIT;
+      virtual void* run() = INIT;
+      void start();
+      static void* static_run(void *void_this);
+  };
 
 #endif

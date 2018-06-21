@@ -18,12 +18,16 @@ const string Data::T_DONE = "DONE";
 const string Data::T_EQUAL = "EQUAL";
 const string Data::T_DELETE = "DELETE";
 
+// Multiserver stuff
+const string Data::T_SERVER_ELECTION = "SERVER_ELECTION";
+const string Data::T_WORKING = "WORKING";
+const string Data::T_COORDINATOR = "COORDINATOR";
+
 bool Data::pedindo() {
     return (
       type == Data::T_LS
       || type == Data::T_DOWNLOAD
       || type == Data::T_UPLOAD
-      || type == Data::T_BYE
       || type == Data::T_BYE
     );
 }

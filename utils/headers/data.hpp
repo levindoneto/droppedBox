@@ -37,6 +37,11 @@ class Data {
     static const string T_EQUAL;
     static const string T_UPLOAD;
     static const string T_DELETE;
+
+    // Multiserver stuff
+    static const string T_WORKING;
+    static const string T_SERVER_ELECTION;
+    static const string T_COORDINATOR;
 };
 
 #endif
