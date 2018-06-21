@@ -70,11 +70,11 @@ string obtaingJustNameOfTheFile(string nameOfTheFile) {
   return nameOfTheFile.substr(INIT, nameOfTheFile.find_last_of('.'));
 }
 
-pid_t getIdOfProcess() {
-  return getpid();
+int getIdOfProcess() {
+  return (int) getpid();
 }
 
-
+// Return the ip of the computer where the process is running
 string getipAddress() {
   struct ifaddrs *ifaddr, *ifa;
   int family, s;

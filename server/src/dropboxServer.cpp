@@ -31,7 +31,6 @@ class DropboxServer {
 int main(int argc, char *argv[]) {
   // Create a object for the server (with the method for cleaning server threads)
   DropboxServer *dropboxServer = new DropboxServer();
-
   int port;
   pid_t pid;
   string typeServer;

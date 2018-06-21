@@ -38,7 +38,7 @@ class MultiServer {
     MultiServer(int port, pid_t pid, string ipAddress);
     ~MultiServer();
     void startThreads();
-    void serverInfoInit(int port, pid_t pid, string ipAddress);
+    void serverInfoInit(int port, pid_t pid, bool local);
     SERVER_INFO getServerInfo();
     void startElectionProcesses();
     void setProcessElected(int procElected);
@@ -46,7 +46,7 @@ class MultiServer {
     void sendAliveMessage();
     list<int> servers;
     list<string> allServersButSelfservers;
-    string selfHost;
+    //string selfHost;
     map<string, Process*> activeServers;
 
   private:
@@ -54,7 +54,6 @@ class MultiServer {
     SERVER_INFO serverInfo;
     vector<SERVER_INFO> listActiveProcesses;
     vector<SERVER_INFO> inElectionProcesses;
-    pid_t getIdOfProcess();
     list<string> dataTypesMS;
 };
 
