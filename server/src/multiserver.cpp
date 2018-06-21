@@ -1,10 +1,15 @@
 #include "../headers/multiserver.hpp"
 #include "../../utils/headers/dropboxUtils.h"
 #include "../../utils/headers/udpUtils.hpp"
+#include "../../utils/headers/process.hpp"
 #include <thread>
 
 // Dynamic initialization for mutex with specified attributes
 pthread_mutex_t startElection_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+MultiServer::MultiServer(int port, pid_t pid, string ipAddress) {
+  serverInfoInit(port, pid, ipAddress);
+}
 
 void MultiServer::startThreads() {
   thread threadSendAlive = thread(&MultiServer::sendAliveMessage, this);
@@ -13,11 +18,10 @@ void MultiServer::startThreads() {
 
 // Initialize the structure with the process' information (ip, port, pid of the
 // process running it). It's called in the constructor of this class.
-void MultiServer::serverInfoInit() {
-  string ipTest = "localhost";
-  this->serverInfo.ip = ipTest;
+void MultiServer::serverInfoInit(int port, pid_t pid, string ipAddress) {
+  this->serverInfo.ip = ipAddress;
   this->serverInfo.port = 3000;
-  this->serverInfo.pid = (int) getpid();
+  this->serverInfo.pid = pid;
 }
 
 // Return the information about the process running the server

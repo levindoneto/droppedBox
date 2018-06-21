@@ -33,7 +33,9 @@ int main(int argc, char *argv[]) {
   DropboxServer *dropboxServer = new DropboxServer();
 
   int port;
+  pid_t pid;
   string typeServer;
+  string ipAddress;
   if (argc > 2) {
     port = atoi(argv[PORT_SERVER]);
     typeServer = string(argv[TYPE_SERVER]);
@@ -44,6 +46,8 @@ int main(int argc, char *argv[]) {
   map<string,ServerUser*> threads;
   UDPUtils listener(port);
   listener.bindServer();
+  pid = getIdOfProcess();
+  ipAddress = getipAddress();
   cout << "******* Server is running *******" << endl << endl;
 
   while (true) {
@@ -51,6 +55,7 @@ int main(int argc, char *argv[]) {
     //MultiServer *ms = new MultiServer();
     //ms->startThreads();
     //ms->startElectionProcesses();
+    MultiServer *ms = new MultiServer(port, pid, ipAddress);
 
     Data message = Data::parse(listener.receive());
     dropboxServer->closeThreadsOpen();

@@ -35,10 +35,10 @@ typedef struct serverInfo {
 
 class MultiServer {
   public:
-    MultiServer() {};
+    MultiServer(int port, pid_t pid, string ipAddress);
     ~MultiServer();
     void startThreads();
-    void serverInfoInit();
+    void serverInfoInit(int port, pid_t pid, string ipAddress);
     SERVER_INFO getServerInfo();
     void startElectionProcesses();
     void setProcessElected(int procElected);
@@ -54,6 +54,7 @@ class MultiServer {
     SERVER_INFO serverInfo;
     vector<SERVER_INFO> listActiveProcesses;
     vector<SERVER_INFO> inElectionProcesses;
+    pid_t getIdOfProcess();
     list<string> dataTypesMS;
 };
 
