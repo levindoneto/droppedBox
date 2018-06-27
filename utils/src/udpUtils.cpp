@@ -77,7 +77,7 @@ sockaddr_in UDPUtils::get_sender_address() {
   return sender_address;
 }
 
-void UDPUtils::turnOnimeout() {
+void UDPUtils::turnOnTimeout() {
     setsockopt(
       id,
       SOL_SOCKET,
@@ -102,6 +102,10 @@ void UDPUtils::set_timeout(int seconds) {
 
 void UDPUtils::set_dest_address(sockaddr_in new_dest_address) {
   dest_address = new_dest_address;
+}
+
+void UDPUtils::set_to_answer(UDPUtils* sock) {
+    dest_address = sock->sender_address;
 }
 
 UDPUtils* UDPUtils::get_answerer() {

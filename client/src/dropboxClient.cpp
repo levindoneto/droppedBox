@@ -46,17 +46,7 @@ void DropboxClient::newProcessCommunication(
 }
 
 bool DropboxClient::verifyServerAlive() {
-  //cout << "travei0\n";
-  FILE *fp;
-  fp = fopen("Welcome.txt","w");
-  fclose(fp);
-  string pathOfTheFile = "Welcome.txt";
-  cout << "travei2\n";
-  processComm->send(Data::T_UPLOAD, pathOfTheFile);
-  cout << "travei3\n";
-  bool workedProperly = processComm->rcvConfirmation();
-  cout << workedProperly << " travei4\n";
-  return workedProperly;
+  return true;
 }
 
 int DropboxClient::run() {

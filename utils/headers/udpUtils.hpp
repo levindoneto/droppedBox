@@ -7,18 +7,19 @@
 
 class UDPUtils {
   private:
-    int id;
-    int port;
     int total_send;
     int total_received;
+    int id;
+    int port;
+    struct sockaddr_in dest_address;
     struct sockaddr_in server_address;
     struct sockaddr_in sender_address;
-    struct sockaddr_in dest_address;
     struct hostent *host;
     char receive_buffer[SOCKET_BUFFER_SIZE];
     const char *send_buffer;
     struct timeval timeout;
     socklen_t socklen;
+    struct timeval zero_timeout;
   public:
     UDPUtils(int port);
     ~UDPUtils();
@@ -32,6 +33,7 @@ class UDPUtils {
     void turnOnTimeout();
     void turnOffTimeout();
     void set_timeout(int seconds);
+    void set_to_answer(UDPUtils* sock);
     UDPUtils* get_answerer();
     static int DEFAULT_TIMEOUT;
 };

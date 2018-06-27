@@ -6,14 +6,71 @@
 
 Process::~Process() {}
 
-Process::Process(string idUser, string session, UDPUtils *socket) {
+Process::Process(string idUser, string session, UDPUtils *sock) {
   this->idUser = idUser;
   this->session = session;
   if (session.empty()) {
     this->session = to_string(rand() % RANDOM_ID_SESSION_SIZE);
   }
-  this->sock = socket;
+  this->sock = sock;
   init_sequences();
+}
+
+Process::Process(string hostname, int port) : Process() {
+  this->sock = new UDPUtils(port);
+  this->sock->setIp(hostname);
+  connectProc();
+}
+
+Process::Process() {
+    this->session = to_string(rand() % RANDOM_ID_SESSION_SIZE);
+    theLastPartS = ERROR;
+    theLastPartRCV = ERROR;
+}
+
+Process::Process(int port) {
+  sock = new UDPUtils(port);
+  sock->bindServer();
+}
+
+Process::Process(string session, UDPUtils* sock) : Process() {
+    this->session = session;
+    this->sock = sock;
+}
+
+Process* Process::createProcComm() {
+    Process* newProcComm = new Process();
+    newProcComm-> sock =  sock->get_answerer();
+    newProcComm->connectProc();
+    return newProcComm;
+}
+
+Process *Process::rcvProcComm() {
+  Data *data = new Data();
+  sock->turnOffTimeout();
+  while (true) {
+    string dataString = this-> sock->receive();
+    Data dataMessage = data->parse(dataString);
+    if (dataMessage.type == Data::T_SYN && dataMessage.session != this->session) {
+      sock->turnOnTimeout();
+      return new Process(dataMessage.session, sock->get_answerer());
+    }
+  }
+}
+
+void Process::connectProc() {
+  send(Data::T_SYN);
+  sock->set_to_answer( sock);
+}
+
+void Process::confirmComm() {
+  theLastPartRCV = INIT;
+  sendConfirmation();
+}
+
+void Process::confirmRcv(Data dataMessage) {
+  theLastPartRCV = dataMessage.sequence;
+  sendConfirmation();
 }
 
 void Process::closeProcess() {
