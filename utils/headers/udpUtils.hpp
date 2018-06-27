@@ -29,6 +29,8 @@ class UDPUtils {
     string receive();
     sockaddr_in get_sender_address();
     void set_dest_address(sockaddr_in new_dest_address);
+    void turnOnTimeout();
+    void turnOffTimeout();
     void set_timeout(int seconds);
     UDPUtils* get_answerer();
     static int DEFAULT_TIMEOUT;
