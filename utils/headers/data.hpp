@@ -38,11 +38,16 @@ class Data {
     static const string T_EQUAL;
     static const string T_UPLOAD;
     static const string T_DELETE;
-
+    static const string T_NEWCLIENT;
     // Multiserver stuff
     static const string T_WORKING;
     static const string T_SERVER_ELECTION;
     static const string T_COORDINATOR;
+    static const string T_HOST;
+    static const string T_BACKUP;
+    static const string T_END;
+    static const string T_PROCCLIENT_ON;
+    static const string T_PROCCLIENT_OFF;
 };
 
 #endif

@@ -17,6 +17,12 @@ const string Data::T_STAT = "STAT";
 const string Data::T_DONE = "DONE";
 const string Data::T_EQUAL = "EQUAL";
 const string Data::T_DELETE = "DELETE";
+const string Data::T_NEWCLIENT = "NEWCLIENT";
+const string Data::T_HOST = "HOST";
+const string Data::T_BACKUP = "BACKUP";
+const string Data::T_END = "END";
+const string Data::T_PROCCLIENT_ON = "PROCCLIENT_ON";
+const string Data::T_PROCCLIENT_OFF = "PROCCLIENT_OFF";
 
 // Multiserver stuff
 const string Data::T_SERVER_ELECTION = "SERVER_ELECTION";

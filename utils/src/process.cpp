@@ -1,6 +1,7 @@
 #include "../headers/process.hpp"
 #include "../headers/dropboxUtils.h"
 
+
 #include <utime.h>
 #include <stdio.h>
 
@@ -53,6 +54,12 @@ Process *Process::rcvProcComm() {
     Data dataMessage = data->parse(dataString);
     if (dataMessage.type == Data::T_SYN && dataMessage.session != this->session) {
       sock->turnOnTimeout();
+      // For non-backup processes FIXME
+
+      if (DropboxServer::backups.count(dataMessage.content) <= INIT) {
+        send(Data::T_NEWCLIENT, dataMessage.content);
+      }
+
       return new Process(dataMessage.session, sock->get_answerer());
     }
   }

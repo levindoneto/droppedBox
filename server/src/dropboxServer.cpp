@@ -6,27 +6,48 @@
 
 using namespace std;
 
-class DropboxServer {
-  public:
-    DropboxServer() {
-      syncThreads = new map<string, ServerCommunication *>();
-      threads = new map<string, ServerUser*>();
-    };
-    ~DropboxServer() {}; // Destroy server
-    map<string, ServerCommunication*> *syncThreads;
-    map<string, ServerUser*> *threads;
-    void closeThreadsOpen() {
-      auto it = (*threads).cbegin();
-      while (it != (*threads).cend()) {
-        if (it->second->usingActive) {
-          ++it;
-        } else {
-            delete it->second;
-            it = (*threads).erase(it);
+DropboxServer::DropboxServer(int port) {
+    sock = new Socket(port);
+    this->port = port;
+}
+
+void DropboxServer::closeThreadsOpen() {
+  auto it = (*threads).cbegin();
+  while (it != (*threads).cend()) {
+    if (it->second->usingActive) {
+      ++it;
+    } else {
+        delete it->second;
+        it = (*threads).erase(it);
+    }
+  }
+}
+
+void primaryServerRun(int port) {
+  listener = new Process(port);
+  cout << "Listening on port " << port << " for connections..." << endl;
+  while (true) {
+    Process *process = listener->rcvProcComm();
+    closeThreadsOpen();
+    // if backup server
+    if (process->session.at(0) == 'b') {
+      //cout << "Backup " << process->host << " connected" << endl;
+      connection->confirmComm();
+      serverBackups.push_back(process);
+    } else if (!threads.count(connection->session)) { // New communication with client
+        ServerUser *newUserThread = new ServerThread(this, process);
+        newUserThread->start();
+        threads[process->session] = newUserThread;
+        for (Process *serverBackup : serverBackups) {
+            serverBackup->send(Data::T_PROCCLIENT_ON, process->hostname);
         }
       }
-    }
-};
+  }
+}
+
+void Server::backup_loop(string master_ip, int port) {
+  //TODO
+}
 
 int main(int argc, char *argv[]) {
   // Create a object for the server (with the method for cleaning server threads)
@@ -78,6 +99,9 @@ int main(int argc, char *argv[]) {
         // Create logged user's session
         (*dropboxServer->threads)[message.session] = newUserThread;
       }
+
+      // TODO Add regarding type of server (primary or backup)
+
     }
   }
 }

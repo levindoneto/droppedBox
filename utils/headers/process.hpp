@@ -5,6 +5,7 @@
 #include "data.hpp"
 #include "dropboxUtils.h"
 #include "../fileSystem/headers/file.hpp"
+#include "../../server/headers/dropboxServer.hpp"
 
 class Process {
   private:
@@ -22,6 +23,7 @@ class Process {
     string folderOfTheUser;
     string session;
     UDPUtils *sock;
+    string hostname;
     // Methods
     Process(string idUser, string session = "", UDPUtils *new_socket = NULL);
     ~Process();
