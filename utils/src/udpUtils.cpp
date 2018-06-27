@@ -77,6 +77,24 @@ sockaddr_in UDPUtils::get_sender_address() {
   return sender_address;
 }
 
+void UDPUtils::turnOnimeout() {
+    setsockopt(
+      id,
+      SOL_SOCKET,
+      SO_RCVTIMEO,
+      (const char *)&timeout, sizeof timeout
+    );
+}
+
+void UDPUtils::turnOffTimeout() {
+  setsockopt(
+    id,
+    SOL_SOCKET,
+    SO_RCVTIMEO,
+    (const char *)&zero_timeout, sizeof timeout
+  );
+}
+
 void UDPUtils::set_timeout(int seconds) {
   timeout.tv_sec = seconds;
   setsockopt(id, SOL_SOCKET, SO_RCVTIMEO, (const char *)&timeout, sizeof timeout);
