@@ -7,6 +7,7 @@
 
 class Data {
   public:
+    Data() {};
     Data(string session, int sequence, string type, string content);
     string to_string();
     void print(char direction = '\0', string idUser = "");
