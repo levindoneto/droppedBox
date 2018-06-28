@@ -12,6 +12,7 @@ class Data {
     string to_string();
     void print(char direction = '\0', string idUser = "");
     bool pedindo();
+    string stringify();
 
     static Data parse(string msg);
     static Data parseb(char *msg);
@@ -43,6 +44,10 @@ class Data {
     static const string T_WORKING;
     static const string T_SERVER_ELECTION;
     static const string T_COORDINATOR;
+    static const string T_NEW_USER;
+    static const string T_IP;
+    static const string T_BACKUP;
+    static const string T_OK;
 };
 
 #endif
