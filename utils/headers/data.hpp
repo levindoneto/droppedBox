@@ -48,6 +48,7 @@ class Data {
     static const string T_IP;
     static const string T_BACKUP;
     static const string T_OK;
+    static const string T_MODTIME;
 };
 
 #endif
