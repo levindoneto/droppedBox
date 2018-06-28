@@ -7,6 +7,30 @@
 #include "../headers/file.hpp"
 #include "../../headers/dropboxUtils.h"
 
+File::File(string filepath)
+  : filepath(filepath), modification_time_str(""), access_time_str(""), creation_time_str("") {
+  update_info();
+}
+
+string File::time_to_string(time_t timestamp) {
+  char buffer[256];
+  struct tm *tm = localtime(&timestamp);
+  strftime(buffer, sizeof(buffer), "%H:%M:%S %d/%m/%Y", tm);
+  return string(buffer, strlen("HH:MM:SS DD/MM/YYYY"));
+}
+
+bool File::update_info() {
+  if (stat(filepath.c_str(), &info) >= INIT) {
+    modification_time_str = time_to_string(info.st_mtime);
+    access_time_str = time_to_string(info.st_atime);
+    creation_time_str = time_to_string(info.st_ctime);
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
 list<string> File::listNamesOfFiles(string dirpath) {
   list <string> nameOfTheFiles;
   DIR *directoryPointer;

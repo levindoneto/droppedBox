@@ -125,3 +125,10 @@ void formatListOfArqs(string filelist) {
   }
   cout << endl;
 }
+
+string time_to_string(time_t timestamp) {
+  char buffer[256];
+  struct tm *tm = localtime(&timestamp);
+  strftime(buffer, sizeof(buffer), "%H:%M:%S %d/%m/%Y", tm);
+  return string(buffer, strlen("HH:MM:SS DD/MM/YYYY"));
+}

@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <utime.h>
 
 using namespace std;
 
@@ -136,6 +137,7 @@ string getipAddress();
 void listClient(string userId);
 void printElement(string data, int width, char separator);
 void formatListOfArqs(string filelist);
+string time_to_string(time_t timestamp);
 class timeout_exception : public runtime_error {
   public:
     timeout_exception() : runtime_error("Error: Timeout") {}
