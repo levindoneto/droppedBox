@@ -25,28 +25,28 @@
 
 using namespace std;
 
+DropboxClient::~DropboxClient() {
+    delete process;
+}
+
 void DropboxClient::newProcessCommunication(
   string userId,
   string host,
   int port
 ) {
+  File *file = new File();
   this->userId = userId;
-  this->folderOfTheUser = getHome() + SYNC_DIR_PREFIX + userId;
-  processComm = new Process(userId); // TODO: REMOVE THE PARAMETER (Redundancy)
+  folderOfTheUser = getHome() + SYNC_DIR_PREFIX + userId;
+  process = new Process(host, port);
+  process->send(Data::T_LOGIN, this->userId);
+  file->createFolderForFiles(folderOfTheUser);
 
-  processComm->sock = new UDPUtils(port);
-  processComm->sock->setIp(host);
-  processComm->login();
-  ClientCommunication clientComm(processComm);
-
+  ClientCommunication* clientComm = new ClientCommunication(this);
+  clientComm->run();
   showMenu();
   cout << endl << "**** The user " << userId
     << " has successfully logged in ****" << endl;
   run(); // For getting the logged user's requests
-}
-
-bool DropboxClient::verifyServerAlive() {
-  return true;
 }
 
 int DropboxClient::run() {
@@ -64,53 +64,53 @@ int DropboxClient::run() {
           continue;
         }
 
-        processComm->send(Data::T_UPLOAD, pathOfTheFile);
-        int workedProperly = processComm->rcvConfirmation();
+        process->send(Data::T_UPLOAD, pathOfTheFile);
+        int workedProperly = process->rcvConfirmation();
         if (!workedProperly) {
-          processComm->sendConfirmation();
+          process->sendConfirmation();
           continue;
         }
         int timestamp = obtainTSofFile(pathOfTheFile);
-        processComm->send(Data::T_SOF, to_string(timestamp));
-        processComm->rcvConfirmation();
+        process->send(Data::T_SOF, to_string(timestamp));
+        process->rcvConfirmation();
 
-        if (processComm->sendArq(pathOfTheFile) != EQUAL) {
+        if (process->sendArq(pathOfTheFile) != EQUAL) {
           char error[ERROR_MSG_SIZE] = "Error sending file";
           throwError(error);
         }
       }
       catch (exception &e) {
-        processComm->sendConfirmation(false);
-        processComm->rcvConfirmation();
+        process->sendConfirmation(false);
+        process->rcvConfirmation();
         continue;
       }
     }
     else if (commandToRun == DOWNLOAD) {
-      processComm->send(Data::T_DOWNLOAD, pathOfTheFile);
-      bool workedProperly = processComm->rcvConfirmation();
+      process->send(Data::T_DOWNLOAD, pathOfTheFile);
+      bool workedProperly = process->rcvConfirmation();
       if (!workedProperly) {
-        processComm->sendConfirmation();
+        process->sendConfirmation();
         continue;
       }
       string filepath = getHome() + PATH_SEPARATOR + pathOfTheFile;
-      if (processComm->getArq(filepath) == EQUAL)
+      if (process->getArq(filepath) == EQUAL)
         cout << pathOfTheFile << " was successfully downloaded into your home :)" << endl;
       else
         cout << pathOfTheFile << " was not downloaded into your home :(" << endl;
     }
     else if (commandToRun == LIST_SERVER) {
-      processComm->send(Data::T_LS);
-      string server_list = processComm->receive_string();
+      process->send(Data::T_LS);
+      string server_list = process->receive_string();
       formatListOfArqs(server_list);
-      processComm->sendConfirmation();
+      process->sendConfirmation();
     }
     else if (commandToRun == LIST_CLIENT) {
       listClient(this->userId);
     }
     else if (commandToRun == EXIT_APP) {
-      processComm->send(Data::T_BYE);
-      processComm->rcvConfirmation();
-      processComm->sendConfirmation();
+      process->send(Data::T_BYE);
+      process->rcvConfirmation();
+      process->sendConfirmation();
       break;
     }
     else if (commandToRun == HELP_L) {
@@ -121,7 +121,7 @@ int DropboxClient::run() {
     }
   }
 
-  delete processComm;
+  delete process;
   cout << "Successfully logged out!" << endl;
   return TRUE;
 }

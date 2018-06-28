@@ -3,14 +3,19 @@
 
 #include "../../utils/headers/dropboxUtils.h"
 #include "../../utils/headers/parUtils.hpp"
-#include "../../utils/headers/udpUtils.hpp"
 #include "../../utils/headers/process.hpp"
+#include "dropboxClient.hpp"
 
 class ClientCommunication: public Thread {
 private:
-  Process* processComm;
+  // Attributes
+  Process* process;
+  DropboxClient *client;
+  list<string> filenames;
+  
+
 public:
-  ClientCommunication(Process* processComm);
+  ClientCommunication(DropboxClient *client);
   ~ClientCommunication();
   bool usingActive;
   void* run();
