@@ -43,51 +43,48 @@ void ServerCommunication::sync_client_files() {
     }
     else if (msg.type == Data::T_DELETE) {
       delete_file(msg.content);
-      for (pair<string, UDPUtils> backup : DropboxServer::backupServers) {
-        // session and sequence are null
-        Data msg = Data(NULL, NULL, msg.type, request.content);
-        backup.second.send(msg.stringify());
-        // delete_file ?
-      }
     }
   }
 }
 
-void ServerCommunication::sync_file(string filename) {
+void ServerCommunication::sync_file(string nameOfTheFile) {
   list<string> syncTypes;
   syncTypes.push(Data::T_UPLOAD);
   syncTypes.push(Data::T_DOWNLOAD);
-  File file(parent->username + SLASH + filename);
+  File file(parent->username + SLASH + nameOfTheFile);
   process->send(Data::T_MODTIME, to_string(file.modification_time()));
   Data msg_action = process->receive(actionTypes);
   if (msg_action.type == Data::T_UPLOAD) {
-    cout << "Receiving " << filename << endl;
-    parent->receive_upload(filename, process);
+    cout << "Receiving " << nameOfTheFile << endl;
+    parent->receive_upload(nameOfTheFile, process);
     cout << "Done receiving file\n";
   }
   else if (msg_action.type == Data::T_DOWNLOAD) {
     cout << "send file";
-    parent->send_download(filename, process);
+    parent->send_download(nameOfTheFile, process);
     cout << "done sending file";
   }
-  files_not_synced.remove(filename);
+  files_not_synced.remove(nameOfTheFile);
 }
 
-void ServerCommunication::delete_file(string filename) {
-  cout << "Delete " <<  filename << endl;
-  if (allowSending(filename)) {
+void ServerCommunication::delete_file(string nameOfTheFile) {
+  cout << "Delete " <<  nameOfTheFile << endl;
+  if (allowSending(nameOfTheFile)) {
     process->send(Data::T_OK);
-    string filepath = parent->username + SLASH + filename;
+    string filepath = parent->username + SLASH + nameOfTheFile;
     remove(filepath.c_str());
     for (auto const &thread_map : parent->server->threads) {
       ServerUser *thread = thread_map.second;
       if (thread->username != parent->username) {
-        thread->server_sync->files_to_delete.push_back(filename);
+        thread->server_sync->files_to_delete.push_back(nameOfTheFile);
       }
     }
     cout << "Done deleting file\n";
-    unlock_file(filename);
-    files_not_synced.remove(filename);
+    unlock_file(nameOfTheFile);
+    files_not_synced.remove(nameOfTheFile);
+    for (Process *backup : parent->server->backupServers) {
+      backup->send(Data::T_DELETE, parent->username + SLASH + nameOfTheFile);
+    }
   } else {
     cout << "File cannot be deleted rn\n";
     process->send(Data::T_ERROR);
@@ -95,17 +92,17 @@ void ServerCommunication::delete_file(string filename) {
 }
 
 void ServerCommunication::send_files_to_client() {
-  for (string &filename : files_to_delete) {
-    cout << "Delete " <<  filename << endl;
-    remove(string(filename + SLASH + parent->username).c_str());
-    process->send(Data::T_DELETE, filename);
+  for (string &nameOfTheFile : files_to_delete) {
+    cout << "Delete " <<  nameOfTheFile << endl;
+    remove(string(nameOfTheFile + SLASH + parent->username).c_str());
+    process->send(Data::T_DELETE, nameOfTheFile);
     cout << "Done deleting file\n";
   }
   files_to_delete.clear();
-  for (string &filename : files_not_synced) {
+  for (string &nameOfTheFile : files_not_synced) {
     cout << "send file";
-    process->send(Data::T_SYNC, filename);
-    process->send_file(parent->username + PATH + filename);
+    process->send(Data::T_SYNC, nameOfTheFile);
+    process->send_file(parent->username + PATH + nameOfTheFile);
     cout << "done sending file";
   }
     process->send(Data::T_DONE);

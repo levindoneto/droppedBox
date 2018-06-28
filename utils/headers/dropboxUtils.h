@@ -98,6 +98,7 @@ using namespace std;
 #define SYNC_DIR_PREFIX "/sync_dir_"
 #define RANDOM_ID_SESSION_SIZE 1000
 #define BACKUP_TAG "B"
+#define BACKUP_TAG_C 'B'
 static const string HOME = string(getenv("HOME"));
 /*  IN_CREATE – File/directory created in watched directory
     IN_DELETE – File/directory deleted from watched directory

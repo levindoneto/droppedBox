@@ -7,57 +7,50 @@
 
 using namespace std;
 
-DropboxServer::DropboxServer(int port) {
-  sock = new UDPUtils(port);
-  this->port = port;
-}
-
-void DropboxServer::start() {
-  listener = new Process(port);
-  sock->bindServer();
-  cout << "Listening on port " << port << ", awaiting communications...\n";
+void DropboxServer::backupServerRun(string hostnamePrimary, int port) {
+  list<string> backupExpectedTypes = {
+    Data::T_UPLOAD,
+    Data::T_DELETE,
+    Data::T_CLIENT_CONNECT,
+    Data::T_CLIENT_DISCONNECT
+  };
+  listener = new Process(hostnamePrimary, port, true); // true: server is a backup
   while (true) {
-    Process *process = listener->rcvProcComm();
-    Data r_msg = Data::parse(sock->receive());
-    if (r_msg.type == Data::T_BACKUP) {
-      UDPUtils backup_socket = UDPUtils(port);
-      backup_socket.setIp(r_msg.content);
-      DropboxServer::backupServers[r_msg.content] = backup_socket;
+    Data msg = listener->receive(backupExpectedTypes);
+    if (msg.type == Data::T_UPLOAD) {
+      string pathOfTheFile = msg.content;
+      listener->receive_file(pathOfTheFile);
     }
-
-    closeThreadsOpen();
-    // If session doesn't exist
-    if (!threads.count(process->session)) {
-      ServerUser *new_thread = new ServerUser(this, process);
-      new_thread->start();
-      threads[process->session] = new_thread;
+    else if (msg.type == Data::T_DELETE) {
+      string pathOfTheFile = msg.content;
+      remove(pathOfTheFile.c_str());
+    }
+    else if (msg.type == Data::T_CLIENT_CONNECT) {
+      threads[msg.content] = NULL;
+    }
+    else if (msg.type == Data::T_CLIENT_DISCONNECT) {
+      threads.erase(msg.content);
     }
   }
 }
 
-void DropboxServer::backup(string host_master) {
-  sock->setIp(host_master);
-
-  Data msg = Data(NULL, NULL, Data::T_BACKUP, "meu ip");
-  sock->send(msg.stringify());
-
-  sock->bindServer();
-  while(true) {
-    Data r_msg = Data::parse(sock->receive());
-
-    if (r_msg.type == Data::T_UPLOAD) {
-      listener = new Process(host_master, port);
-      listener->send(Data::T_DOWNLOAD, r_msg.content);
-      listener->receive(Data::T_OK);
-      // dirpath + "/" + filename
-      listener->receive_file("file.txt");  // FIXME dirpath AND filenameeeeeeeeeeeeeeeee
-      delete listener;
-    }
-    else if (r_msg.type == Data::T_IP) {
-      DropboxServer::clientIps.push_back(r_msg.content);
-    }
-    else if (r_msg.type == Data::T_DELETE) {
-      cout << "delete";
+void DropboxServer::primaryServerRun(int port) {
+  listener = new Process(port);
+  //sock->bindServer();
+  cout << "Listening on port " << port << ", awaiting communications...\n";
+  while (true) {
+    Process *process = listener->rcvProcComm();
+    closeThreadsOpen();
+    if (process->session.at(INIT) == BACKUP_TAG_C) {
+      backupServers.push_back(process); // Add new server back process to the list
+    } else if (!threads.count(process->session)) {
+       // If new client process communication
+       ServerUser *newUserThread = new ServerUser(this, process);
+       newUserThread->start();
+       threads[process->session] = newUserThread;
+       for (Process* backup : backupServer) {
+         backup->send(Data::T_CLIENT_CONNECT, process->hostname);
+       }
     }
   }
 }
@@ -76,9 +69,16 @@ void DropboxServer::closeThreadsOpen() {
 
 int main(int argc, char *argv[]) {
   int port;
-  if (argc > 1) {
-    port = atoi(argv[1]);
+  if (argc > DEF) port = atoi(argv[PORT_SERVER]);
+  string thisProcessHostname = getIpAddress();
+  string primaryServer = "";
+  for (string &hostname : getListOfHostnames()) {
+    if (thisProcessHostname < hostname) {
+      primaryServer = hostname;
+      break;
+    }
   }
-  DropboxServer* server = new DropboxServer(port);
-  server->start();
+  DropboxServer *server = new DropboxServer();
+  if (primaryServer.empty()) server->primaryServerRun(port);
+  else server->backupServerRun(primaryServer, port);
 }

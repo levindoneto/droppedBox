@@ -6,18 +6,19 @@
 
 class DropboxServer {
   private:
+    // Methods
     void rcvProcComm(UDPUtils listener);
     void closeThreadsOpen();
   public:
+    // Attributes
     int port;
     Process* listener;
-    UDPUtils* sock;
-    static map<string, UDPUtils> backupServers;
-    static list<string> clientIps;
+    static list<Process*> backupServers;
     map<string, ServerUser*> threads;
+    // Methods
     DropboxServer(int port);
-    void start();
-    void backup(string hostname);
+    void backupServerRun(string hostnamePrimary, int port);
+    void primaryServerRun(int port);
 };
 
 #endif
