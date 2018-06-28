@@ -8,11 +8,11 @@ class DropboxClient {
   private:
     // Where the commands are in (link with the server via UDP functions)
     int run();
-    bool verifyServerAlive();
     string userId;
-    string folderOfTheUser;
-    Process *processComm;
   public:
+    ~DropboxClient();
+    string folderOfTheUser;
+    Process *process;
     void newProcessCommunication(string userId, string host, int port);
 };
 

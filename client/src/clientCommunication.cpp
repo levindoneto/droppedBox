@@ -8,24 +8,22 @@
 #include <unistd.h>
 
 ClientCommunication::~ClientCommunication() {
-  delete processComm;
+  delete process;
 }
 
-ClientCommunication::ClientCommunication(Process *_processComm) {
-  this->processComm = new Process(_processComm->idUser);
-  this->processComm->sock = _processComm->sock->get_answerer();
-  this->processComm->login();
-  this->start();
+ClientCommunication::ClientCommunication(DropboxClient *client) : Thread() {
+    this->client = client;
+    filenames = File::listNamesOfFiles(client->folderOfTheUser);
 }
 
 void *ClientCommunication::run() {
   list<string> previousListOfFiles;
   list<string> currentListOfFiles;
   while (true) {
-    processComm->send(Data::T_SYNC);
-    processComm->rcvConfirmation();
+    process->send(Data::T_SYNC);
+    process->rcvConfirmation();
     list<string> currentListOfFiles = File::listNamesOfFiles(
-      processComm->folderOfTheUser
+      process->folderOfTheUser
     );
 
     for (
@@ -34,15 +32,15 @@ void *ClientCommunication::run() {
       ++fname
     ) {
       string idArq = *fname;
-      string filePath = processComm->folderOfTheUser + PATH_SEPARATOR + idArq;
+      string filePath = process->folderOfTheUser + PATH_SEPARATOR + idArq;
       previousListOfFiles.remove(idArq);
 
       if (allowSending(idArq)) {
         int timeStamp = obtainTSofFile(filePath);
         if (timeStamp != ERROR) {
           string content = to_string(timeStamp) + SEPARATOR_FILENAME + idArq;
-          processComm->send(Data::T_STAT, content);
-          processComm->rcvConfirmation();
+          process->send(Data::T_STAT, content);
+          process->rcvConfirmation();
           list<string> expectedTypes;
           expectedTypes.push_back(Data::T_DOWNLOAD);
           expectedTypes.push_back(Data::T_UPLOAD);
@@ -50,11 +48,11 @@ void *ClientCommunication::run() {
           expectedTypes.push_back(Data::T_ERROR);
           expectedTypes.push_back(Data::T_DELETE);
 
-          Data message = processComm->receive(expectedTypes);
+          Data message = process->receive(expectedTypes);
 
           if (message.type == Data::T_DOWNLOAD) {
-            processComm->sendConfirmation();
-            if (processComm->getArq(filePath) == EQUAL)
+            process->sendConfirmation();
+            if (process->getArq(filePath) == EQUAL)
               cout << "File received" << '\n';
             else {
               char error[ERROR_MSG_SIZE] = "Download failed";
@@ -62,41 +60,41 @@ void *ClientCommunication::run() {
             }
           }
           else if (message.type == Data::T_UPLOAD) {
-            processComm->sendConfirmation();
+            process->sendConfirmation();
             try {
               if (!ifstream(filePath)) {
                 char error[ERROR_MSG_SIZE] = "Error on opening file";
                 throwError(error);
-                processComm->sendConfirmation(false);
-                processComm->rcvConfirmation();
+                process->sendConfirmation(false);
+                process->rcvConfirmation();
                 unlock_file(idArq);
                 continue;
               }
 
               int timeStamp = obtainTSofFile(filePath);
 
-              processComm->send(Data::T_SOF, to_string(timeStamp));
-              processComm->rcvConfirmation();
+              process->send(Data::T_SOF, to_string(timeStamp));
+              process->rcvConfirmation();
 
-              if (processComm->sendArq(filePath) != 0) {
+              if (process->sendArq(filePath) != 0) {
                 char error[ERROR_MSG_SIZE] = "Error sending file";
                 throwError(error);
               }
             }
             catch (exception &e) {
               cout << e.what() << endl;
-              processComm->sendConfirmation(false);
-              processComm->rcvConfirmation();
+              process->sendConfirmation(false);
+              process->rcvConfirmation();
               unlock_file(idArq);
               continue;
             }
           }
           else if (message.type == Data::T_EQUAL) {
-            processComm->sendConfirmation();
+            process->sendConfirmation();
             unlock_file(idArq);
             continue;
           } else {
-            processComm->sendConfirmation();
+            process->sendConfirmation();
             unlock_file(idArq);
             continue;
           }
@@ -123,48 +121,48 @@ void *ClientCommunication::run() {
         ++fname
       ) {
         string nameOfTheFile = *fname;
-        processComm->send(Data::T_DELETE, nameOfTheFile);
-        processComm->rcvConfirmation();
+        process->send(Data::T_DELETE, nameOfTheFile);
+        process->rcvConfirmation();
       }
     }
 
     // Send confirmation
-    processComm->send(Data::T_DONE);
-    processComm->rcvConfirmation();
+    process->send(Data::T_DONE);
+    process->rcvConfirmation();
 
     // Receive files which the client does not have yet
     while (true) {
-      Data message = processComm->receive(expectedTypes);
+      Data message = process->receive(expectedTypes);
       if (message.type == Data::T_DONE) {
-        processComm->sendConfirmation();
+        process->sendConfirmation();
         break;
       }
       else if (message.type == Data::T_DOWNLOAD) {
         string idArq = message.content;
-        string filePath = processComm->folderOfTheUser + PATH_SEPARATOR + idArq;
+        string filePath = process->folderOfTheUser + PATH_SEPARATOR + idArq;
         if (allowSending(idArq)) {
-          processComm->sendConfirmation();
-          if (processComm->getArq(filePath) != OK) {
+          process->sendConfirmation();
+          if (process->getArq(filePath) != OK) {
             char error[ERROR_MSG_SIZE] = "Error on downloading files";
             throwError(error);
           }
           unlock_file(idArq);
         }
         else {
-          processComm->sendConfirmation(false);
-          processComm->rcvConfirmation();
+          process->sendConfirmation(false);
+          process->rcvConfirmation();
           continue;
         }
       }
       else {
         char error[ERROR_MSG_SIZE] = "Error of not found file";
         throwError(error);
-        processComm->sendConfirmation();
+        process->sendConfirmation();
         continue;
       }
     }
 
-    previousListOfFiles = File::listNamesOfFiles(processComm->folderOfTheUser);
+    previousListOfFiles = File::listNamesOfFiles(process->folderOfTheUser);
     sleep(TIME_DO_NOTHING);
   }
 }
