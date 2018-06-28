@@ -7,20 +7,26 @@
 #include "../../utils/headers/process.hpp"
 #include "../headers/serverCommunication.hpp"
 
+class DropboxServer;
+
 class ServerUser : public Thread {
-  private:
-    Process *processComm;
   public:
-    ServerUser(
-      Process *processComm,
-      map<string, ServerUser*> *syncUserThreads,
-      map<string, ServerCommunication*> *syncCommunicationThreads
-    );
+    ServerUser(DropboxServer* server, Process *process);
     ~ServerUser();
     void *run();
+
+    void mainloop();
+    void receive_upload(string filename, Process* process = NULL);
+    void send_download(string filename, Process* process = NULL);
+    void list_server();
+    void close_session();
+
     bool usingActive;
-    map<string, ServerUser*> *threads;
-    map<string, ServerCommunication*> *syncThreads;
+    string username;
+    Process *process;
+    DropboxServer* server;
+    ServerCommunication* server_sync;
+
 };
 
 #endif
