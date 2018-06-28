@@ -10,6 +10,7 @@ const string Data::T_DOWNLOAD = "DOWN";
 const string Data::T_UPLOAD = "UP";
 const string Data::T_BYE = "EXITAPP";
 const string Data::T_FILE = "FILE";
+const string Data::T_END = "END";
 const string Data::T_SOF = "SOF";
 const string Data::T_EOF = "EOF";
 const string Data::T_ERROR = "ERRO";
@@ -28,6 +29,7 @@ const string Data::T_IP = "IP";
 const string Data::T_BACKUP = "BACKUP";
 const string Data::T_OK = "OK";
 const string Data::T_MODTIME = "MODTIME";
+const string Data::T_LOGIN = "LOGIN";
 
 bool Data::pedindo() {
   return (

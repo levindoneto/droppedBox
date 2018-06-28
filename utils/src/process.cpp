@@ -1,9 +1,10 @@
 #include "../headers/process.hpp"
 #include "../headers/dropboxUtils.h"
-
+#include <string>
+#include <list>
 #include <utime.h>
 #include <stdio.h>
-
+using namespace std;
 Process::~Process() {}
 
 Process::Process(string idUser, string session, UDPUtils *sock) {
@@ -53,6 +54,11 @@ Process *Process::rcvProcComm() {
     Data dataMessage = data->parse(dataString);
     if (dataMessage.type == Data::T_SYN && dataMessage.session != this->session) {
       sock->turnOnTimeout();
+/*
+      if (DropboxServer::backupServers.count(dataMessage.content) <= INIT) {
+        send(Data::T_NEW_USER, dataMessage.content);
+      }
+*/
       return new Process(dataMessage.session, sock->get_answerer());
     }
   }
@@ -113,8 +119,8 @@ void Process::sendConfirmation(bool workedProperly) {
   }
 }
 
-int Process::sendArq(string filepath) {
-  ifstream file(filepath, std::ifstream::binary);
+int Process::sendArq(string pathOfTheFile) {
+  ifstream file(pathOfTheFile, std::ifstream::binary);
   char chunk[DATAGRAM_LEN];
   do {
     file.read(chunk, DATAGRAM_LEN);
@@ -203,6 +209,13 @@ Data Process::receive(list<string> expected_types) {
   }
 }
 
+string Process::receive_content(string expected_type) {
+  Data dataMessage = receive(expected_type);
+  string contentReceived = dataMessage.content;
+  return contentReceived;
+}
+
+
 Data Process::receive_request() {
   this->sock->set_timeout(INIT); // Never timeout
   while (true) {
@@ -259,7 +272,7 @@ string Process::receive_string() {
   }
 }
 
-int Process::getArq(string filepath) {
+int Process::getArq(string pathOfTheFile) {
   int longTime;
   ofstream file;
   while (true) {
@@ -272,7 +285,7 @@ int Process::getArq(string filepath) {
       } else if (msg.type == Data::T_SOF) {
           theLastPartRCV = msg.sequence;
           longTime = stoi(msg.content);
-          file.open(filepath, ofstream::binary | ofstream::trunc);
+          file.open(pathOfTheFile, ofstream::binary | ofstream::trunc);
           sendConfirmation();
       } else if (msg.type == Data::T_EOF) {
           theLastPartRCV = msg.sequence;
@@ -283,11 +296,11 @@ int Process::getArq(string filepath) {
           struct utimbuf ubuf;
           ubuf.modtime = longTime;
           struct stat info;
-          stat(filepath.c_str(), &info);
-          if (utime(filepath.c_str(), &ubuf) != EQUAL) {
+          stat(pathOfTheFile.c_str(), &info);
+          if (utime(pathOfTheFile.c_str(), &ubuf) != EQUAL) {
             throwError("Timing error");
           } else {
-            stat(filepath.c_str(), &info);
+            stat(pathOfTheFile.c_str(), &info);
           }
         return EQUAL;
       }
@@ -300,6 +313,25 @@ int Process::getArq(string filepath) {
   }
 }
 
+void Process::receive_file(string pathOfTheFile) {
+  list<string> fileExpextedTypes = {Data::T_END, Data::T_FILE};
+
+  ofstream fileS;
+
+  // ofstream::binary for solving bug with non text files
+  fileS.open(pathOfTheFile, ofstream::binary | ofstream::trunc);
+  while (true) {
+    Data msg = receive(fileExpextedTypes);
+    if (msg.type == Data::T_FILE)
+      fileS.write(msg.content.data(), msg.content.length());
+    else break;
+  }
+  fileS.close();
+  int modificsTime = stoi(receive_content(Data::T_MODTIME));
+  File file(pathOfTheFile);
+  file.set_modification_time(modificsTime);
+}
+
 void Process::init_sequences() {
   theLastPartS = ERROR;
   theLastPartRCV = ERROR;
@@ -309,8 +341,8 @@ string Process::list_server_dir(string dirpath) {
   return File::ll(dirpath);
 }
 
-int Process::deleteFile(string filepath) {
-  const char *cstr = filepath.c_str();
+int Process::deleteFile(string pathOfTheFile) {
+  const char *cstr = pathOfTheFile.c_str();
   int status = remove(cstr);
   if (status != OK) {
     return ERROR;
