@@ -25,31 +25,33 @@
 
 using namespace std;
 
+DropboxClient::DropboxClient(string username,
+  string hostname,
+  int port
+) : Thread() {
+    this->username = username;
+    this->hostname = hostname;
+    this->port = port;
+}
+
 DropboxClient::~DropboxClient() {
     delete process;
 }
 
-void DropboxClient::newProcessCommunication(
-  string userId,
-  string host,
-  int port
-) {
-  File *file = new File();
-  this->userId = userId;
-  folderOfTheUser = getHome() + SYNC_DIR_PREFIX + userId;
-  process = new Process(host, port);
-  process->send(Data::T_LOGIN, this->userId);
-  file->createFolderForFiles(folderOfTheUser);
+void* DropboxClient::run() {
+  cout << "Connecting to " << hostname << ":" << port << " ..." << endl;
+  process = new Process(hostname, port);
+  process->send(Data::T_LOGIN, userId);
+  folderOfTheUser = getHome() + "/sync_dir_" + userId;
+  File::createFolderForFiles(folderOfTheUser);
 
-  ClientCommunication* clientComm = new ClientCommunication(this);
-  clientComm->run();
-  showMenu();
-  cout << endl << "**** The user " << userId
-    << " has successfully logged in ****" << endl;
-  run(); // For getting the logged user's requests
+  ClientCommunication* clientCommunication = new ClientCommunication(this);
+  clientCommunication->start();
+  cout << "Successfully logged in as " << userId << "!" << endl;
+  mainloop(); // For getting the logged user's requests
 }
 
-int DropboxClient::run() {
+int DropboxClient::mainloop() {
   string commandToRun;
   string pathOfTheFile;
   while (true) {
@@ -126,29 +128,25 @@ int DropboxClient::run() {
   return TRUE;
 }
 
+string listen_new_master(DropboxClient* client, UDPUtils* sock) {
+  cout << "Listening new master process" << endl;
+  string newPrimaryProcessServer = sock->receive();
+  cout << "The new master: " << newPrimaryProcessServer << endl;
+  delete client;
+  return newPrimaryProcessServer;
+}
+
 int main(int argc, char *argv[]) {
   srand(time(NULL));
-  string userName;
-  string host;
-  int port;
-  userName = string(argv[USER_CLIENT]);
-  host = string(argv[HOST_CLIENT]);
-  port = atoi(argv[PORT_CLIENT]);
-
-  if (
-    argv[USER_CLIENT] != NULL &&
-    argv[HOST_CLIENT] != NULL &&
-    argv[PORT_CLIENT] != NULL
-  ) {
-    userName = argv[USER_CLIENT];
-    host = argv[HOST_CLIENT];
-    port = atoi(argv[PORT_CLIENT]);
-  } else {
-    cout << PREFIX_BASH << "Usage:" << endl
-      << PREFIX_BASH << "./dropboxClient <idUser> <host> <port>" << endl;
-    char error[ERROR_MSG_SIZE] = "[Client]: Invalid use of the application";
-    throwError(error);
+  string username = string(argv[1]);
+  string hostname = string(argv[2]);
+  int port = atoi(argv[3]);
+  string master = hostname;
+  UDPUtils* sock = new UDPUtils(4002);
+  sock->bindServer();
+  while (true) {
+    DropboxClient *client = new DropboxClient(username, master, port);
+    client->start();
+    master = listen_new_master(client, sock);
   }
-  DropboxClient dropboxClient;
-  dropboxClient.newProcessCommunication(userName, host, port); // Used for the frontend
 }
