@@ -16,7 +16,7 @@ class DropboxServer {
     static list<Process*> backupServers;
     map<string, ServerUser*> threads;
     // Methods
-    DropboxServer(int port);
+    //DropboxServer(int port);
     void backupServerRun(string hostnamePrimary, int port);
     void primaryServerRun(int port);
 };

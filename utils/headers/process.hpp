@@ -5,7 +5,7 @@
 #include "data.hpp"
 #include "dropboxUtils.h"
 #include "../fileSystem/headers/file.hpp"
-#include "../../server/headers/dropboxServer.hpp"
+//#include "../../server/headers/dropboxServer.hpp"
 
 class Process {
   private:
@@ -14,6 +14,7 @@ class Process {
     int theLastPartS;
     int theLastPartRCV;
     // Methods
+    int content_space(string type);
     Data receive();
     void init_sequences();
 
@@ -25,13 +26,12 @@ class Process {
     string session;
     UDPUtils *sock;
     // Methods
-    Process(string idUser, string session = "", UDPUtils *new_socket = NULL);
-    ~Process();
-    void closeProcess();
-    Process(string hostname, int port);
     Process();
     Process(int port);
+    Process(string hostname, int port, bool is_backup = false);
     Process(string session, UDPUtils* sock);
+    ~Process();
+    void closeProcess();
     Process* createProcComm();
     Process *rcvProcComm();
     void connectProc();

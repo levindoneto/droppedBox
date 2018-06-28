@@ -5,29 +5,11 @@
 #include <utime.h>
 #include <stdio.h>
 using namespace std;
-Process::~Process() {}
-
-Process::Process(string idUser, string session, UDPUtils *sock) {
-  this->idUser = idUser;
-  this->session = session;
-  if (session.empty()) {
-    this->session = to_string(rand() % RANDOM_ID_SESSION_SIZE);
-  }
-  this->sock = sock;
-  init_sequences();
-}
-
-Process::Process(string hostname, int port, bool backupServer) : Process() {
-  if backupServer session.insert(INIT, BACKUP_TAG);
-  this->sock = new UDPUtils(port);
-  this->sock->setIp(hostname);
-  connectProc();
-}
 
 Process::Process() {
-    this->session = to_string(rand() % RANDOM_ID_SESSION_SIZE);
-    theLastPartS = ERROR;
-    theLastPartRCV = ERROR;
+  this->session = to_string(rand() % RANDOM_ID_SESSION_SIZE);
+  theLastPartS = ERROR;
+  theLastPartRCV = ERROR;
 }
 
 Process::Process(int port) {
@@ -36,13 +18,24 @@ Process::Process(int port) {
 }
 
 Process::Process(string session, UDPUtils* sock) : Process() {
-    this->session = session;
-    this->sock = sock;
+  this->session = session;
+  this->sock = sock;
 }
 
-Process* Process::createProcComm() {
+Process::Process(string hostname, int port, bool backupServer) : Process() {
+  sock = new UDPUtils(port);
+  sock->setIp(hostname);
+  if (backupServer) session.insert(INIT, BACKUP_TAG);
+  connectProc();
+}
+
+Process::~Process() {
+  delete this->sock; // Close communication socket
+}
+
+Process *Process::createProcComm() {
     Process* newProcComm = new Process();
-    newProcComm-> sock =  sock->get_answerer();
+    newProcComm->sock =  sock->get_answerer();
     newProcComm->connectProc();
     return newProcComm;
 }
@@ -121,16 +114,24 @@ void Process::sendConfirmation(bool workedProperly) {
 }
 
 int Process::sendArq(string pathOfTheFile) {
-  ifstream file(pathOfTheFile, std::ifstream::binary);
-  char chunk[DATAGRAM_LEN];
+  ifstream file_stream(pathOfTheFile, ifstream::binary);
+  int sizeOfTheFile = content_space(Data::T_FILE);
+  char *buffer = new char[sizeOfTheFile];
   do {
-    file.read(chunk, DATAGRAM_LEN);
-    send(Data::T_FILE, string(chunk, file.gcount()));
-    rcvConfirmation();
-  } while (!file.eof());
-  send(Data::T_EOF);
-  rcvConfirmation();
-  return INIT;
+    file_stream.read(buffer, sizeOfTheFile);
+    send(Data::T_FILE, string(buffer, file_stream.gcount()));
+    int new_content_len = content_space(Data::T_FILE);
+    if (new_content_len < sizeOfTheFile) {
+        delete[] buffer;
+        buffer = new char[new_content_len];
+        sizeOfTheFile = new_content_len;
+    }
+  } while (!file_stream.eof());
+  delete[] buffer;
+  send(Data::T_END);
+  File file(pathOfTheFile);
+  string modtime = to_string(file.modification_time());
+  send(Data::T_MODTIME, modtime);
 }
 
 void Process::sendText(string data) {
@@ -347,4 +348,13 @@ int Process::deleteFile(string pathOfTheFile) {
   int status = remove(cstr);
   if (status != OK) return ERROR;
   return INIT;
+}
+
+int Process::content_space(string type) {
+  int content_space = SOCKET_BUFFER_SIZE;
+  content_space -= session.length();
+  content_space -= to_string(theLastPartS).length() + 1;
+  content_space -= type.length();
+  content_space -= 4; // separators
+  return content_space;
 }

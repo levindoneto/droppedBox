@@ -11,6 +11,8 @@ class File {
     static string ll(string dirpath);
     unsigned int getLenOfTheFile(string nameOfTheFile);
     static list<string> listNamesOfFiles(string dirpath);
+    unsigned int size();
+    unsigned int modification_time();
     void set_modification_time(int modtime);
     string filepath;
     string modification_time_str;

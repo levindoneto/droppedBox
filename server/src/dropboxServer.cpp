@@ -48,8 +48,8 @@ void DropboxServer::primaryServerRun(int port) {
        ServerUser *newUserThread = new ServerUser(this, process);
        newUserThread->start();
        threads[process->session] = newUserThread;
-       for (Process* backup : backupServer) {
-         backup->send(Data::T_CLIENT_CONNECT, process->hostname);
+       for (Process* backup : backupServers) {
+         backup->send(Data::T_CLIENT_CONNECT, process->ip);
        }
     }
   }
