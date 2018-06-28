@@ -45,6 +45,7 @@ class Data {
     static const string T_SERVER_ELECTION;
     static const string T_COORDINATOR;
     static const string T_NEW_USER;
+    static const string T_LOGIN;
     static const string T_IP;
     static const string T_BACKUP;
     static const string T_OK;

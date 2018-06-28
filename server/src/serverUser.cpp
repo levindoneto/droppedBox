@@ -1,92 +1,111 @@
-#include "../headers/serverUser.hpp"
+DropboxServer#include "../headers/serverUser.hpp"
 #include "../headers/serverCommunication.hpp"
 #include "../../utils/headers/ui.hpp"
 #include "../../utils/headers/dropboxUtils.h"
 #include "../../utils/fileSystem/headers/folder.hpp"
 
-ServerUser::ServerUser(
-  Process *processComm,
-  map<string, ServerUser*> *syncUserThreads,
-  map<string, ServerCommunication*> *syncCommunicationThreads
-) {
+ServerUser::ServerUser(DropboxServer* server, Process *process) {
   usingActive = true;
-  threads = syncUserThreads;
-  syncThreads = syncCommunicationThreads;
-  this->processComm = processComm;
+  this->server = server;
+  this->process = process;
 }
 
 ServerUser::~ServerUser() {
-  delete processComm;
+  delete process;
 }
 
 void *ServerUser::run() {
-  processComm->initProcessComm();
-  ServerCommunication server_sync(processComm, syncThreads);
-  server_sync.start();
-  cout << processComm->idUser << " logged in" << endl;
+  process->confirmComm();
+  username = process->receive_content(Data::T_LOGIN);
+  File::createFolderForFiles(username);
+
+  server_sync = new ServerCommunication(this);
+  server_sync->start();
+
+  cout << username << " logged in" << endl;
+
+  mainloop();
+
+  return NULL;
+}
+
+void ServerUser::mainloop() {
   while (true) {
-    Data request = processComm->receive_request();
-    if (request.type == Data::T_LS) {
-      processComm->sendText(processComm->list_server_dir(processComm->folderOfTheUser));
-      processComm->rcvConfirmation();
-    }
-    else if (request.type == Data::T_UPLOAD) {
-      string content = request.content;
-      string nameOfTheFile = parsePath(content, to_string(PATH_SEPARATOR)).back();
-      string pathOfTheFile = processComm->folderOfTheUser + PATH_SEPARATOR+ nameOfTheFile;
-      if (!allowSending(request.content)) {
-        processComm->sendConfirmation(false);
-        processComm->rcvConfirmation();
-        continue;
+    Data request = process->receive_request();
+    if (request.type == Data::T_UPLOAD) {
+      receive_upload(request.content);
+      for (pair<string, UDPUtils> backup : DropboxServer::backupServers) {
+        Data msg = Data(NULL,
+          NULL,
+          request.type,
+          username + SLASH + request.content
+        );
+        backup.second.send(msg.stringify());
       }
-      processComm->sendConfirmation();
-      processComm->getArq(pathOfTheFile);
-      unlock_file(pathOfTheFile);
     }
     else if (request.type == Data::T_DOWNLOAD) {
-      string nameOfTheFile = request.content;
-      string pathOfTheFile = processComm->folderOfTheUser + PATH_SEPARATOR + nameOfTheFile;
-      if (!allowSending(nameOfTheFile)) {
-        processComm->sendConfirmation(false);
-        processComm->rcvConfirmation();
-        continue;
+      send_download(request.content);
+    }
+    else if (request.type == Data::T_LS) {
+      list_server();
+    }
+    else if (request.type == Data::T_NEW_USER) {
+      for (pair<string, UDPUtils> backup : Server::backupServers) {
+        Data msg = Data(NULL, NULL, Data::T_IP, request.content);
+        backup.second.send(msg.stringify());
       }
-      processComm->sendConfirmation();
-      try {
-        if (!fileInFolder(pathOfTheFile)) {
-          char error[ERROR_MSG_SIZE] = "Error opening file";
-          //throwError(error);
-          printf("The solicited file does not exist in this server");
-          processComm->sendConfirmation(false);
-          processComm->rcvConfirmation();
-          unlock_file(nameOfTheFile);
-          continue;
-        }
-        int timeStamp = obtainTSofFile(pathOfTheFile);
-
-        processComm->send(Data::T_SOF, to_string(timeStamp));
-        processComm->rcvConfirmation();
-
-        processComm->sendArq(pathOfTheFile);
-        unlock_file(nameOfTheFile);
-      }
-      catch (exception &e) {
-        processComm->sendConfirmation(false);
-        processComm->rcvConfirmation();
-
-        cout << e.what() << endl;
-        unlock_file(nameOfTheFile);
-        continue;
-      }
-      unlock_file(nameOfTheFile);
     }
     else if (request.type == Data::T_BYE) {
-      processComm->sendConfirmation();
-      processComm->rcvConfirmation();
       break;
     }
   }
-  cout << "User " << processComm->idUser << " logged out." << endl;
+  cout << "User " << username << " logged out." << endl;
   usingActive = false;
-  return NULL;
+}
+
+void ServerUser::receive_upload(string filename, Process* process) {
+  if (!process) {
+    process = this->process;
+  }
+  string filepath = username + '/' + filename;
+  if (allowSending(filename)) {
+    process->send(Data::T_OK);
+    cout << username << " is uploading " << filename << "..." << endl;
+    process->receive_file(filepath);
+    unlock_file(filename);
+    cout << username << " uploaded " << filename << endl;
+  }
+  else {
+    cout << "Error: File " << filename << " currently syncing" << endl;
+    process->send(Data::T_ERROR, "File currently syncing");
+    return;
+  }
+}
+
+void ServerUser::send_download(string filename, Process* process) {
+  if (!process) {
+    process = this->process;
+  }
+  string filepath = username + '/' + filename;
+
+  if (!fileInFolder(filepath)) {
+    cout << "Error opening file " << filename << " at " << username << endl;
+    process->send(Data::T_ERROR, "File not found");
+    return;
+  }
+  if (allowSending(filename)) {
+    process->send(Data::T_OK);
+    cout << username << " is downloading " << filename << "..." << endl;
+    process->send_file(filepath);
+    cout << username << " downloaded " << filename << endl;
+    unlock_file(filename);
+  } else {
+      cout << "Error: File " << filename << " currently syncing" << endl;
+      process->send(Data::T_ERROR, "File currently syncing");
+  }
+}
+
+void ServerUser::list_server() {
+  string file_list = File::list_directory_str(username);
+  process->send_long_content(Data::T_LS, file_list);
 }
