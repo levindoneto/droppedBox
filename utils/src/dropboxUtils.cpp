@@ -75,7 +75,7 @@ int getIdOfProcess() {
 }
 
 // Return the ip of the computer where the process is running
-string getipAddress() {
+string getOwnIpAddress() {
   struct ifaddrs *ifaddr, *ifa;
   int family, s;
   char host[NI_MAXHOST];
@@ -102,6 +102,24 @@ string getipAddress() {
       }
     }
   }
+}
+
+list<string> getListOfHostnames() {
+  string hostname;
+  list<string> hostnames;
+  ifstream file("allservers.txt");
+  getline(file, hostname); // the 1st line is the own hostname
+  while (getline(file, hostname)) {
+    hostnames.push_back(hostname);
+  }
+  return hostnames;
+}
+
+string getIpAddress() {
+  string ip;
+  ifstream file("allservers.txt");
+  getline(file, ip);
+  return ip;
 }
 
 void listClient(string userId) {
