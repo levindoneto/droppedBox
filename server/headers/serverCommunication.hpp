@@ -6,19 +6,26 @@
 #include "../../utils/headers/udpUtils.hpp"
 #include "../../utils/headers/process.hpp"
 
+class ServerUser;
+
 class ServerCommunication : public Thread {
   public:
-    ServerCommunication(
-      Process *processComm,
-      map<string, ServerCommunication*> *syncCommunicationThreads
-    );
+    ServerCommunication(ServerUser* parent);
     ~ServerCommunication();
     void *run();
     bool usingActive;
-    map<string, ServerCommunication*> *syncThreads;
     list<string> arqsSending;
+    //map<string, ServerCommunication*> *syncThreads;
   private:
-    Process *processComm;
+    Process *process;
+    void sync_client_files();
+    void sync_file(string filename);
+    void delete_file(string filename);
+    void send_files_to_client();
+
+    ServerUser* parent;
+    list<string> files_not_synced;
+    list<string> files_to_delete;
 };
 
 #endif

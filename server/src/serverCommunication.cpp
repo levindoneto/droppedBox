@@ -1,187 +1,112 @@
 #include "../headers/serverCommunication.hpp"
 #include "../headers/serverUser.hpp"
+#include "../headers/dropboxServer.hpp"
 #include "../../utils/headers/dropboxUtils.h"
 #include "../../utils/fileSystem/headers/folder.hpp"
+
+ServerSync::ServerSync(ServerUser *parent) : Thread() {
+  this->parent = parent;
+  log_file = parent->username + "/sync_log";
+}
 
 ServerCommunication::~ServerCommunication() {
   delete processComm;
 }
 
-ServerCommunication::ServerCommunication(
-  Process *processComm,
-  map<string, ServerCommunication*> *syncCommunicationThreads
-) {
-  syncThreads = syncCommunicationThreads;
-  // Each device gets one in the beggining regardless
-  string newUserDeviceSession;
+void *ServerCommunication::run() {
+  this->process = parent->process->rcvProcComm();
+  process->confirmComm();
   while (true) {
-    string dataMessage = processComm->sock->receive();
-    Data msg = Data::parse(dataMessage);
-    if (msg.type == Data::T_SYN && msg.session != processComm->session) {
-      newUserDeviceSession = msg.session;
-      break;
-    }
+    sync_client_files();
+    cout << "sending left out files";
+    send_files_to_client();
+    cout << "sent left out files";
   }
-  this->processComm = new Process(
-    processComm->idUser,
-    newUserDeviceSession,
-    processComm->sock->get_answerer()
-  );
 }
 
-void *ServerCommunication::run() {
-  processComm->initProcessComm();
+void ServerCommunication::sync_client_files() {
+  // TODO: Check username vs folderOfTheUser
+  // Create list of sync expected types
+  list<string> syncTypes;
+  syncTypes.push(Data::T_DONE);
+  syncTypes.push(Data::T_SYNC);
+  syncTypes.push(Data::T_DELETE);
+
+  files_not_synced = File::listNamesOfFiles(parent->username);
   while (true) {
-    cout << "SYNC - IM ALIVE\n";
-    list<string> filesToBePosted = File::listNamesOfFiles(
-      processComm->folderOfTheUser
-    );
-    Data msg = processComm->receive(Data::T_SYNC);
-    list<string> expected_types;
-    bool receiving_stats = true;
-    processComm->sendConfirmation();
-    expected_types.push_back(Data::T_STAT);
-    expected_types.push_back(Data::T_DONE);
-    expected_types.push_back(Data::T_DELETE);
-
-    // Merge files
-    while (receiving_stats) {
-      Data msg = processComm->receive(expected_types);
-      // Check file timestamp
-      if (msg.type == Data::T_STAT) {
-        processComm->sendConfirmation();
-        int timestamp_sep = msg.content.find(SEPARATOR_FILENAME);
-        int content_len = msg.content.size();
-        int timestamp_len = timestamp_sep;
-        int nameOfTheFile_len = content_len - timestamp_len - 1;
-        int timestamp_remote = stoi(msg.content.substr(INIT, timestamp_len));
-        string nameOfTheFile = msg.content.substr(timestamp_len + 1, content_len);
-        string filepath = processComm->folderOfTheUser + PATH_SEPARATOR + nameOfTheFile;
-
-        if (!allowSending(nameOfTheFile)) {
-          // The file is being sent
-          processComm->sendConfirmation(false);
-          processComm->rcvConfirmation();
-          continue;
-        }
-        // Get timestamps from server
-        int timestamp_local = obtainTSofFile(filepath);
-        // Sync via timestamps
-        if (timestamp_remote < timestamp_local) {
-          // Server sends the file to the user
-          try {
-            processComm->send(Data::T_DOWNLOAD);
-            processComm->rcvConfirmation();
-            int timestamp = obtainTSofFile(filepath);
-            processComm->send(Data::T_SOF, to_string(timestamp));
-            processComm->rcvConfirmation();
-            if (processComm->sendArq(filepath) == OK) {
-              printf("Down ok.\n");
-            } else {
-                printf("Down not ok.\n");
-            }
-          }
-          catch (exception &e) {
-            unlock_file(nameOfTheFile);
-            continue;
-          }
-        }
-        else if (timestamp_remote > timestamp_local || timestamp_local == ERROR) {
-          // server gets
-          processComm->send(Data::T_UPLOAD);
-          processComm->rcvConfirmation();
-          // Upload on the client side
-          if (processComm->getArq(filepath) == OK) {
-            printf("Up ok.\n");
-          } else {
-              printf("Up not ok.\n");
-            }
-        }
-        else {
-          processComm->send(Data::T_EQUAL);
-          processComm->rcvConfirmation();
-        }
-
-        filesToBePosted.remove(nameOfTheFile);
-        unlock_file(nameOfTheFile);
-      }
-      else if (msg.type == Data::T_DONE) {
-        processComm->sendConfirmation();
-        if (filesToBePosted.size() == EQUAL) {
-          processComm->send(Data::T_DONE);
-          processComm->rcvConfirmation();
-          break;
-        }
-        else {
-          for (list<string>::iterator fname = filesToBePosted.begin();
-            fname != filesToBePosted.end();
-            ++fname
-          ) {
-            try {
-              string nameOfTheFile = *fname;
-              string filepath = processComm->folderOfTheUser + PATH_SEPARATOR + nameOfTheFile;
-              // User gets the file via download from this server
-              if (!fileInFolder(filepath)) {
-                continue;
-              }
-              // Download on the client side
-              processComm->send(Data::T_DOWNLOAD, nameOfTheFile);
-              bool ok = processComm->rcvConfirmation();
-              if (ok) {
-                int timestamp = obtainTSofFile(filepath);
-                processComm->send(Data::T_SOF, to_string(timestamp));
-                processComm->rcvConfirmation();
-                if (processComm->sendArq(filepath) == OK) {
-                  printf("Down ok.\n");
-                } else {
-                    printf("Down not ok.\n");
-                }
-              }
-              else {
-                processComm->sendConfirmation();
-              }
-            }
-            catch (exception &e) {
-              cout << e.what() << endl;
-              continue;
-            }
-          }
-          // Send confirmation after finishing any operation
-          processComm->send(Data::T_DONE);
-          processComm->rcvConfirmation();
-          break;
-        }
-      }
-      else if (msg.type == Data::T_DELETE) {
-        string nameOfTheFile = msg.content;
-        string filepath = processComm->folderOfTheUser
-          + PATH_SEPARATOR
-          + nameOfTheFile;
-        if (processComm->deleteFile(filepath) == OK) {
-          cout << "The file " << nameOfTheFile
-            << " has been successfully removed from one session. "
-            << "Now it will be removed from the other ones" << endl;
-          // Delete the file for the other sessions (other devices) of the user who deleted the file
-          for (
-            map<string, ServerCommunication *>::iterator fname = (*syncThreads).begin();
-            fname != (*syncThreads).end();
-            ++fname
-          ) {
-            ServerCommunication *thread = fname->second;
-            if (
-              thread->processComm->idUser != this->processComm->idUser &&
-              thread->processComm->session != this->processComm->session
-            ) {
-              thread->processComm->send(Data::T_DELETE, nameOfTheFile);
-            }
-          }
-        } else {
-            cout << "The file " << nameOfTheFile
-              << " has been successfully removed :)" << endl;
-        }
-        filesToBePosted.remove(nameOfTheFile);
-        processComm->sendConfirmation(); // About the attempt of deleting the file
+    Data msg = process->receive(syncTypes);
+    if (msg.type == Data::T_DONE) {
+      break;
+    }
+    else if (msg.type == Data::T_SYNC) {
+      sync_file(msg.content);
+    }
+    else if (msg.type == Data::T_DELETE) {
+      delete_file(msg.content);
+      for (pair<string, UDPUtils> backup : DropboxServer::backupServers) {
+        // session and sequence are null
+        Data msg = Data(NULL, NULL, msg.type, request.content);
+        backup.second.send(msg.stringify());
+        // delete_file ?
       }
     }
   }
+}
+
+void ServerCommunication::sync_file(string filename) {
+  list<string> syncTypes;
+  syncTypes.push(Data::T_UPLOAD);
+  syncTypes.push(Data::T_DOWNLOAD);
+  File file(parent->username + SLASH + filename);
+  process->send(Data::T_MODTIME, to_string(file.modification_time()));
+  Data msg_action = process->receive(actionTypes);
+  if (msg_action.type == Data::T_UPLOAD) {
+    cout << "Receiving " << filename << endl;
+    parent->receive_upload(filename, process);
+    cout << "Done receiving file\n";
+  }
+  else if (msg_action.type == Data::T_DOWNLOAD) {
+    cout << "send file";
+    parent->send_download(filename, process);
+    cout << "done sending file";
+  }
+  files_not_synced.remove(filename);
+}
+
+void ServerCommunication::delete_file(string filename) {
+  cout << "Delete " <<  filename << endl;
+  if (allowSending(filename)) {
+    process->send(Data::T_OK);
+    string filepath = parent->username + SLASH + filename;
+    remove(filepath.c_str());
+    for (auto const &thread_map : parent->server->threads) {
+      ServerUser *thread = thread_map.second;
+      if (thread->username != parent->username) {
+        thread->server_sync->files_to_delete.push_back(filename);
+      }
+    }
+    cout << "Done deleting file\n";
+    unlock_file(filename);
+    files_not_synced.remove(filename);
+  } else {
+    cout << "File cannot be deleted rn\n";
+    process->send(Data::T_ERROR);
+  }
+}
+
+void ServerCommunication::send_files_to_client() {
+  for (string &filename : files_to_delete) {
+    cout << "Delete " <<  filename << endl;
+    remove(string(filename + SLASH + parent->username).c_str());
+    process->send(Data::T_DELETE, filename);
+    cout << "Done deleting file\n";
+  }
+  files_to_delete.clear();
+  for (string &filename : files_not_synced) {
+    cout << "send file";
+    process->send(Data::T_SYNC, filename);
+    process->send_file(parent->username + PATH + filename);
+    cout << "done sending file";
+  }
+    process->send(Data::T_DONE);
 }
