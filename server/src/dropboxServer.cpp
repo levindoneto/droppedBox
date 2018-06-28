@@ -49,7 +49,8 @@ void DropboxServer::backup(string host_master) {
       listener = new Process(host_master, port);
       listener->send(Data::T_DOWNLOAD, r_msg.content);
       listener->receive(Data::T_OK);
-      listener->receive_file(dirpath + "/" + filename);  // FIXME dirpath AND filenameeeeeeeeeeeeeeeee
+      // dirpath + "/" + filename
+      listener->receive_file("file.txt");  // FIXME dirpath AND filenameeeeeeeeeeeeeeeee
       delete listener;
     }
     else if (r_msg.type == Data::T_IP) {
@@ -62,14 +63,14 @@ void DropboxServer::backup(string host_master) {
 }
 
 void DropboxServer::closeThreadsOpen() {
-  auto it = (*threads).cbegin();
-  while (it != (*threads).cend()) {
-    if (it->second->usingActive) {
-      ++it;
-    } else {
-        delete it->second;
-        it = (*threads).erase(it);
+  auto it = threads.cbegin();
+  while (it != threads.cend()) {
+    ServerUser *serverUserThread = it->second;
+    if (!serverUserThread->usingActive) {
+      delete serverUserThread;
+      it = threads.erase(it);
     }
+    else ++it;
   }
 }
 

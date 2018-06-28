@@ -314,7 +314,7 @@ int Process::getArq(string pathOfTheFile) {
 }
 
 void Process::receive_file(string pathOfTheFile) {
-  list<string> fileExpextedTypes = {Data::T_END, Data::T_FILE};
+  list<string> fileExpextedTypes = {Data::T_END, Data::T_FILE}; // TODO: see if it's ok
 
   ofstream fileS;
 
