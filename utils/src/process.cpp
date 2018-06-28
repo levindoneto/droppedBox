@@ -55,8 +55,11 @@ Process *Process::rcvProcComm() {
     Data dataMessage = data->parse(dataString);
     if (dataMessage.type == Data::T_SYN && dataMessage.session != this->session) {
       sock->turnOnTimeout();
-      Process* newProcComm = new Process(msg.session, sock->get_answerer());
-      newProcComm->dataMessage = msg.content;
+      Process* newProcComm = new Process(
+        dataMessage.session,
+        sock->get_answerer()
+      );
+      newProcComm->ip = dataMessage.content;
       return newProcComm;
     }
   }
@@ -342,8 +345,6 @@ string Process::list_server_dir(string dirpath) {
 int Process::deleteFile(string pathOfTheFile) {
   const char *cstr = pathOfTheFile.c_str();
   int status = remove(cstr);
-  if (status != OK) {
-    return ERROR;
-  }
+  if (status != OK) return ERROR;
   return INIT;
 }
