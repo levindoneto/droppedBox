@@ -21,6 +21,7 @@ class Process {
     // Attr
     string idUser;
     string folderOfTheUser;
+    string ip;
     string session;
     UDPUtils *sock;
     // Methods

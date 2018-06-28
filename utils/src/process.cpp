@@ -17,7 +17,8 @@ Process::Process(string idUser, string session, UDPUtils *sock) {
   init_sequences();
 }
 
-Process::Process(string hostname, int port) : Process() {
+Process::Process(string hostname, int port, bool backupServer) : Process() {
+  if backupServer session.insert(INIT, BACKUP_TAG);
   this->sock = new UDPUtils(port);
   this->sock->setIp(hostname);
   connectProc();
@@ -54,12 +55,9 @@ Process *Process::rcvProcComm() {
     Data dataMessage = data->parse(dataString);
     if (dataMessage.type == Data::T_SYN && dataMessage.session != this->session) {
       sock->turnOnTimeout();
-
-      if (DropboxServer::backupServers.count(dataMessage.content) <= INIT) {
-        send(Data::T_NEW_USER, dataMessage.content);
-      }
-
-      return new Process(dataMessage.session, sock->get_answerer());
+      Process* newProcComm = new Process(msg.session, sock->get_answerer());
+      newProcComm->dataMessage = msg.content;
+      return newProcComm;
     }
   }
 }

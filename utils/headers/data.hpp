@@ -41,13 +41,15 @@ class Data {
     static const string T_UPLOAD;
     static const string T_DELETE;
 
+    // Backup stuff
+    static const string T_CLIENT_CONNECT;
+    static const string T_CLIENT_DISCONNECT;
+
     // Multiserver stuff
     static const string T_WORKING;
     static const string T_SERVER_ELECTION;
     static const string T_COORDINATOR;
-    static const string T_NEW_USER;
     static const string T_LOGIN;
-    static const string T_IP;
     static const string T_BACKUP;
     static const string T_OK;
     static const string T_MODTIME;

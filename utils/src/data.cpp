@@ -20,12 +20,14 @@ const string Data::T_DONE = "DONE";
 const string Data::T_EQUAL = "EQUAL";
 const string Data::T_DELETE = "DELETE";
 
+// Backup stuff
+const string Data::T_CLIENT_CONNECT = "CLIENT_CONNECT";
+const string Data::T_CLIENT_DISCONNECT = "CLIENT_DISCONNECT";
+
 // Multiserver stuff
 const string Data::T_SERVER_ELECTION = "SERVER_ELECTION";
 const string Data::T_WORKING = "WORKING";
 const string Data::T_COORDINATOR = "COORDINATOR";
-const string Data::T_NEW_USER = "NEW_USER";
-const string Data::T_IP = "IP";
 const string Data::T_BACKUP = "BACKUP";
 const string Data::T_OK = "OK";
 const string Data::T_MODTIME = "MODTIME";
@@ -37,7 +39,6 @@ bool Data::pedindo() {
     || type == Data::T_DOWNLOAD
     || type == Data::T_UPLOAD
     || type == Data::T_BYE
-    || type == Data::T_NEW_USER
   );
 }
 
