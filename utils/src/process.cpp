@@ -54,11 +54,11 @@ Process *Process::rcvProcComm() {
     Data dataMessage = data->parse(dataString);
     if (dataMessage.type == Data::T_SYN && dataMessage.session != this->session) {
       sock->turnOnTimeout();
-/*
+
       if (DropboxServer::backupServers.count(dataMessage.content) <= INIT) {
         send(Data::T_NEW_USER, dataMessage.content);
       }
-*/
+
       return new Process(dataMessage.session, sock->get_answerer());
     }
   }

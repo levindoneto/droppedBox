@@ -5,7 +5,7 @@
 #include "data.hpp"
 #include "dropboxUtils.h"
 #include "../fileSystem/headers/file.hpp"
-//#include "../../server/headers/dropboxServer.hpp"
+#include "../../server/headers/dropboxServer.hpp"
 
 class Process {
   private:
