@@ -1,8 +1,6 @@
 #include <string>
-#include "../headers/serverUser.hpp"
 #include "../headers/dropboxServer.hpp"
 #include "../../utils/headers/dropboxUtils.h"
-#include "../headers/multiserver.hpp"
 #include "../../settings/config.hpp"
 
 using namespace std;

@@ -84,6 +84,7 @@ void ServerCommunication::delete_file(string nameOfTheFile) {
     for (Process *backup : parent->server->backupServers) {
       backup->send(Data::T_DELETE, parent->username + SLASH + nameOfTheFile);
     }
+    
   } else {
     cout << "File cannot be deleted rn\n";
     process->send(Data::T_ERROR);

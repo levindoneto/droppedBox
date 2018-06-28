@@ -1,5 +1,5 @@
 #include "../headers/serverUser.hpp"
-#include "../headers/serverCommunication.hpp"
+#include "../headers/dropboxServer.hpp"
 #include "../../utils/headers/ui.hpp"
 #include "../../utils/headers/dropboxUtils.h"
 #include "../../utils/fileSystem/headers/folder.hpp"
@@ -17,7 +17,8 @@ ServerUser::~ServerUser() {
 void *ServerUser::run() {
   process->confirmComm();
   username = process->receive_content(Data::T_LOGIN);
-  File::createFolderForFiles(username);
+  File *file = new File();
+  file->createFolderForFiles(username);
 
   server_sync = new ServerCommunication(this);
   server_sync->start();
@@ -61,7 +62,7 @@ void ServerUser::receive_upload(string nameOfTheFile, Process *process) {
     process->receive_file(filepath);
     for (Process *backup : server->backupServers) {
       backup->send(Data::T_UPLOAD, filepath);
-      backup->send_file(filepath); // TODO: Add to process.cpp
+      backup->sendArq(filepath); // TODO: Add to process.cpp
     }
     unlock_file(nameOfTheFile);
     cout << "The user " << username << " successfully uploaded the file"
@@ -88,7 +89,7 @@ void ServerUser::send_download(string nameOfTheFile, Process *process) {
   if (allowSending(nameOfTheFile)) {
     process->send(Data::T_OK);
     cout << username << " is downloading " << nameOfTheFile << "..." << endl;
-    process->send_file(filepath);
+    process->sendArq(filepath);
     cout << username << " downloaded " << nameOfTheFile << endl;
     unlock_file(nameOfTheFile);
   } else {
@@ -98,6 +99,7 @@ void ServerUser::send_download(string nameOfTheFile, Process *process) {
 }
 
 void ServerUser::list_server() {
-  string file_list = File::list_directory_str(username);
+  File *file = new File();
+  string file_list = file->ll(username);
   process->send_long_content(Data::T_LS, file_list);
 }

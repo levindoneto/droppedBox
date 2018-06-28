@@ -21,7 +21,7 @@ class ServerCommunication : public Thread {
     void delete_file(string filename);
     void send_files_to_client();
     Process *process;
-    ServerUser* parent;
+    ServerUser *parent;
     list<string> files_not_synced;
     list<string> files_to_delete;
 };
