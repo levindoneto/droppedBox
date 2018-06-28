@@ -26,6 +26,7 @@ class Data {
     static const string MSG_END;
     static const string T_BYE;
     static const string T_FILE;
+    static const string T_END;
     static const string T_SOF;
     static const string T_EOF;
     static const string T_SYN;

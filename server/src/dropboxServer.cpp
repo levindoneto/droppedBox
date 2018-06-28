@@ -1,83 +1,83 @@
 #include <string>
 #include "../headers/serverUser.hpp"
+#include "../headers/dropboxServer.hpp"
 #include "../../utils/headers/dropboxUtils.h"
 #include "../headers/multiserver.hpp"
 #include "../../settings/config.hpp"
 
 using namespace std;
 
-class DropboxServer {
-  public:
-    DropboxServer() {
-      syncThreads = new map<string, ServerCommunication *>();
-      threads = new map<string, ServerUser*>();
-    };
-    ~DropboxServer() {}; // Destroy server
-    map<string, ServerCommunication*> *syncThreads;
-    map<string, ServerUser*> *threads;
-    void closeThreadsOpen() {
-      auto it = (*threads).cbegin();
-      while (it != (*threads).cend()) {
-        if (it->second->usingActive) {
-          ++it;
-        } else {
-            delete it->second;
-            it = (*threads).erase(it);
-        }
-      }
+DropboxServer::DropboxServer(int port) {
+  sock = new UDPUtils(port);
+  this->port = port;
+}
+
+void DropboxServer::start() {
+  listener = new Process(port);
+  sock->bindServer();
+  cout << "Listening on port " << port << ", awaiting communications...\n";
+  while (true) {
+    Process *process = listener->rcvProcComm();
+    Data r_msg = Data::parse(sock->receive());
+    if (r_msg.type == Data::T_BACKUP) {
+      UDPUtils backup_socket = UDPUtils(port);
+      backup_socket.setIp(r_msg.content);
+      DropboxServer::backupServers[r_msg.content] = backup_socket;
     }
-};
+
+    closeThreadsOpen();
+    // If session doesn't exist
+    if (!threads.count(process->session)) {
+      ServerUser *new_thread = new ServerUser(this, process);
+      new_thread->start();
+      threads[process->session] = new_thread;
+    }
+  }
+}
+
+void DropboxServer::backup(string host_master) {
+  sock->setIp(host_master);
+
+  Data msg = Data(NULL, NULL, Data::T_BACKUP, "meu ip");
+  sock->send(msg.stringify());
+
+  sock->bindServer();
+  while(true) {
+    Data r_msg = Data::parse(sock->receive());
+
+    if (r_msg.type == Data::T_UPLOAD) {
+      listener = new Process(host_master, port);
+      listener->send(Data::T_DOWNLOAD, r_msg.content);
+      listener->receive(Data::T_OK);
+      listener->receive_file(dirpath + "/" + filename);  // FIXME dirpath AND filenameeeeeeeeeeeeeeeee
+      delete listener;
+    }
+    else if (r_msg.type == Data::T_IP) {
+      DropboxServer::clientIps.push_back(r_msg.content);
+    }
+    else if (r_msg.type == Data::T_DELETE) {
+      cout << "delete";
+    }
+  }
+}
+
+void DropboxServer::closeThreadsOpen() {
+  auto it = (*threads).cbegin();
+  while (it != (*threads).cend()) {
+    if (it->second->usingActive) {
+      ++it;
+    } else {
+        delete it->second;
+        it = (*threads).erase(it);
+    }
+  }
+}
 
 int main(int argc, char *argv[]) {
-  // Create a object for the server (with the method for cleaning server threads)
-  DropboxServer *dropboxServer = new DropboxServer();
   int port;
-  pid_t pid;
-  string typeServer;
-  string ipAddress;
-  if (argc > 2) {
-    port = atoi(argv[PORT_SERVER]);
-    typeServer = string(argv[TYPE_SERVER]);
-  } else {
-      char error[ERROR_MSG_SIZE] = "[DropboxServer]: Invalid parameter";
-      throwError(error);
+  if (argc > 1) {
+    port = atoi(argv[1]);
   }
-  map<string,ServerUser*> threads;
-  UDPUtils listener(port);
-  listener.bindServer();
-  pid = getIdOfProcess();
-  ipAddress = getipAddress();
-  cout << "******* Server is running *******" << endl << endl;
-
-  while (true) {
-    printf("im alive");
-    //MultiServer *ms = new MultiServer();
-    //ms->startThreads();
-    //ms->startElectionProcesses();
-    MultiServer *ms = new MultiServer(port, pid, ipAddress);
-
-    Data message = Data::parse(listener.receive());
-    dropboxServer->closeThreadsOpen();
-    if (message.type == Data::T_SYN) {
-      if ((*dropboxServer->threads).count(message.session)) {
-        char error[ERROR_MSG_SIZE] = "Session already exists";
-        throwError(error);
-      }
-      else {
-        Process* processComm = new Process(
-          message.content,
-          message.session,
-          listener.get_answerer()
-        );
-        ServerUser* newUserThread = new ServerUser(
-          processComm,
-          dropboxServer->threads,
-          dropboxServer->syncThreads
-        );
-        newUserThread->start();
-        // Create logged user's session
-        (*dropboxServer->threads)[message.session] = newUserThread;
-      }
-    }
-  }
+  DropboxServer* server = new DropboxServer(port);
+  server->start();
 }

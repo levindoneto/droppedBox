@@ -116,3 +116,10 @@ void File::createFolderForFiles(string path) {
     throwError("error creating folder for files");
   }
 }
+
+void File::set_modification_time(int modtime) {
+  struct utimbuf ubuf;
+  ubuf.modtime = modtime;
+  if (utime(filepath.c_str(), &ubuf) == EQUAL) update_info();
+  else perror("utime - error");
+}

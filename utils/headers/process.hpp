@@ -5,6 +5,7 @@
 #include "data.hpp"
 #include "dropboxUtils.h"
 #include "../fileSystem/headers/file.hpp"
+//#include "../../server/headers/dropboxServer.hpp"
 
 class Process {
   private:
@@ -40,7 +41,7 @@ class Process {
     void send(string type, string content = "");
     void sendb(string stype, char *content = NULL);
     void sendConfirmation(bool workedProperly = true);
-    int sendArq(string filepath);
+    int sendArq(string pathOfTheFile);
     void sendText(string data);
     void resend();
     static Process *listener(int port);
@@ -48,11 +49,13 @@ class Process {
     Data receive(list<string> expected_types);
     Data receive_request();
     bool rcvConfirmation();
-    int getArq(string filepath);
+    int getArq(string pathOfTheFile);
     string receive_string();
     string list_server_dir(string dirpath);
-    int deleteFile(string filepath);
+    int deleteFile(string pathOfTheFile);
     static void *server_thread(void *void_this);
+    void receive_file(string pathOfTheFile);
+    string receive_content(string expected_type);
 };
 
 #endif
