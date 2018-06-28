@@ -358,3 +358,16 @@ int Process::content_space(string type) {
   content_space -= 4; // separators
   return content_space;
 }
+
+void Process::send_long_content(string type, string content) {
+  string buffer;
+  int start = INIT;
+  int len = content_space(type);
+  do {
+    buffer = content.substr(start, len);
+    send(type, buffer);
+    start += len;
+    len = content_space(type);
+  } while (start < (int)content.length());
+  send(Data::T_END);
+}

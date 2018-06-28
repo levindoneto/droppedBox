@@ -7,7 +7,7 @@ class File {
   public:
     File() {};
     File(string filepath);
-    void createFolderForFiles(string path);
+    static void createFolderForFiles(string path);
     static string ll(string dirpath);
     unsigned int getLenOfTheFile(string nameOfTheFile);
     static list<string> listNamesOfFiles(string dirpath);

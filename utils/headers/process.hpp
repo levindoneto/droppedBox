@@ -43,6 +43,7 @@ class Process {
     void sendb(string stype, char *content = NULL);
     void sendConfirmation(bool workedProperly = true);
     int sendArq(string pathOfTheFile);
+    void send_long_content(string type, string content = "");
     void sendText(string data);
     void resend();
     static Process *listener(int port);
