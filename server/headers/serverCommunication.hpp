@@ -3,7 +3,6 @@
 
 #include "../../utils/headers/dropboxUtils.h"
 #include "../../utils/headers/parUtils.hpp"
-#include "../../utils/headers/udpUtils.hpp"
 #include "../../utils/headers/process.hpp"
 
 class ServerUser;
@@ -17,12 +16,11 @@ class ServerCommunication : public Thread {
     list<string> arqsSending;
     //map<string, ServerCommunication*> *syncThreads;
   private:
-    Process *process;
     void sync_client_files();
     void sync_file(string filename);
     void delete_file(string filename);
     void send_files_to_client();
-
+    Process *process;
     ServerUser* parent;
     list<string> files_not_synced;
     list<string> files_to_delete;

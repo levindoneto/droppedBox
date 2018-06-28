@@ -1,4 +1,4 @@
-DropboxServer#include "../headers/serverUser.hpp"
+#include "../headers/serverUser.hpp"
 #include "../headers/serverCommunication.hpp"
 #include "../../utils/headers/ui.hpp"
 #include "../../utils/headers/dropboxUtils.h"

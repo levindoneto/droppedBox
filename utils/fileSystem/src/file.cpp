@@ -123,3 +123,12 @@ void File::set_modification_time(int modtime) {
   if (utime(filepath.c_str(), &ubuf) == EQUAL) update_info();
   else perror("utime - error");
 }
+
+unsigned int File::size() {
+  return info.st_size;
+}
+
+unsigned int File::modification_time() {
+  if (update_info()) return info.st_mtime;
+  else return INIT;
+}

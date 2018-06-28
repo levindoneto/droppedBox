@@ -20,7 +20,7 @@ void MultiServer::startThreads() {
 // Initialize the structure with the process' information (ip, port, pid of the
 // process running it). It's called in the constructor of this class.
 void MultiServer::serverInfoInit(int port, pid_t pid, bool local) {
-  this->serverInfo.ip = getipAddress();
+  this->serverInfo.ip = getIpAddress();
   if (local) this->serverInfo.ip = LOCALHOST; // Local tests
   this->serverInfo.port = port;
   this->serverInfo.pid = getIdOfProcess();

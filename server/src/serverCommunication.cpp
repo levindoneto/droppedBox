@@ -1,16 +1,15 @@
 #include "../headers/serverCommunication.hpp"
-#include "../headers/serverUser.hpp"
 #include "../headers/dropboxServer.hpp"
+#include "../headers/serverUser.hpp"
 #include "../../utils/headers/dropboxUtils.h"
 #include "../../utils/fileSystem/headers/folder.hpp"
 
-ServerSync::ServerSync(ServerUser *parent) : Thread() {
+ServerCommunication::ServerCommunication(ServerUser *parent) : Thread() {
   this->parent = parent;
-  log_file = parent->username + "/sync_log";
 }
 
 ServerCommunication::~ServerCommunication() {
-  delete processComm;
+  delete process;
 }
 
 void *ServerCommunication::run() {
@@ -28,9 +27,9 @@ void ServerCommunication::sync_client_files() {
   // TODO: Check username vs folderOfTheUser
   // Create list of sync expected types
   list<string> syncTypes;
-  syncTypes.push(Data::T_DONE);
-  syncTypes.push(Data::T_SYNC);
-  syncTypes.push(Data::T_DELETE);
+  syncTypes.push_back(Data::T_DONE);
+  syncTypes.push_back(Data::T_SYNC);
+  syncTypes.push_back(Data::T_DELETE);
 
   files_not_synced = File::listNamesOfFiles(parent->username);
   while (true) {
@@ -49,11 +48,11 @@ void ServerCommunication::sync_client_files() {
 
 void ServerCommunication::sync_file(string nameOfTheFile) {
   list<string> syncTypes;
-  syncTypes.push(Data::T_UPLOAD);
-  syncTypes.push(Data::T_DOWNLOAD);
+  syncTypes.push_back(Data::T_UPLOAD);
+  syncTypes.push_back(Data::T_DOWNLOAD);
   File file(parent->username + SLASH + nameOfTheFile);
   process->send(Data::T_MODTIME, to_string(file.modification_time()));
-  Data msg_action = process->receive(actionTypes);
+  Data msg_action = process->receive(syncTypes);
   if (msg_action.type == Data::T_UPLOAD) {
     cout << "Receiving " << nameOfTheFile << endl;
     parent->receive_upload(nameOfTheFile, process);
@@ -102,7 +101,7 @@ void ServerCommunication::send_files_to_client() {
   for (string &nameOfTheFile : files_not_synced) {
     cout << "send file";
     process->send(Data::T_SYNC, nameOfTheFile);
-    process->send_file(parent->username + PATH + nameOfTheFile);
+    process->sendArq(parent->username + SLASH + nameOfTheFile);
     cout << "done sending file";
   }
     process->send(Data::T_DONE);
