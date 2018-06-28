@@ -1,4 +1,5 @@
 #include "../headers/data.hpp"
+#include <string>
 
 const string Data::MSG_SEPARATOR = "|";
 
@@ -26,6 +27,7 @@ const string Data::T_NEW_USER = "NEW_USER";
 const string Data::T_IP = "IP";
 const string Data::T_BACKUP = "BACKUP";
 const string Data::T_OK = "OK";
+const string Data::T_MODTIME = "MODTIME";
 
 bool Data::pedindo() {
   return (
@@ -79,9 +81,9 @@ string Data::stringify() {
   string msgData = "";
   msgData += session;
   msgData += Data::MSG_SEPARATOR;
-  msgData += to_string(sequence);
+  msgData += std::to_string(sequence);
   msgData += Data::MSG_SEPARATOR;
-  msgData += to_string(static_cast<int>(type));
+  msgData += type;
   msgData += Data::MSG_SEPARATOR;
   msgData += content;
   msgData += Data::MSG_SEPARATOR;
