@@ -8,6 +8,7 @@ using namespace std;
 
 Process::Process() {
   this->session = to_string(rand() % RANDOM_ID_SESSION_SIZE);
+  sendAgainInCaseTO = true; // Resend the file if the time is bigger than 6
   theLastPartS = ERROR;
   theLastPartRCV = ERROR;
 }
@@ -247,7 +248,8 @@ Data Process::receive() {
       }
     }
     catch (timeout_exception &e) {
-      resend();
+      if (sendAgainInCaseTO) resend();
+      else throw e;
     }
     catch (runtime_error &e) {
       cout << e.what() << endl;

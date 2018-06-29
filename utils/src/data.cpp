@@ -23,6 +23,8 @@ const string Data::T_DELETE = "DELETE";
 // Backup stuff
 const string Data::T_CLIENT_CONNECT = "CLIENT_CONNECT";
 const string Data::T_CLIENT_DISCONNECT = "CLIENT_DISCONNECT";
+const string Data::T_SERVER_ALIVE = "SERVER_ALIVE";
+
 
 // Multiserver stuff
 const string Data::T_SERVER_ELECTION = "SERVER_ELECTION";

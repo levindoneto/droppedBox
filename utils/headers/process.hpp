@@ -25,6 +25,7 @@ class Process {
     string ip;
     string session;
     UDPUtils *sock;
+    bool sendAgainInCaseTO;
     // Methods
     Process();
     Process(int port);
