@@ -53,7 +53,6 @@ class Process {
     bool rcvConfirmation();
     int getArq(string pathOfTheFile);
     string receive_string();
-    string list_server_dir(string dirpath);
     int deleteFile(string pathOfTheFile);
     static void *server_thread(void *void_this);
     void receive_file(string pathOfTheFile);

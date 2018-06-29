@@ -17,7 +17,7 @@ class ServerCommunication : public Thread {
     //map<string, ServerCommunication*> *syncThreads;
   private:
     void sync_client_files();
-    void sync_file(string filename);
+    void mergeFile(string filename);
     void delete_file(string filename);
     void send_files_to_client();
     Process *process;

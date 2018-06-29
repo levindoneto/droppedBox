@@ -38,7 +38,7 @@ void ServerCommunication::sync_client_files() {
       break;
     }
     else if (msg.type == Data::T_SYNC) {
-      sync_file(msg.content);
+      mergeFile(msg.content);
     }
     else if (msg.type == Data::T_DELETE) {
       delete_file(msg.content);
@@ -46,7 +46,7 @@ void ServerCommunication::sync_client_files() {
   }
 }
 
-void ServerCommunication::sync_file(string nameOfTheFile) {
+void ServerCommunication::mergeFile(string nameOfTheFile) {
   list<string> syncTypes;
   syncTypes.push_back(Data::T_UPLOAD);
   syncTypes.push_back(Data::T_DOWNLOAD);

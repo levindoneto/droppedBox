@@ -13,6 +13,14 @@ class DropboxClient : public Thread {
   public:
     DropboxClient(string username, string hostname, int port);
     ~DropboxClient();
+    void down(string filename,
+      string pathOfTheFolder = EMPTY_PATH,
+      Process* process = NULL
+    );
+    void up(string filename,
+      string pathOfTheFolder = EMPTY_PATH,
+      Process* process = NULL
+    );
     void *run();
     int port;
     string folderOfTheUser;
