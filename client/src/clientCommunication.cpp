@@ -27,9 +27,7 @@ void *ClientCommunication::run() {
 }
 
 void ClientCommunication::mergeTheseFiles() {
-  /*
-  File *file = new File();
-  for (File &file : file->listNamesOfFiles(client->folderOfTheUser)) {
+  for (File &file : File::list_directory(client->folderOfTheUser)) {
     mergeFile(file);
     filenames.remove(file.name());
   }
@@ -40,12 +38,12 @@ void ClientCommunication::mergeTheseFiles() {
       delFine = true;
       try {
         process->receive(Data::T_OK);
-      } catch (ResponseException &e){
+      } catch (runtime_error &e){
         delFine = false;
       }
     }
   }
-  */
+
   process->send(Data::T_DONE);
   filenames = File::listNamesOfFiles(client->folderOfTheUser);
 }
