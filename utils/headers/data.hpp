@@ -44,6 +44,7 @@ class Data {
     // Backup stuff
     static const string T_CLIENT_CONNECT;
     static const string T_CLIENT_DISCONNECT;
+    static const string T_SERVER_ALIVE;
 
     // Multiserver stuff
     static const string T_WORKING;
