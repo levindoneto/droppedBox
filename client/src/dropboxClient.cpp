@@ -38,6 +38,47 @@ DropboxClient::~DropboxClient() {
     delete process;
 }
 
+void DropboxClient::down(string filename,
+  string pathOfTheFolder,
+  Process* process
+) {
+  if (!process) process = this->process;
+  if (pathOfTheFolder.empty()) pathOfTheFolder = File::working_directory();
+  try {
+    process->send(Data::T_DOWNLOAD, filename);
+    process->receive(Data::T_OK);
+    cout << "Download the " << filename << " into:  "
+      << pathOfTheFolder << " :)\n";
+    process->receive_file(pathOfTheFolder + "/" + filename);
+    cout << filename << " downloaded successfully!" << endl;
+  } catch (runtime_error &e) {
+      cout << "Error is: " << e.what() << endl;
+  }
+}
+
+void DropboxClient::up(string filename,
+  string pathOfTheFolder,
+  Process* process
+) {
+  if (!process) process = this->process;
+  if (pathOfTheFolder.empty()) pathOfTheFolder = File::working_directory();
+  if (!fileInFolder(pathOfTheFolder + SLASH + filename)) {
+      cout << "File not found at " << pathOfTheFolder << endl;
+      return;
+  }
+
+  try {
+    process->send(Data::T_UPLOAD, filename);
+    process->receive(Data::T_OK);
+    cout << "Upload the file: " << filename << " :)\n";
+    process->sendArq(pathOfTheFolder + SLASH + filename);
+    cout << filename << " was successfully uploaded :)" << endl;
+  }
+  catch (runtime_error &e) {
+      cout << e.what() << endl;
+  }
+}
+
 void* DropboxClient::run() {
   cout << "Connecting to " << hostname << ":" << port << " ..." << endl;
   process = new Process(hostname, port);
@@ -57,49 +98,9 @@ int DropboxClient::mainloop() {
   while (true) {
     cout << PREFIX_BASH;
     cin >> commandToRun;
-    if (commandToRun == UPLOAD || commandToRun == DOWNLOAD) {
-      cin >> pathOfTheFile;
-    }
-    if (commandToRun == UPLOAD) {
-      try {
-        if (!ifstream(pathOfTheFile)) {
-          continue;
-        }
-
-        process->send(Data::T_UPLOAD, pathOfTheFile);
-        int workedProperly = process->rcvConfirmation();
-        if (!workedProperly) {
-          process->sendConfirmation();
-          continue;
-        }
-        int timestamp = obtainTSofFile(pathOfTheFile);
-        process->send(Data::T_SOF, to_string(timestamp));
-        process->rcvConfirmation();
-
-        if (process->sendArq(pathOfTheFile) != EQUAL) {
-          char error[ERROR_MSG_SIZE] = "Error sending file";
-          throwError(error);
-        }
-      }
-      catch (exception &e) {
-        process->sendConfirmation(false);
-        process->rcvConfirmation();
-        continue;
-      }
-    }
-    else if (commandToRun == DOWNLOAD) {
-      process->send(Data::T_DOWNLOAD, pathOfTheFile);
-      bool workedProperly = process->rcvConfirmation();
-      if (!workedProperly) {
-        process->sendConfirmation();
-        continue;
-      }
-      string filepath = getHome() + PATH_SEPARATOR + pathOfTheFile;
-      if (process->getArq(filepath) == EQUAL)
-        cout << pathOfTheFile << " was successfully downloaded into your home :)" << endl;
-      else
-        cout << pathOfTheFile << " was not downloaded into your home :(" << endl;
-    }
+    if (commandToRun == UPLOAD || commandToRun == DOWNLOAD) cin >> pathOfTheFile;
+    if (commandToRun == DOWNLOAD) down(pathOfTheFile);
+    else if (commandToRun == UPLOAD) up(pathOfTheFile);
     else if (commandToRun == LIST_SERVER) {
       process->send(Data::T_LS);
       string server_list = process->receive_string();

@@ -12,13 +12,16 @@ private:
   Process* process;
   DropboxClient *client;
   list<string> filenames;
-  
+
+  void mergeTheseFiles();
+  void mergeFile(File file);
+  void getAllFilesFromServer();
 
 public:
   ClientCommunication(DropboxClient *client);
   ~ClientCommunication();
   bool usingActive;
-  void* run();
+  void *run();
 };
 
 #endif

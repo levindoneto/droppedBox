@@ -339,10 +339,6 @@ void Process::init_sequences() {
   theLastPartRCV = ERROR;
 }
 
-string Process::list_server_dir(string dirpath) {
-  return File::ll(dirpath);
-}
-
 int Process::deleteFile(string pathOfTheFile) {
   const char *cstr = pathOfTheFile.c_str();
   int status = remove(cstr);

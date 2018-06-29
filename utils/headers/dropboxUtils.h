@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <unistd.h> // close
+#include <sys/ioctl.h> // table
 #include <fstream>
 #include <iostream>
 #include <list>
@@ -18,6 +19,9 @@
 #include <vector>
 #include <list>
 #include <utime.h>
+#include <algorithm>
+#include <cstdio>
+#include <sstream>
 
 using namespace std;
 
@@ -142,6 +146,7 @@ void listClient(string userId);
 void printElement(string data, int width, char separator);
 void formatListOfArqs(string filelist);
 string time_to_string(time_t timestamp);
+void print_table(string table);
 class timeout_exception : public runtime_error {
   public:
     timeout_exception() : runtime_error("Error: Timeout") {}

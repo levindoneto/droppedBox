@@ -130,6 +130,36 @@ void printElement(string data, int width, char separator) {
   cout << left << setw(width) << setfill(separator) << data;
 }
 
+int terminal_width() {
+  struct winsize w;
+  ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+  return w.ws_col;
+}
+
+void print_table_row(string row, char delimiter = '|') {
+  int pos = INIT;
+  int field_width = INIT;
+  while (!row.empty()) {
+    pos = row.find(delimiter);
+    string data = row.substr(INIT, pos);
+    if (!field_width) {
+      int field_count = count(row.begin(), row.end(), delimiter);
+      field_width = terminal_width() / field_count;
+    }
+    printElement(data, field_width, ' ');
+    row.erase(INIT, pos + 1);
+  }
+}
+
+void print_table(string table) {
+  string row;
+  istringstream string_stream(table);
+  while (getline(string_stream, row)) {
+    print_table_row(row);
+    cout << endl;
+  }
+}
+
 void formatListOfArqs(string filelist) {
   char separator = FORMAT_NAME_FILE_S;
   int fieldWidth = SIZE_FILENAME_LIST;
